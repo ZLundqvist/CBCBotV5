@@ -1,0 +1,6 @@
+{
+    "debug.node.autoAttach": "off",
+    "typescript.tsdk": "node_modules/typescript/lib",
+    "typescript.format.enable": true,
+    "typescript.format.insertSpaceAfterKeywordsInControlFlowStatements": false
+}

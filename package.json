@@ -1,0 +1,62 @@
+{
+  "name": "cbcbotv4",
+  "version": "1.4.1",
+  "description": "Universal Discordbot",
+  "main": "src/index.js",
+  "scripts": {
+    "start:prod": "pm2 start dist/app.js --name CBCBotV4",
+    "stop:prod": "pm2 stop CBCBotV4",
+    "start": "node dist/app.js",
+    "dev": "ts-node-dev --respawn src/app.ts",
+    "build": "tsc",
+    "test": "npx jest",
+    "test:dev": "nodemon --exec npm test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ZLundqvist/CBCBotV4.git"
+  },
+  "author": "ZL",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ZLundqvist/CBCBotV4/issues"
+  },
+  "homepage": "https://github.com/ZLundqvist/CBCBotV4#readme",
+  "devDependencies": {
+    "@types/cheerio": "^0.22.30",
+    "@types/fs-extra": "^9.0.12",
+    "@types/jest": "^27.0.1",
+    "@types/node": "^16.7.6",
+    "@types/validator": "^13.6.3",
+    "@types/ws": "^7.4.6",
+    "jest": "^27.1.0",
+    "ts-jest": "^27.0.5",
+    "ts-node-dev": "^1.1.8",
+    "typescript": "^4.4.2"
+  },
+  "dependencies": {
+    "@discordjs/opus": "^0.6.0",
+    "@discordjs/rest": "^0.1.0-canary.0",
+    "@discordjs/voice": "^0.6.0",
+    "axios": "^0.21.1",
+    "bufferutil": "^4.0.3",
+    "cheerio": "^1.0.0-rc.10",
+    "discord-api-types": "^0.22.0",
+    "discord.js": "^13.1.0",
+    "ffmpeg-static": "^4.4.0",
+    "fs-extra": "^10.0.0",
+    "log4js": "^6.3.0",
+    "moment": "^2.29.1",
+    "nanoid": "^3.1.23",
+    "reflect-metadata": "^0.1.13",
+    "snoowrap": "^1.23.0",
+    "sodium": "^3.0.2",
+    "sqlite3": "^5.0.2",
+    "typeorm": "^0.2.37",
+    "utf-8-validate": "^5.0.5",
+    "validator": "^13.6.0",
+    "youtube-search": "^1.1.6",
+    "ytdl-core": "^4.9.1",
+    "zlib-sync": "^0.1.7"
+  }
+}
