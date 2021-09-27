@@ -23,7 +23,7 @@
   "devDependencies": {
     "@types/cheerio": "^0.22.30",
     "@types/fs-extra": "^9.0.12",
-    "@types/jest": "^27.0.1",
+    "@types/jest": "^27.0.2",
     "@types/node": "^16.7.6",
     "@types/validator": "^13.6.3",
     "@types/ws": "^7.4.6",
