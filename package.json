@@ -22,7 +22,7 @@
   "homepage": "https://github.com/ZLundqvist/CBCBotV5#readme",
   "devDependencies": {
     "@types/cheerio": "^0.22.30",
-    "@types/fs-extra": "^9.0.12",
+    "@types/fs-extra": "^9.0.13",
     "@types/jest": "^27.0.2",
     "@types/node": "^16.7.6",
     "@types/validator": "^13.6.3",
