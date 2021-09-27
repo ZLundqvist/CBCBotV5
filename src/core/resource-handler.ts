@@ -4,49 +4,39 @@ import validator from 'validator';
 import getLogger from '../utils/logger';
 import axios from 'axios';
 
-const log = getLogger(__filename);
+const log = getLogger('ResourceHandler');
 
 /**
  * Singleton class
  */
 class ResourceHandler {
-
-    private initialized: boolean;
     private root!: string;
     private sfx_folder!: string;
     private img_folder!: string;
 
     constructor() {
-        this.initialized = false;
-    }
+        this.root = path.resolve('./resources');
+        this.sfx_folder = path.join(this.root, 'sfx');
+        this.img_folder = path.join(this.root, 'img');
 
-    init(dir: string): void {
         log.debug('Initializing ResourceHandler');
-        this.setRoot(dir);
 
         if(!fs.existsSync(this.root)) {
-            throw new Error(`Resource directory ${this.root} does not exist.`);
+            fs.mkdirSync(this.root);
+            log.info(`Created resource directory: ${this.root}`);
         }
 
         if(!fs.existsSync(this.sfx_folder)) {
-            throw new Error(`${this.sfx_folder} does not exist.`);
+            fs.mkdirSync(this.sfx_folder);
+            log.info(`Created sfx folder: ${this.sfx_folder}`);
         }
-        log.debug(`SFX folder contains ${fs.readdirSync(this.sfx_folder).length} files.`);
+        log.info(`SFX folder contains ${fs.readdirSync(this.sfx_folder).length} files.`);
 
         if(!fs.existsSync(this.img_folder)) {
             fs.mkdirSync(this.img_folder);
-            
-            throw new Error(`${this.img_folder} does not exist.`);
+            log.info(`Created image folder: ${this.img_folder}`);
         }
-        log.debug(`Image folder contains ${fs.readdirSync(this.img_folder).length} files.`);
-        
-        this.initialized = true;
-    }
-
-    private setRoot(dir: string) {
-        this.root = dir;
-        this.sfx_folder = path.join(this.root, 'sfx');
-        this.img_folder = path.join(this.root, 'img');
+        log.info(`Image folder contains ${fs.readdirSync(this.img_folder).length} files.`);
     }
 
     getImages(): string[] {
@@ -156,7 +146,7 @@ class ResourceHandler {
     }
 
     private errorIfNotInitialized() {
-        if(!this.initialized) {
+        if(false) {
             throw new Error('ResourceHandler must be initialized before use.');
         }
     }

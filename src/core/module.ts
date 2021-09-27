@@ -7,5 +7,5 @@ export abstract class Module {
         this.name = name;
     }
 
-    abstract init(client: Discord.Client): Promise<void>;
+    abstract init(client: Discord.Client<true>): Promise<void>;
 }

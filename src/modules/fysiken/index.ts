@@ -1,7 +1,7 @@
-import Discord from 'discord.js';
-import { Module } from "../../core/module";
-import getLogger from '../../utils/logger';
+import { Module } from "@core";
+import getLogger from '@utils/logger';
 import axios from 'axios';
+import Discord from 'discord.js';
 
 const log = getLogger(__dirname);
 
@@ -13,7 +13,7 @@ type FysikenUser = {
     threshold: number;
 };
 
-class Fysiken extends Module {
+class FysikenModule extends Module {
     users: FysikenUser[];
     client!: Discord.Client;
 
@@ -69,7 +69,11 @@ class Fysiken extends Module {
             // Users not notified gets saved until next check
             this.users = otherUsers;
         } catch(e) {
-            log.error(e.message);
+            if(e instanceof Error) {
+                log.error(e.message);
+            } else {
+                log.error(e);
+            }
         }
     }
 
@@ -80,4 +84,4 @@ class Fysiken extends Module {
     }
 }
 
-export default new Fysiken();
+export default new FysikenModule();

@@ -1,23 +1,24 @@
+import { CommandError, Module, VoiceStateUpdateCustom } from "@core";
+import { DBGuildUtils, Guild } from "@db/guild";
+import { DBMemberUtils } from '@db/member';
+import { getVoiceConnection, VoiceConnectionStatus } from '@discordjs/voice';
+import audio from '@modules/audio';
+import getLogger from '@utils/logger';
 import Discord from 'discord.js';
-import { CommandError } from '../../core/command-error';
-import { VoiceStateUpdateCustom } from "../../core/custom-events";
-import { Module } from "../../core/module";
 import ResourceHandler from '../../core/resource-handler';
-import { Guild } from "../../database/entity/guild";
-import { getMember } from '../../database/entity/member';
-import getLogger from '../../utils/logger';
-import sleep from "../../utils/sleep";
-import audio from "../audio";
 
 const log = getLogger(__dirname);
 
-class EntrySound extends Module {
-    
+class EntrySoundModule extends Module {
+
+    private client!: Discord.Client<true>;
+
     constructor() {
         super('EntrySound');
     }
 
-    async init(client: Discord.Client): Promise<void> {
+    async init(client: Discord.Client<true>): Promise<void> {
+        this.client = client;
         client.on('voiceStateUpdateCustom' as any, (event: VoiceStateUpdateCustom) => {
             this.onVoiceStateUpdate(event);
         });
@@ -25,57 +26,50 @@ class EntrySound extends Module {
 
     async setBotEntrySFX(g: Discord.Guild, newSFX: string) {
         if(!ResourceHandler.sfxExists(newSFX)) {
-            throw new CommandError(`Invalid sfx: ${newSFX}`);
+            throw new CommandError(`Invalid SFX: ${newSFX}`);
         }
 
-        const guild = await Guild.findOneOrFail(g.id);
+        const guild = await DBGuildUtils.getGuild(g);
         guild.entrysound = newSFX;
         await guild.save();
     }
 
     async setMemberEntrySFX(m: Discord.GuildMember, newSFX: string) {
         if(!ResourceHandler.sfxExists(newSFX)) {
-            throw new CommandError(`Invalid sfx: ${newSFX}`);
+            throw new CommandError(`Invalid SFX: ${newSFX}`);
         }
 
-        const member = await getMember(m);
+        const member = await DBMemberUtils.getMember(m);
         member.entrysound = newSFX;
         await member.save();
     }
 
     async getBotEntrySFX(g: Discord.Guild): Promise<string | null> {
-        const guild = await Guild.findOneOrFail(g.id);
+        const guild = await DBGuildUtils.getGuild(g);
         return guild.entrysound;
     }
 
     async getMemberEntrySFX(m: Discord.GuildMember): Promise<string | null> {
-        const member = await getMember(m);
+        const member = await DBMemberUtils.getMember(m);
         return member.entrysound;
     }
 
     private async onVoiceStateUpdate({ oldState, newState, type }: VoiceStateUpdateCustom) {
-        if(type === 'disconnect') 
-            return;
-
-        // Edge case. If someone transfers into the same channel
-        // This happens when someone changes state in the current VC
-        // i.e. they start/stop streaming video (go live)
-        if(type === 'transfer' && oldState.channelID === newState.channelID)
-            return;
-        
-        if(newState.member?.user.id === newState.client.user?.id) {
-            // If event was caused by bot itself
-            await this.playBotEntry(newState.guild);
-        } else if(newState.member && newState.channelID === newState.guild.voice?.channelID) {
-            // If event was someone joining my channel
-            await this.playMemberEntry(newState.member);
-        } else {
-            // Someone connected/transferred, but it wasn't TO bot's current channel
+        if(type === 'transfer' || type === 'connect') {
+            if(newState.member?.user.id === this.client.user.id) {
+                // If event was caused by bot itself
+                await this.playBotEntry(newState.guild);
+            } else if(newState.member && newState.channelId === newState.guild.me?.voice.channelId) {
+                // If event was someone joining my channel
+                await this.playMemberEntry(newState.member);
+            } else {
+                // Someone connected/transferred, but it wasn't TO bot's current channel
+            }
         }
     }
 
     private async playBotEntry(guild: Discord.Guild) {
-        let guildDB = await Guild.findOneOrFail(guild.id);
+        const guildDB = await DBGuildUtils.getGuild(guild);
 
         if(!guildDB.entrysound) {
             log.debug(`No entrysound set: ${guild.name}`);
@@ -83,34 +77,29 @@ class EntrySound extends Module {
         }
 
         if(!guild.me) {
-            log.warn(`No guild.me when joining channel?`);
             return;
         }
 
-        await sleep(1000);
-        if(!audio.isPlaying(guild)) {
-            await audio.play(guild.me, guildDB.entrysound);
+        const guildAudio = audio.getGuildAudio(guild);
+
+        if(!guildAudio.isPlaying()) {
+            await guildAudio.queue(guild.me, guildDB.entrysound, false, false);
         }
     }
 
     private async playMemberEntry(m: Discord.GuildMember) {
-        let member = await getMember(m);
+        let member = await DBMemberUtils.getMember(m);
 
         if(!member.entrysound) {
             log.debug(`No entrysound set: ${member.id}`);
             return;
         }
 
-        if(!m.guild.me) {
-            log.warn(`No guild.me when user joined my channel?`);
-            return;
-        }
-
-        await sleep(500);   // arbitrary
-        if(!audio.isPlaying(m.guild)) {
-            await audio.play(m.guild.me, member.entrysound);
+        const guildAudio = audio.getGuildAudio(m.guild);
+        if(!guildAudio.isPlaying()) {
+            await guildAudio.queue(m, member.entrysound, false, false);
         }
     }
 }
 
-export default new EntrySound();
+export default new EntrySoundModule();

@@ -1,46 +1,49 @@
-import { Command } from "../../core/command";
-import Discord from 'discord.js';
-import Audio from '../../modules/audio';
-import { CommandError } from "../../core/command-error";
+import { GuildCommand } from "@core";
+import { SlashCommandBuilder } from '@discordjs/builders';
+import audio from '@modules/audio';
+import getLogger from '@utils/logger';
+import Discord, { CommandInteraction } from 'discord.js';
 
-const name = 'Volume';
-const keywords = [ 'v', 'volume', 'volym' ];
-const description = '[volume]. Set or get volume.';
+const log = getLogger(__dirname);
 
-class GetVolume extends Command {
+const command = new SlashCommandBuilder()
+    .setName('volume')
+    .setDescription('Set or get the volume')
+    .addIntegerOption((input) => {
+        return input
+            .setName('v')
+            .setDescription('New volume')
+            .setRequired(false);
+    });
+
+class VolumeCommand extends GuildCommand {
     constructor() {
-        super(name, keywords, description, true, false);
+        super(command, false, false);
     }
 
-    async execute(msg: Discord.Message, ...args: string[]): Promise<void> {
-        if(!msg.guild)
-            return;
+    async execute(interaction: CommandInteraction, guild: Discord.Guild, member: Discord.GuildMember) {
+        const newVolume = interaction.options.getInteger('v', false);
+        const guildAudio = audio.getGuildAudio(guild);
 
-        if(!args.length || !args[0]) {
-            const currentVolume = await Audio.getVolume(msg.guild);
+        if(newVolume) {
+            guildAudio.setVolume(newVolume);
 
-            if(currentVolume === 100) {
-                await msg.channel.send(`Current volume: :100:%`);
-            } else {
-                await msg.channel.send(`Current volume: ${currentVolume}%`);
-            }
-            return;
-        }
+            await interaction.reply('Volume set to: :100:%');
 
-        const newVolume = parseInt(args[0], 10);
-
-        if(isNaN(newVolume)) {
-            throw new CommandError(`That is not a volume: ${args[0]}`);
+            // if(newVolume === 100) {
+            //     await interaction.reply('Volume set to: :100:%');
+            // } else {
+            //     await interaction.reply(`Volume set to: ${newVolume}%`);
+            // }
         } else {
-            await Audio.setVolume(msg.guild, newVolume);
-
-            if(newVolume === 100) {
-                await msg.channel.send(`Volume set to: :100:%`);
+            const currentVolume = guildAudio.getVolume();
+            if(currentVolume === 100) {
+                await interaction.reply('Current volume: :100:%');
             } else {
-                await msg.channel.send(`Volume set to: ${args[0]}%`);
+                await interaction.reply(`Current volume: ${currentVolume}%`);
             }
         }
     }
 }
 
-export default new GetVolume();
+export default new VolumeCommand();

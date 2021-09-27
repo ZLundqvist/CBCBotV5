@@ -1,40 +1,27 @@
-import Discord from 'discord.js';
-import getLogger from '../../utils/logger';
-
-const log = getLogger(__dirname);
-
-export interface GuildQueueItem {
-    id: string;
-    title: string;
-    queuedBy: Discord.User;
-    play: (connection: Discord.VoiceConnection) => Promise<Discord.StreamDispatcher>;
-    color: string;
-    emoji: string;
-    length?: number;
-    thumbnail?: string;
-    link?: string;
-    notifyMsg?: Discord.Message;
-}
+import { GuildQueueItem } from './guild-queue-item';
 
 export class GuildQueue {
-    readonly guildID: string;
     private queue: GuildQueueItem[];
 
-    constructor(guild: Discord.Guild) {
-        this.guildID = guild.id;
+    constructor() {
         this.queue = [];
     }
 
-    getAll(): GuildQueueItem[] {
+    get size(): number {
+        return this.queue.length;
+    }
+
+    getQueue(): GuildQueueItem[] {
         return this.queue;
     }
 
     /**
-     * Add items to queue
+     * Add item to queue.
+     * Returns the queued items position in queue.
      * @param items 
      */
-    add(...items: GuildQueueItem[]): void {
-        this.queue.push(...items);
+    add(item: GuildQueueItem): number {
+        return this.queue.push(item);
     }
 
     /** Clears queue */
@@ -43,21 +30,22 @@ export class GuildQueue {
     }
 
     /**
-     * Removes first item in queue
+     * Removes and returns first item in queue
+     * Returns undefined if queue is empty
      */
-    removeFirst(): void {
-        this.queue.shift();
+    pop(): GuildQueueItem | undefined {
+        return this.queue.shift();
     }
 
     /**
-     * Returns first item in queue (or undefined if empty queue)
+     * Returns first item in queue without removing it (or undefined if empty queue)
      */
-    getFirst(): GuildQueueItem | undefined {
+    peek(): GuildQueueItem | undefined {
         return this.queue[0];
     }
 
-    length(): number {
-        return this.queue.length;
+    getById(id: string): GuildQueueItem | undefined {
+        return this.queue.find(item => item.id === id);
     }
 
     /**
@@ -66,11 +54,8 @@ export class GuildQueue {
      * @param id 
      */
     removeById(id: string): boolean {
-        if(this.queue.find(item => item.id === id)) {
-            this.queue = this.queue.filter(item => item.id !== id);
-            return true;
-        }
-
-        return false;
+        const beforeSize = this.size;
+        this.queue = this.queue.filter(item => item.id !== id);
+        return beforeSize !== this.size; // Return true if size has changed after filtering
     }
 }

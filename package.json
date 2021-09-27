@@ -1,27 +1,25 @@
 {
-  "name": "cbcbotv4",
-  "version": "1.4.1",
-  "description": "Universal Discordbot",
-  "main": "src/index.js",
+  "name": "cbcbotv5",
+  "version": "0.0.1",
+  "description": "Unimpressive bot for discord",
+  "main": "src/app.js",
   "scripts": {
-    "start:prod": "pm2 start dist/app.js --name CBCBotV4",
-    "stop:prod": "pm2 stop CBCBotV4",
     "start": "node dist/app.js",
-    "dev": "ts-node-dev --respawn src/app.ts",
+    "dev": "tsnd --respawn -r tsconfig-paths/register src/app.ts",
     "build": "tsc",
     "test": "npx jest",
-    "test:dev": "nodemon --exec npm test"
+    "docker-build": "docker build -t CBCBotV5:$npm_package_version ."
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/ZLundqvist/CBCBotV4.git"
+    "url": "git+https://github.com/ZLundqvist/CBCBotV5.git"
   },
   "author": "ZL",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/ZLundqvist/CBCBotV4/issues"
+    "url": "https://github.com/ZLundqvist/CBCBotV5/issues"
   },
-  "homepage": "https://github.com/ZLundqvist/CBCBotV4#readme",
+  "homepage": "https://github.com/ZLundqvist/CBCBotV5#readme",
   "devDependencies": {
     "@types/cheerio": "^0.22.30",
     "@types/fs-extra": "^9.0.12",
@@ -32,16 +30,18 @@
     "jest": "^27.1.0",
     "ts-jest": "^27.0.5",
     "ts-node-dev": "^1.1.8",
+    "tsconfig-paths": "^3.11.0",
     "typescript": "^4.4.2"
   },
   "dependencies": {
+    "@discordjs/builders": "^0.6.0",
     "@discordjs/opus": "^0.6.0",
     "@discordjs/rest": "^0.1.0-canary.0",
     "@discordjs/voice": "^0.6.0",
     "axios": "^0.21.1",
     "bufferutil": "^4.0.3",
     "cheerio": "^1.0.0-rc.10",
-    "discord-api-types": "^0.22.0",
+    "discord-api-types": "^0.23.1",
     "discord.js": "^13.1.0",
     "ffmpeg-static": "^4.4.0",
     "fs-extra": "^10.0.0",

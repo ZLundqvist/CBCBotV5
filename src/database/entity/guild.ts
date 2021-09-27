@@ -1,19 +1,18 @@
+import getLogger from '@utils/logger';
 import Discord from 'discord.js';
 import { BaseEntity, Column, CreateDateColumn, Entity, OneToMany, PrimaryColumn, UpdateDateColumn } from "typeorm";
-import { Administrator } from "./administrator";
 import { Alias } from "./alias";
-import { Blacklist } from "./blacklist";
 import { Member } from "./member";
+import { QueueHistory } from './queue-history';
+
+const log = getLogger('Database');
 
 @Entity()
 export class Guild extends BaseEntity {
-    @PrimaryColumn()
+    @PrimaryColumn('text')
     id!: string;
 
-    @Column('text')
-    prefix!: string;
-
-    @Column('int', { default: 1})
+    @Column('int', { default: 1 })
     gpm!: number;
 
     @Column('int', { default: 20 })
@@ -25,17 +24,14 @@ export class Guild extends BaseEntity {
     @Column('text', { nullable: true })
     pcsound!: string | null;
 
-    @OneToMany(type => Administrator, administrator => administrator.guild)
-    administrators!: Administrator[];
-
     @OneToMany(type => Member, member => member.guild)
     members!: Member[];
 
-    @OneToMany(type => Blacklist, blacklisted => blacklisted.guild)
-    blacklist!: Blacklist[];
-
     @OneToMany(type => Alias, alias => alias.guild)
     aliases!: Alias[];
+
+    @OneToMany(type => QueueHistory, queueHistory => queueHistory.guild)
+    queueHistory!: QueueHistory[];
 
     @CreateDateColumn()
     createdDate!: Date;
@@ -44,14 +40,30 @@ export class Guild extends BaseEntity {
     updatedDate!: Date;
 }
 
-export async function getGuildPrefix(guild: Discord.Guild): Promise<string> {
-    const guildData = await Guild.findOneOrFail(guild.id);
-
-    return guildData.prefix;
+/**
+ * Adds guilds which bot is part of to DB if it isn't already in the db
+ * @param client 
+ */
+async function addMissingGuilds(guilds: Discord.Guild[]): Promise<void> {
+    for(let guild of guilds) {
+        await getGuild(guild);
+    }
 }
 
-export async function setGuildPrefix(guild: Discord.Guild, newPrefix: string): Promise<void> {
-    const guildData = await Guild.findOneOrFail(newPrefix);
-    guildData.prefix = newPrefix;
-    await guildData.save();
+async function getGuild(guild: Discord.Guild): Promise<Guild> {
+    let dbGuild = await Guild.findOne(guild.id);
+
+    if(!dbGuild) {
+        dbGuild = new Guild();
+        dbGuild.id = guild.id;
+        await dbGuild.save();
+        log.info(`Added guild ${guild.name} to database.`);
+    }
+
+    return dbGuild;
 }
+
+export const DBGuildUtils = {
+    addMissingGuilds,
+    getGuild
+};

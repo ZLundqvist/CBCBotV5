@@ -1,22 +1,27 @@
-import { Command } from "../../core/command";
-import Discord from 'discord.js';
-import { getQueueEmbed } from "../../modules/audio/embed-generator";
+import { GuildCommand } from "@core";
+import { SlashCommandBuilder } from '@discordjs/builders';
+import audio from '@modules/audio';
+import getLogger from '@utils/logger';
+import Discord, { CommandInteraction } from 'discord.js';
 
-const name = 'GetQueue';
-const keywords = [ 'queue', 'q', 'now', 'nu' ];
-const description = 'Get current queue.';
+const log = getLogger(__dirname);
 
-class GetQueue extends Command {
+const command = new SlashCommandBuilder()
+    .setName('queue')
+    .setDescription('Get current queue');
+
+class GetQueueCommand extends GuildCommand {
     constructor() {
-        super(name, keywords, description, true, false);
+        super(command, false, false);
     }
 
-    async execute(msg: Discord.Message): Promise<void> {
-        if(!msg.guild)
-            return;
+    async execute(interaction: CommandInteraction, guild: Discord.Guild, member: Discord.GuildMember) {
+        const embed = audio.getGuildAudio(guild).getQueueEmbed();
 
-        await msg.channel.send(getQueueEmbed(msg.guild));
+        await interaction.reply({
+            embeds: [embed]
+        });
     }
 }
 
-export default new GetQueue();
+export default new GetQueueCommand();

@@ -1,13 +1,13 @@
+import Discord from 'discord.js';
 import fs from 'fs';
 import path from 'path';
 import getLogger from './logger';
 
-const log = getLogger(__filename);
+const log = getLogger('Config');
 
 class Settings {
     'token': string;
     'owner-id': string;
-    'default-prefix': string;
     'youtube-api-key': string;
     'reddit-client-id': string;
     'reddit-client-secret': string;
@@ -16,7 +16,6 @@ class Settings {
     constructor() {
         this['token'] = '';
         this['owner-id'] = '';
-        this['default-prefix'] = '';
         this['youtube-api-key'] = '';
         this['reddit-client-id'] = '';
         this['reddit-client-secret'] = '';
@@ -25,13 +24,13 @@ class Settings {
 }
 
 class Config {
-    configPath:string;
-    settings:Settings;
+    configPath: string;
+    settings: Settings;
 
     constructor(configPath: string = path.join(__dirname, '../../config.json')) {
         this.configPath = configPath;
         this.settings = new Settings();
-        log.debug(`Loading config: ${this.configPath}`);
+        log.info(`Loading config: ${this.configPath}`);
         this.loadSettings();
     }
 
@@ -46,7 +45,7 @@ class Config {
         }
 
         try {
-            this.settings = <Settings> JSON.parse(fs.readFileSync(this.configPath, { encoding: 'utf-8' }));
+            this.settings = <Settings>JSON.parse(fs.readFileSync(this.configPath, { encoding: 'utf-8' }));
         } catch {
             log.fatal('Corrupted config file, forced to exit');
             process.exit(1);
@@ -70,10 +69,10 @@ class Config {
 
     setConfigValue<K extends keyof Settings>(key: K, value: string) {
         log.warn(`setConfigValue called. This should be avoided.`);
-        this.settings[key] = value; 
+        this.settings[key] = value;
         this.saveSettings();
     }
-    
+
     getConfigValue<K extends keyof Settings>(key: K): string {
         log.trace('getConfigValue::' + key);
         this.loadSettings();
@@ -89,13 +88,19 @@ class Config {
     private static getMissingKey<T>(jsonObject: Object, instanceType: { new(): T; }): string | undefined {
         // Check that all the properties of the JSON Object are also available in the Class.
         const instanceObject = new instanceType();
-        for (let propertyName in instanceObject) {
-            if (!jsonObject.hasOwnProperty(propertyName)) {
+        for(let propertyName in instanceObject) {
+            if(!jsonObject.hasOwnProperty(propertyName)) {
                 // If any property in instance object is missing then we have a mismatch.
                 return propertyName;
             }
         }
-    };
+    }
+
+    isOwner(user: Discord.User): boolean {
+        log.trace('isOwner::' + user.id);
+        return this.getConfigValue('owner-id') === user.id;
+    }
+
 }
 
 export default new Config();

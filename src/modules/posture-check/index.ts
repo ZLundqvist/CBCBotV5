@@ -1,11 +1,8 @@
+import { Module } from '@core';
+import audio from '@modules/audio';
+import getLogger from '@utils/logger';
 import Discord from 'discord.js';
 import { clearInterval } from 'timers';
-import { CommandError } from '../../core/command-error';
-import { Module } from "../../core/module";
-import ResourceHandler from '../../core/resource-handler';
-import { Guild } from "../../database/entity/guild";
-import getLogger from '../../utils/logger';
-import audio from "../audio";
 
 const log = getLogger(__dirname);
 
@@ -15,8 +12,8 @@ interface GuildInterval {
     timer: NodeJS.Timeout | null; // null if disabled
 }
 
-class PostureCheck extends Module {
-    guildIntervals: GuildInterval[] = [];
+class PostureCheckModule extends Module {
+    private guildIntervals: GuildInterval[] = [];
 
     constructor() {
         super('PostureCheck');
@@ -40,10 +37,7 @@ class PostureCheck extends Module {
     async enable(guild: Discord.Guild, period: number) {
         let interval = this.getGuildInterval(guild);
 
-        if(!await this.getSFX(guild)) {
-            throw new CommandError('PostureCheck SFX is not set.');
-        }
-
+        // Disable old timer if it exists
         if(this.isRunning(guild)) {
             this.disable(guild);
         }
@@ -67,28 +61,6 @@ class PostureCheck extends Module {
         }
     }
 
-    async getSFX(guild: Discord.Guild): Promise<string | null> {
-        const guildDB = await Guild.findOneOrFail(guild.id);
-
-        if(guildDB.pcsound && !ResourceHandler.sfxExists(guildDB.pcsound)) {
-            return null;
-        }
-
-        return guildDB.pcsound;
-    }
-
-    async setSFX(guild: Discord.Guild, sfx: string) {
-        const guildDB = await Guild.findOneOrFail(guild.id);
-
-        if(!ResourceHandler.sfxExists(sfx)) {
-            throw new CommandError(`SFX does not exist: ${sfx}`);
-        }
-
-        guildDB.pcsound = sfx;
-        await guildDB.save();
-        log.info(`Posture check sound set in ${guild.name}: ${guildDB.pcsound}`);
-    }
-
     private getGuildInterval(guild: Discord.Guild): GuildInterval {
         let interval = this.guildIntervals.find(item => item.guildID === guild.id);
 
@@ -106,7 +78,9 @@ class PostureCheck extends Module {
     }
 
     private async performPC(guild: Discord.Guild) {
-        if(audio.isPlaying(guild)) {
+        const guildAudio = audio.getGuildAudio(guild);
+
+        if(guildAudio.isPlaying()) {
             return;
         }
 
@@ -115,14 +89,8 @@ class PostureCheck extends Module {
             return;
         }
 
-        const sfx = await this.getSFX(guild);
-        if(!sfx) {
-            this.disable(guild);
-            throw new Error(`No SFX: ${guild.name}`);
-        }
-
-        audio.play(guild.me, sfx);
+        await guildAudio.queue(guild.me, 'pc', false, false);
     }
 }
 
-export default new PostureCheck();
+export default new PostureCheckModule();

@@ -1,26 +1,28 @@
-import { Command } from "../../core/command";
-import Discord from 'discord.js';
-import { inSameChannelAs } from "../../utils/voice";
-import audio from "../../modules/audio";
+import { CommandError, GuildCommand } from "@core";
+import { SlashCommandBuilder } from '@discordjs/builders';
+import getLogger from '@utils/logger';
+import { disconnect, inSameChannelAs, isAlone } from "@utils/voice";
+import Discord, { CommandInteraction } from 'discord.js';
 
-const name = 'Leave';
-const keywords = [ 'leave', 'stick', 'dra', 'fuckoff' ];
-const description = 'EJECT bot from channel.';
+const log = getLogger(__dirname);
 
-class Leave extends Command {
+const command = new SlashCommandBuilder()
+    .setName('leave')
+    .setDescription('Disconnect bot from channel');
+
+class LeaveCommand extends GuildCommand {
     constructor() {
-        super(name, keywords, description, true, false);
+        super(command, false, true);
     }
 
-    async execute(msg: Discord.Message): Promise<void> {
-        if(!msg.guild || !msg.member)
-            return;
-
-        if(inSameChannelAs(msg.member)) {
-            audio.stop(msg.guild);
-            msg.guild.voice?.connection?.disconnect();
+    async execute(interaction: CommandInteraction, guild: Discord.Guild, member: Discord.GuildMember) {
+        if(inSameChannelAs(member) || isAlone(guild)) {
+            await disconnect(guild);
+            await interaction.deleteReply();
+        } else {
+            throw new CommandError('Unable to leave current channel');
         }
     }
 }
 
-export default new Leave();
+export default new LeaveCommand();

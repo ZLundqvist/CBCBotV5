@@ -1,11 +1,10 @@
-import Discord from 'discord.js';
+import { CommandError, Module } from "@core";
+import config from '@utils/config';
+import getLogger from '@utils/logger';
+import { pickRandom } from '@utils/random';
 import axios from 'axios';
+import Discord from 'discord.js';
 import snoowrap from 'snoowrap';
-import { CommandError } from '../../core/command-error';
-import { Module } from "../../core/module";
-import config from '../../utils/config';
-import getLogger from '../../utils/logger';
-import { pickRandom } from '../../utils/random';
 
 const log = getLogger(__dirname);
 
@@ -15,7 +14,7 @@ export enum RandomPostMode {
     HOT = 'getHot'
 }
 
-class Reddit extends Module {
+class RedditModule extends Module {
     reddit?: snoowrap;
     mode: RandomPostMode;
 
@@ -32,7 +31,7 @@ class Reddit extends Module {
             clientSecret: config.getConfigValue('reddit-client-secret'),
             refreshToken: config.getConfigValue('reddit-refresh-token')
         });
-        log.debug('Reddit API wrapper initialized');
+        log.trace('Reddit API wrapper initialized');
     }
 
     setMode(mode: RandomPostMode) {
@@ -59,4 +58,4 @@ class Reddit extends Module {
     }
 }
 
-export default new Reddit();
+export default new RedditModule();

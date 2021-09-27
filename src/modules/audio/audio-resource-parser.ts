@@ -1,23 +1,16 @@
-import Discord from 'discord.js';
-import { Readable } from 'stream';
-import validUrl from 'valid-url';
+import { createAudioResource } from '@discordjs/voice';
+import Discord, { Guild } from 'discord.js';
+import { nanoid } from 'nanoid';
+import validator from 'validator';
 import ytSearch from 'youtube-search';
-import colors from '../../constants/colors';
-import emojiCharacter from '../../constants/emoji-character';
+import { Colors, EmojiCharacters, LocalAudioProvider, YoutubeAudioProvider } from '@constants';
 import { CommandError } from '../../core/command-error';
 import ResourceHandler from '../../core/resource-handler';
 import config from '../../utils/config';
-import { getSFXEmbed } from './embed-generator';
-import { GuildQueueItem } from './guild-queue';
-import { isVideoURL, parseVideo } from './video-parser';
-import { nanoid } from 'nanoid'
+import { getSFXEmbed, getYoutubeEmbed } from './embed-generator';
+import { GuildQueueItem } from './guild-queue-item';
+import ytdl from 'ytdl-core';
 
-export type AudioResource = Readable | string;
-
-export interface ParseResult {
-    embed: Discord.MessageEmbed | null;
-    item: GuildQueueItem;
-}
 
 const searchOpts: ytSearch.YouTubeSearchOptions = {
     maxResults: 1,
@@ -26,69 +19,97 @@ const searchOpts: ytSearch.YouTubeSearchOptions = {
 };
 
 /**
- * Converts an audio resource to a GuildQueueItem[]
- * Supports youtube videos, youtube playlists and local sfx's
+ * Converts an audio resource to a GuildQueueItem
+ * Supports youtube videos and local sfx's
  * Also generates a MessageEmbed that represents the results
  */
-export async function smartParse(resource: AudioResource, member: Discord.GuildMember): Promise<ParseResult> {
-    // If stream, return it
-    if(resource instanceof Readable) {
-        // Nothing can be parsed from a stream
-        return {
-            item: {
-                id: nanoid(),
-                play: async (connection) => connection.play(resource),
-                queuedBy: member.user,
-                title: 'unknown stream',
-                emoji: emojiCharacter.note,
-                color: colors.white
-            },
-            embed: null
-        };
-    }
-
+export async function smartParse(member: Discord.GuildMember, query: string, generateEmbed: boolean, currentQueueSize: number): Promise<GuildQueueItem> {
     // If resource matches an sfx
-    if(ResourceHandler.sfxExists(resource)) {
-        const queueItem: GuildQueueItem = {
-            id: nanoid(),
-            play: async (connection) => connection.play(ResourceHandler.getSFXPath(resource)!),
-            title: resource,
-            queuedBy: member.user,
-            emoji: emojiCharacter.note,
-            color: colors.white
+    const sfxPath = ResourceHandler.getSFXPath(query);
+    if(sfxPath) {
+        const audioResourceCreator = () => {
+            return createAudioResource(sfxPath);
         };
 
-        return {
-            item: queueItem,
-            embed: getSFXEmbed(member.guild, queueItem)
+        const item = new GuildQueueItem(
+            query,
+            member.user.id,
+            member.displayName,
+            audioResourceCreator,
+            LocalAudioProvider,
+            currentQueueSize + 1
+        );
+
+        if(generateEmbed) {
+            item.embed = getSFXEmbed(member.guild, item);
+        }
+
+        return item;
+    }
+
+    // Get link from query
+    const link = await parseQuery(query);
+
+    // If link is a youtube URL
+    if(ytdl.validateURL(link)) {
+        let info = await ytdl.getInfo(link);
+
+        const audioResourceCreator = () => {
+            const stream = ytdl.downloadFromInfo(info, { quality: 'highestaudio', filter: 'audioonly' });
+            return createAudioResource(stream);
         };
+
+        const item = new GuildQueueItem(
+            info.player_response.videoDetails.title,
+            member.user.id,
+            member.displayName,
+            audioResourceCreator,
+            YoutubeAudioProvider,
+            currentQueueSize + 1
+        );
+
+        // Extract thumbnail with biggest dimensions
+        const thumbnail = info.player_response.videoDetails.thumbnail.thumbnails.reduce((prev, current) => {
+            return (prev.width > current.width) ? prev : current
+        }).url;
+        const length = parseInt(info.player_response.videoDetails.lengthSeconds, 10)
+
+        item.setLength(length)
+            .setLink(link)
+            .setThumbnail(thumbnail);
+
+        if(generateEmbed) {
+            item.embed = getYoutubeEmbed(member.guild, item);
+        }
+
+        return item;
     }
 
-    // Get link from resource
-    const link = await getLink(resource);
-    if(isVideoURL(link)) {
-        return await parseVideo(member, link);
-    }
-
-    throw new CommandError(`Cannot stream: ${resource}`);
+    throw new CommandError(`Cannot stream: ${query}`);
 }
 
-async function getLink(resource: string) {
-    if(validUrl.isWebUri(resource)) {
-        return resource;
+/**
+ * Parses a query into a URL, either by validating that it already is a URL or 
+ * by performing a YT search and returning the link to the first result.
+ * @param query 
+ * @returns 
+ */
+async function parseQuery(query: string) {
+    if(validator.isURL(query)) {
+        return query;
     }
 
     // Resource is not an URL, query youtube
-    let result = await search(resource);
+    let result = await youtubeSearch(query);
 
     if(!result) {
-        throw new CommandError(`Nothing found for: ${resource}`);
+        throw new CommandError(`Nothing found on Youtube for: ${query}`);
     }
 
     return result.link;
 }
 
-async function search(query: string): Promise<ytSearch.YouTubeSearchResults | undefined> {
+async function youtubeSearch(query: string): Promise<ytSearch.YouTubeSearchResults | undefined> {
     const results = await ytSearch(query, searchOpts);
 
     if(results.results.length) {

@@ -1,26 +1,34 @@
+import { Module, VoiceStateUpdateCustom } from '@core';
+import getLogger from '@utils/logger';
+import * as voice from "@utils/voice";
 import Discord from 'discord.js';
-import { VoiceStateUpdateCustom } from "../../core/custom-events";
-import { Module } from "../../core/module";
-import getLogger from '../../utils/logger';
-import { connectIfAloneOrDisconnected, disconnectIfAlone, isAlone, disconnect } from "../../utils/voice";
-import audio from '../audio';
+// import audio from '../audio';
 import postureCheck from '../posture-check';
 
 const log = getLogger(__dirname)
 
-class AutoJoin extends Module {
+class AutoJoinModule extends Module {
+
+    private client!: Discord.Client<true>;
+
     constructor() {
         super('AutoJoin');
     }
 
-    async init(client: Discord.Client): Promise<void> {
+    async init(client: Discord.Client<true>): Promise<void> {
+        this.client = client;
         client.on('voiceStateUpdateCustom' as any, (event: VoiceStateUpdateCustom) => {
             this.onVoiceStateUpdate(event);
         });
     }
 
+    /**
+     * Function that handles logic that should run when a VoiceState change occurs
+     * Does not run when the VoiceState belongs to me
+     */
     private onVoiceStateUpdate({ oldState, newState, type }: VoiceStateUpdateCustom) {
-        if(newState.client.user?.id === newState.member?.user.id)
+        // If state belongs to me
+        if(this.client.user.id === newState.member?.user.id)
             return;
 
         switch(type) {
@@ -33,34 +41,44 @@ class AutoJoin extends Module {
             case 'transfer':
                 this.onTransfer(newState);
                 break;
-            default:
-                log.warn(`No event type??\n${JSON.stringify(oldState)}\n${JSON.stringify(newState)}`);
         }
     }
 
+    /**
+     * Runs when another member connects to a VC
+     * @param state 
+     */
     private onConnect(state: Discord.VoiceState) {
-        if(state.channel && state.channelID !== state.guild.afkChannelID) {
-            connectIfAloneOrDisconnected(state.channel);
+        if(state.channel && state.channelId !== state.guild.afkChannelId && state.channel.type === 'GUILD_VOICE') {
+            voice.connectIfAloneOrDisconnected(state.channel);
         } else {
-            disconnectIfAlone(state.guild);
-        }       
-    }
-
-    private onDisconnect(state: Discord.VoiceState) {
-        if(isAlone(state.guild)) {
-            audio.stop(state.guild);
-            postureCheck.disable(state.guild);
-            disconnect(state.guild);
+            voice.disconnectIfAlone(state.guild);
         }
     }
 
+    /**
+     * Runs when another member disconnects from a VC
+     * @param state 
+     */
+    private onDisconnect(state: Discord.VoiceState) {
+        if(voice.isAlone(state.guild)) {
+            // audio.stop(state.guild);
+            postureCheck.disable(state.guild);
+            voice.disconnect(state.guild);
+        }
+    }
+
+    /**
+     * Runs when another member transfers from one VC to another(!) VC
+     * @param state 
+     */
     private onTransfer(state: Discord.VoiceState) {
-        if(state.channel && state.channelID !== state.guild.afkChannelID) {
-            connectIfAloneOrDisconnected(state.channel);
+        if(state.channel && state.channelId !== state.guild.afkChannelId && state.channel.type === 'GUILD_VOICE') {
+            voice.connectIfAloneOrDisconnected(state.channel);
         } else {
-            disconnectIfAlone(state.guild);
-        }      
+            voice.disconnectIfAlone(state.guild);
+        }
     }
 }
 
-export default new AutoJoin();
+export default new AutoJoinModule();

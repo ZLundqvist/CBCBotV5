@@ -1,18 +1,33 @@
-import { Command } from "../../core/command";
-import Discord from 'discord.js';
+import { GlobalCommand } from "@core";
+import { SlashCommandBuilder } from '@discordjs/builders';
+import getLogger from '@utils/logger';
+import { CommandInteraction, Permissions } from 'discord.js';
 
-const name = 'GetInviteLink';
-const keywords = [ 'invite' ];
-const description = 'Get link to invite bot to other servers.';
+const log = getLogger(__dirname);
 
-class GetInviteLink extends Command {
+const command = new SlashCommandBuilder()
+    .setName('invite')
+    .setDescription('Get a link to invite this bot to other servers');
+
+class GetInvinteLinkCommand extends GlobalCommand {
     constructor() {
-        super(name, keywords, description, false, false);
+        super(command, false, false);
     }
 
-    async execute(msg: Discord.Message): Promise<void> {
-        await msg.channel.send(`https://discordapp.com/api/oauth2/authorize?client_id=${msg.client.user?.id}&permissions=8&scope=bot`);
+    async execute(interaction: CommandInteraction) {
+        const inviteUrl = interaction.client.generateInvite({
+            scopes: [
+                'bot',
+                'applications.commands'
+            ],
+            permissions: Permissions.ALL 
+        });
+        
+        await interaction.reply({
+            content: inviteUrl,
+            ephemeral: true
+        });
     }
 }
 
-export default new GetInviteLink();
+export default new GetInvinteLinkCommand();

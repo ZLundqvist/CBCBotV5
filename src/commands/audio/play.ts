@@ -1,42 +1,58 @@
-import { Command } from "../../core/command";
-import Discord, { Guild } from 'discord.js';
-import { inSameChannelAs, inVoiceChannel, connectIfAloneOrDisconnected } from "../../utils/voice";
-import audio from "../../modules/audio";
-import sleep from "../../utils/sleep";
+import { GuildCommand } from "@core";
+import { SlashCommandBuilder } from '@discordjs/builders';
+import audio from '@modules/audio';
+import getLogger from '@utils/logger';
+import { connectIfAloneOrDisconnected, inSameChannelAs, inVoiceChannel } from "@utils/voice";
+import Discord, { CommandInteraction } from 'discord.js';
 
-const name = 'Play';
-const keywords = [ 'play', 'spela' ];
-const description = '<link/search>. Play link or search for video on youtube.';
+const log = getLogger(__dirname);
 
-class Play extends Command {
+const command = new SlashCommandBuilder()
+    .setName('play')
+    .setDescription('Play audio')
+    .addStringOption((option) => {
+        option
+            .setName('audio')
+            .setDescription('Link to video or search string')
+            .setRequired(true);
+        return option;
+    });
+
+
+class PlayCommand extends GuildCommand {
     constructor() {
-        super(name, keywords, description, true, false);
+        super(command, false, true);
     }
 
-    async execute(msg: Discord.Message, ...args: string[]): Promise<void> {
-        if(!msg.guild || !msg.member)
-            return;
-
-        if(!inVoiceChannel(msg.guild) && msg.member.voice.channel) {
-            await connectIfAloneOrDisconnected(msg.member.voice.channel);
-            await sleep(2000);  // Let changes propagate
+    async execute(interaction: CommandInteraction, guild: Discord.Guild, member: Discord.GuildMember): Promise<void> {
+        if(!inVoiceChannel(guild) && member.voice.channel) {
+            await connectIfAloneOrDisconnected(member.voice.channel);
         }
 
-        if(!inSameChannelAs(msg.member))
+        if(!inSameChannelAs(member)) {
+            await interaction.editReply({
+                content: 'We must be in the same channel'
+            });
             return;
-
-        let query = args.join(' ');
-
-        if(!query)
-            return;
-
-        if(msg.channel.type === 'text') {
-            await audio.playAndNotify(msg.member, msg.channel, query);
         }
 
-        if(msg.deletable)
-            await msg.delete();
+        const guildAudio = audio.getGuildAudio(guild);
+
+        const query = interaction.options.getString('audio', true);
+        const item = await guildAudio.queue(member, query, true, true);
+
+
+        if(item.embed) {
+            const reply = await interaction.editReply({ embeds: [item.embed] });
+
+            if(reply instanceof Discord.Message) {
+                item.setEmbedMessage(reply);
+                await guildAudio.attachSkipReaction(item);
+            } else {
+                log.warn('Not instance of Discord.Message. Cannot attach skip reaction.');
+            }
+        }
     }
 }
 
-export default new Play();
+export default new PlayCommand();

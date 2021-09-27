@@ -1,42 +1,44 @@
-import { Command } from "../../core/command";
-import Discord from 'discord.js';
-import postureCheck from "../../modules/posture-check";
-import { CommandError } from "../../core/command-error";
+import { CommandError, GuildCommand } from "@core";
+import { DBGuildUtils } from '@db/guild';
+import { SlashCommandBuilder } from '@discordjs/builders';
+import audio from '@modules/audio';
+import entrySound from '@modules/entry-sound';
+import postureCheck from '@modules/posture-check';
+import getLogger from '@utils/logger';
+import { connectIfAloneOrDisconnected, inSameChannelAs, inVoiceChannel } from "@utils/voice";
+import ResourceHandler from 'core/resource-handler';
+import Discord, { CommandInteraction } from 'discord.js';
 
-const name = 'PostureCheck';
-const keywords = [ 'pc' ];
-const description = '<interval>. Enables PC. 0 to disable.';
+const log = getLogger(__dirname);
 
-class PostureCheck extends Command {
+const command = new SlashCommandBuilder()
+    .setName('pc')
+    .setDescription('Enable/disable posture check')
+    .addIntegerOption((option) => {
+        return option
+            .setName('interval')
+            .setDescription('Posture check interval in minutes. 0 to disable.')
+            .setRequired(true);
+    });
+
+class PostureCheckCommand extends GuildCommand {
     constructor() {
-        super(name, keywords, description, true, false);
+        super(command, false, false);
     }
 
-    async execute(msg: Discord.Message, period: string): Promise<void> {
-        if(!msg.guild)
-            return;
+    async execute(interaction: CommandInteraction, guild: Discord.Guild, member: Discord.GuildMember): Promise<void> {
+        const input = interaction.options.getInteger('interval', true);
 
-        if(period) {
-            let parsed = parseFloat(period);
-
-            if(isNaN(parsed))
-                throw new CommandError(`'${period}' is not a number`);
-
-            if(parsed === 0) {
-                postureCheck.disable(msg.guild);
-                await msg.channel.send(`PostureCheck disabled`);
-            } else if(parsed > 0) {
-                await postureCheck.enable(msg.guild, parsed);
-                await msg.channel.send(`PostureCheck enabled: ${postureCheck.getPeriod(msg.guild)} minutes`);
-            }
+        if(input === 0) {
+            postureCheck.disable(guild);
+            await interaction.reply('Posture check disabled');
+        } else if(input > 0) {
+            await postureCheck.enable(guild, input);
+            await interaction.reply(`Posture check enabled (${input}-minute interval)`);
         } else {
-            if(postureCheck.isRunning(msg.guild)) {
-                await msg.channel.send(`PostureCheck enabled: ${postureCheck.getPeriod(msg.guild)} minutes`);
-            } else {
-                await msg.channel.send(`PostureCheck disabled`);
-            }
+            await interaction.reply('Interval cannot be negative.');
         }
     }
 }
 
-export default new PostureCheck();
+export default new PostureCheckCommand();

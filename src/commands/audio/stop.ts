@@ -1,26 +1,30 @@
-import { Command } from "../../core/command";
-import Discord, { Guild } from 'discord.js';
-import { inSameChannelAs } from "../../utils/voice";
-import audio from "../../modules/audio";
+import { CommandError, GuildCommand } from "@core";
+import { SlashCommandBuilder } from '@discordjs/builders';
+import audio from '@modules/audio';
+import getLogger from '@utils/logger';
+import { inSameChannelAs } from "@utils/voice";
+import Discord, { CommandInteraction } from 'discord.js';
 
-const name = 'Stop';
-const keywords = [ 'stop', 'sluta', 'end' ];
-const description = 'Stops playing and clears queue.';
+const log = getLogger(__dirname);
 
-class Stop extends Command {
+const command = new SlashCommandBuilder()
+    .setName('stop')
+    .setDescription('Stop playing audio');
+
+class StopCommand extends GuildCommand {
     constructor() {
-        super(name, keywords, description, true, false);
+        super(command, false, true);
     }
 
-    async execute(msg: Discord.Message): Promise<void> {
-        if(!msg.guild || !msg.member)
-            return;
-
-        if(!inSameChannelAs(msg.member))
-            return;
-
-        audio.stop(msg.guild);
+    async execute(interaction: CommandInteraction, guild: Discord.Guild, member: Discord.GuildMember) {
+        if(inSameChannelAs(member)) {
+            const guildAudio = audio.getGuildAudio(guild);
+            guildAudio.stop();
+            await interaction.deleteReply();
+        } else {
+            throw new CommandError('Must be in same channel');
+        }
     }
 }
 
-export default new Stop();
+export default new StopCommand();

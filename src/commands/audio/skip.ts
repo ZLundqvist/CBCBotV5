@@ -1,26 +1,30 @@
-import { Command } from "../../core/command";
-import Discord, { Guild } from 'discord.js';
-import { connect, inSameChannelAs } from "../../utils/voice";
-import audio from "../../modules/audio";
+import { GuildCommand } from "@core";
+import { SlashCommandBuilder } from '@discordjs/builders';
+import audio from '@modules/audio';
+import getLogger from '@utils/logger';
+import { inSameChannelAs } from "@utils/voice";
+import Discord, { CommandInteraction } from 'discord.js';
 
-const name = 'Skip';
-const keywords = [ 'skip', 'next', 'nästa' ];
-const description = 'Skips current song.';
+const log = getLogger(__dirname);
 
-class Skip extends Command {
+const command = new SlashCommandBuilder()
+    .setName('skip')
+    .setDescription('Skip current song');
+
+class SkipCommand extends GuildCommand {
     constructor() {
-        super(name, keywords, description, true, false);
+        super(command, false, true);
     }
 
-    async execute(msg: Discord.Message): Promise<void> {
-        if(!msg.guild || !msg.member)
-            return;
-
-        if(!inSameChannelAs(msg.member))
-            return;
-
-        audio.skip(msg.guild);
+    async execute(interaction: CommandInteraction, guild: Discord.Guild, member: Discord.GuildMember) {
+        if(inSameChannelAs(member)) {
+            const guildAudio = audio.getGuildAudio(guild);
+            guildAudio.skipCurrent();
+            await interaction.deleteReply();
+        } else {
+            await interaction.editReply('Must be in same channel');
+        }
     }
 }
 
-export default new Skip();
+export default new SkipCommand();

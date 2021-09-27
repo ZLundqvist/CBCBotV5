@@ -1,26 +1,38 @@
-import { Command } from "../../core/command";
-import Discord from 'discord.js';
-import { connect } from "../../utils/voice";
-import audio from "../../modules/audio";
+import { CommandError, GuildCommand } from "@core";
+import { SlashCommandBuilder } from '@discordjs/builders';
+import audio from '@modules/audio';
+import getLogger from '@utils/logger';
+import { connect, inSameChannelAs } from "@utils/voice";
+import Discord, { CommandInteraction } from 'discord.js';
 
-const name = 'Join';
-const keywords = [ 'kom', 'join' ];
-const description = 'Call bot into current channel.';
+const log = getLogger(__dirname);
 
-class Join extends Command {
+const command = new SlashCommandBuilder()
+    .setName('join')
+    .setDescription('Move bot to your channel');
+
+class JoinCommand extends GuildCommand {
     constructor() {
-        super(name, keywords, description, true, false);
+        super(command, false, true);
     }
 
-    async execute(msg: Discord.Message): Promise<void> {
-        if(!msg.guild || !msg.member)
-            return;
-
-        if(msg.member?.voice.channel && !audio.isPlaying(msg.guild)) {
-            // If not playing, just join caller
-            connect(msg.member.voice.channel);
+    async execute(interaction: CommandInteraction, guild: Discord.Guild, member: Discord.GuildMember) {
+        if(inSameChannelAs(member)) {
+            throw new CommandError('Already in your channel');
         }
+
+        if(!member.voice.channel) {
+            throw new CommandError('You must be in a channel first');
+        }
+
+        const guildAudio = audio.getGuildAudio(guild);
+        if(guildAudio.isPlaying()) {
+            throw new CommandError('Unable to join your channel (currently playing audio)');
+        }
+
+        await connect(member.voice.channel);
+        await interaction.deleteReply();
     }
 }
 
-export default new Join();
+export default new JoinCommand();

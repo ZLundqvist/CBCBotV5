@@ -1,27 +1,26 @@
+import { CommandError, Module } from '@core';
+import { Alias } from '@db/alias';
+import { Guild } from '@db/guild';
+import getLogger from '@utils/logger';
 import Discord from 'discord.js';
-import { CommandError } from '../../core/command-error';
-import { Module } from "../../core/module";
-import { Alias as AliasDB } from "../../database/entity/alias";
-import { getGuildPrefix, Guild } from "../../database/entity/guild";
-import getLogger from '../../utils/logger';
 
 const log = getLogger(__dirname);
 
-class Alias extends Module {
+class AliasModule extends Module {
     constructor() {
         super('Alias');
     }
 
-    async init(client: Discord.Client): Promise<void> {
-        client.on('message', (msg: Discord.Message) => {
-            this.processMessage(msg);
+    async init(client: Discord.Client<true>): Promise<void> {
+        client.on('messageCreate', (msg: Discord.Message) => {
+            this.onMessageCreate(msg);
         });
     }
 
-    async addInGuild(guild: Discord.Guild, key: string, value: string): Promise<AliasDB> {
-        let alias = await AliasDB.findOne({
+    async addInGuild(guildId: string, key: string, value: string) {
+        let alias = await Alias.findOne({
             where: {
-                guild: guild.id,
+                guild: guildId,
                 key: key
             }
         });
@@ -30,10 +29,10 @@ class Alias extends Module {
             alias.key = key;
             alias.value = value;
         } else {
-            alias = new AliasDB();
+            alias = new Alias();
             const guildDB = await Guild.findOneOrFail({
                 where: {
-                    id: guild.id
+                    id: guildId
                 }
             });
 
@@ -47,10 +46,10 @@ class Alias extends Module {
         return alias;
     }
 
-    async removeInGuild(guild: Discord.Guild, key: string) {
-        const alias = await AliasDB.findOne({
+    async removeInGuild(guildId: string, key: string) {
+        const alias = await Alias.findOne({
             where: {
-                guild: guild.id,
+                guild: guildId,
                 key: key
             }
         });
@@ -62,17 +61,17 @@ class Alias extends Module {
         log.info(`Alias removed: ${alias.key}`);
     }
 
-    async getAllInGuild(guild: Discord.Guild): Promise<AliasDB[]> {
-        const aliases = await AliasDB.find({
+    async getAllInGuild(guildId: string): Promise<Alias[]> {
+        const aliases = await Alias.find({
             where: {
-                guild: guild.id
+                guild: guildId
             }
         });
 
         return aliases;
     }
 
-    private async processMessage(msg: Discord.Message) {
+    private async onMessageCreate(msg: Discord.Message) {
         if(!msg.guild) {
             return;
         }
@@ -81,21 +80,19 @@ class Alias extends Module {
             return;
         }
 
-        const prefix = await getGuildPrefix(msg.guild);
-        const alias = await AliasDB.findOne({
+        const alias = await Alias.findOne({
             where: {
                 guild: msg.guild.id,
-                key: msg.content.substr(prefix.length)
+                key: msg.content.trim()
             }
         });
 
-        if(!alias) {
-            return;
+        if(alias) {
+            await msg.channel.send(alias.value);
+            await msg.delete();
         }
-
-        await msg.channel.send(alias.value);
     }
 }
 
 
-export default new Alias();
+export default new AliasModule();

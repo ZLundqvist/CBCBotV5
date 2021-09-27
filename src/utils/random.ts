@@ -1,5 +1,5 @@
 
-function roll(min: number, max: number) {
+export function roll(min: number, max: number) {
     if(isNaN(min)) {
         throw new Error('min is not a number');
     }
@@ -22,7 +22,7 @@ function roll(min: number, max: number) {
     return Math.floor(Math.random() * (max - min + 1) + min);
 }
 
-function pickRandom<T>(list: T[]): undefined | T {
+export function pickRandom<T>(list: T[]): undefined | T {
     if(list.length === 0) {
         return;
     }
@@ -31,7 +31,7 @@ function pickRandom<T>(list: T[]): undefined | T {
 }
 
 // Randomize
-function shuffle<T>(list: T[]): T[] {
+export function shuffle<T>(list: T[]): T[] {
     // Don't modify original array
     const shuffledArray = Array.from(list);
 
@@ -54,6 +54,3 @@ function shuffle<T>(list: T[]): T[] {
 
     return shuffledArray;
 }
-
-
-export { roll, pickRandom, shuffle };

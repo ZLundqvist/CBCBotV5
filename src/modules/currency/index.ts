@@ -1,40 +1,37 @@
-import Discord, { EmbedField, EmbedFieldData } from 'discord.js';
+import { Colors, Images } from '@constants';
+import { Module } from "@core";
+import { Guild } from "@db/guild";
+import { DBMemberUtils } from '@db/member';
+import getLogger from '@utils/logger';
+import Discord, { EmbedField } from 'discord.js';
 import moment from 'moment';
-import colors from '../../constants/colors';
-import images from '../../constants/images';
-import { Module } from "../../core/module";
-import { Guild } from "../../database/entity/guild";
-import { addMemberCurrency, getMember, getMemberCurrencyTop } from '../../database/entity/member';
-import getLogger from '../../utils/logger';
 
 const log = getLogger(__dirname);
 
-class Currency extends Module {
+class CurrencyModule extends Module {
     distributer: NodeJS.Timeout | null = null;
 
     constructor() {
         super('Currency');
     }
 
-    async init(client: Discord.Client): Promise<void> {
-        client.on('readyWithClient' as any, (client: Discord.Client) => {
-            if(this.distributer) {
-                clearInterval(this.distributer);
-            }
+    async init(client: Discord.Client<true>): Promise<void> {
+        if(this.distributer) {
+            clearInterval(this.distributer);
+        }
 
-            this.distributer = setInterval(() => {
-                this.distributeGold(client);
-            }, 60 * 1000);
-            log.debug('Distributer enabled.');
-        });
+        this.distributer = setInterval(() => {
+            this.distributeGold(client);
+        }, 60 * 1000);
+        log.debug('Distributer enabled.');
     }
 
     async getMemberEmbed(member: Discord.GuildMember): Promise<Discord.MessageEmbed> {
-        const currency = await getMember(member);
+        const currency = await DBMemberUtils.getMember(member);
 
         const embed = new Discord.MessageEmbed();
-        embed.setAuthor(member.displayName, images.currencyLogo);
-        embed.setColor(colors.gold);
+        embed.setAuthor(member.displayName, Images.currencyLogo);
+        embed.setColor(Colors.gold);
         embed.addFields([
             {
                 name: 'Amount' + widen(15), // Repeat for formatting purposes
@@ -48,15 +45,15 @@ class Currency extends Module {
     }
 
     async getTopEmbed(guild: Discord.Guild, spots: number = 10): Promise<Discord.MessageEmbed> {
-        const top = await getMemberCurrencyTop(guild, spots);
+        const top = await DBMemberUtils.getMemberCurrencyTop(guild, spots);
 
         const fields: Discord.EmbedField[] = [];
         const embed = new Discord.MessageEmbed();
-        embed.setAuthor('Gold Top ' + spots + widen(6), images.currencyLogo);
-        embed.setColor(colors.gold);
+        embed.setAuthor('Gold Top ' + spots + widen(6), Images.currencyLogo);
+        embed.setColor(Colors.gold);
 
         top.forEach((currency, index) => {
-            const member = guild.member(currency.id);
+            const member = guild.members.resolve(currency.id);
 
             fields.push({
                 name: `#${index + 1} **${member ? member.displayName : 'UNKNOWN_USER'}**`,
@@ -85,23 +82,28 @@ class Currency extends Module {
             return;
         }
 
-        for(let guild of client.guilds.cache.array()) {
+        for(let guild of client.guilds.cache.values()) {
             try {
                 const guildSettings = await Guild.findOneOrFail(guild.id);
 
-                let vcs = <Discord.VoiceChannel[]> guild.channels.cache.filter(c => c.type === 'voice').array();
+                let vcs: Discord.VoiceChannel[] = Array.from(guild.channels.cache.filter(c => c.type === 'GUILD_VOICE').values()) as Discord.VoiceChannel[];
 
                 // Remove AFK channels
-                vcs = vcs.filter(vc => vc.guild.afkChannelID !== vc.id);
+                vcs = vcs.filter(vc => vc.guild.afkChannelId !== vc.id);
 
                 // Gathers all connected members and flattens that array
-                let connectedMembers = vcs.map(vc => vc.members.array()).reduce((acc, cur) => acc.concat(cur), []);
+                let connectedMembers = vcs.map(vc => Array.from(vc.members.values())).reduce((acc, cur) => acc.concat(cur), []);
 
                 for(let member of connectedMembers) {
-                    await addMemberCurrency(member, guildSettings.gpm);
+                    await DBMemberUtils.addMemberCurrency(member, guildSettings.gpm);
                 }
             } catch(error) {
-                log.error(`Unable to distribute in guild ${guild.name}: ` + error.message);
+                if(error instanceof Error) {
+                    log.error(`Unable to distribute in guild ${guild.name}: ` + error.message);
+                } else {
+                    log.error(error);
+                }
+
             }
         }
         log.trace('Currency distributed');
@@ -116,4 +118,4 @@ function widen(n: number) {
     return '\t'.repeat(n) + '\u200C';
 }
 
-export default new Currency();
+export default new CurrencyModule();
