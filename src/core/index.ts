@@ -8,20 +8,20 @@ import configuration from './configuration';
 import { attachCustomEvents } from './custom-events';
 import { Modules } from './modules';
 
-const log = getLogger('Core');
+const log = getLogger('core');
 
 const modules: Modules = new Modules();
 const commands: Commands = new Commands();
 
-export function getModulesHandler() {
+export function getModulesHandler(): Modules {
     return modules;
 }
 
-export function getCommandsHandler() {
+export function getCommandsHandler(): Commands {
     return commands;
 }
 
-export async function start() {
+export async function start(): Promise<void> {
     await db.createConnection();
 
     const client = new Discord.Client({
@@ -35,7 +35,7 @@ export async function start() {
 }
 
 
-function attachListeners(client: Discord.Client) {
+function attachListeners(client: Discord.Client): void {
     client.on('ready', async (client) => {
         log.info(`Connected to Discord and logged in as ${client.user?.tag}`);
         await modules.init(client);
@@ -63,7 +63,7 @@ function attachListeners(client: Discord.Client) {
     });
 }
 
-async function gracefulShutdown(client: Discord.Client) {
+async function gracefulShutdown(client: Discord.Client): Promise<void> {
     log.info('Performing graceful shutdown...');
     await db.closeConnection();
     log.info('Destroying client');

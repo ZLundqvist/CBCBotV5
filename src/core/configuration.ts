@@ -3,7 +3,7 @@ import Discord from 'discord.js';
 import fs from 'fs';
 import path from 'path';
 
-const log = getLogger('Config');
+const log = getLogger('config');
 
 class ConfigurationParameters {
     'token': string;
@@ -34,7 +34,7 @@ class Configuration {
         this.loadSettings();
     }
 
-    private loadSettings() {
+    private loadSettings(): void {
         log.trace(`loadSettings: ${this.configPath}`);
 
         if(!fs.existsSync(this.configPath)) {
@@ -62,7 +62,7 @@ class Configuration {
         }
     }
 
-    private saveSettings() {
+    private saveSettings(): void {
         log.trace('Config::saveSettings');
         fs.writeFileSync(this.configPath, JSON.stringify(this.settings, null, 2));
     }

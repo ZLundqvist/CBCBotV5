@@ -21,7 +21,7 @@ export class QueueHistory extends BaseEntity {
     createdDate!: Date;
 }
 
-async function addGuildQueueItemToQueueHistory(guild: Discord.Guild, item: GuildQueueItem) {
+async function addGuildQueueItemToQueueHistory(guild: Discord.Guild, item: GuildQueueItem): Promise<QueueHistory> {
     let dbGuild = await Guild.findOneOrFail(guild.id);
 
     const entry = QueueHistory.create();

@@ -5,7 +5,7 @@ import fs from 'fs';
 import path from 'path';
 import { Module } from './module';
 
-const log = getLogger('Core');
+const log = getLogger('core');
 const MODULES_PATH = path.join(__dirname, '../modules/');
 
 export class Modules {
@@ -15,11 +15,11 @@ export class Modules {
         this.modules = [];
     }
 
-    async init(client: Discord.Client<true>) {
+    async init(client: Discord.Client<true>): Promise<void> {
         await this.registerModules(client);
     }
 
-    private async registerModules(client: Discord.Client<true>) {
+    private async registerModules(client: Discord.Client<true>): Promise<void> {
         timeMeasurement.start('Module import');
 
         const moduleFolders = fs.readdirSync(MODULES_PATH).filter(file => {

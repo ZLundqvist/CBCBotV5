@@ -1,7 +1,7 @@
 import log4js from 'log4js';
 import getLogger from './logger';
 
-const log = getLogger('Time');
+const log = getLogger('time');
 
 /**
  * Converts seconds to mm:ss

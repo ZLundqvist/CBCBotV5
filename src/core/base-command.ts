@@ -17,7 +17,7 @@ export abstract class BaseCommand {
         this.autoDefer = autoDefer;
     }
 
-    get name() {
+    get name(): string {
         return this.data.name;
     }
 

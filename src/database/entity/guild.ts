@@ -5,7 +5,7 @@ import { Alias } from "./alias";
 import { Member } from "./member";
 import { QueueHistory } from './queue-history';
 
-const log = getLogger('Database');
+const log = getLogger('database');
 
 @Entity()
 export class Guild extends BaseEntity {

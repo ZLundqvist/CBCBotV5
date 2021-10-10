@@ -7,7 +7,7 @@ export abstract class GuildCommand extends BaseCommand {
         super(data, ownerOnly, autoDefer);
     }
 
-    async onInteraction(interaction: Discord.CommandInteraction) {
+    async onInteraction(interaction: Discord.CommandInteraction): Promise<void> {
         if(!interaction.inGuild()) {
             throw new CommandError('This is a guild-only command');
         }

@@ -8,7 +8,7 @@ import path from 'path';
 import { BaseCommand } from './base-command';
 import { CommandError } from './command-error';
 
-const log = getLogger('Core');
+const log = getLogger('core');
 const COMMANDS_PATH = path.join(__dirname, '../commands/');
 
 export class Commands {
@@ -30,7 +30,7 @@ export class Commands {
             }
         });
 
-        await this.refreshCommandsIfNeeded();
+        await this.redeployCommandsIfNeeded();
     }
 
     async setCommandsInGuild(guild: Discord.Guild): Promise<void> {
@@ -50,10 +50,6 @@ export class Commands {
 
     getGlobalCommands(): GlobalCommand[] {
         return Array.from(this.commands.filter((cmd): cmd is GlobalCommand => cmd instanceof GlobalCommand).values());
-    }
-
-    async updateGuildCommandPermissions(guild: Discord.Guild, cmd: GuildCommand) {
-        const id = await this.getGuildCommandIdByName(guild, cmd.name);
     }
 
     private async onCommandInteractionCreate(interaction: Discord.CommandInteraction): Promise<void> {
@@ -87,7 +83,7 @@ export class Commands {
         }
     }
 
-    private async importCommands() {
+    private async importCommands(): Promise<void> {
         timeMeasurement.start('Command import');
 
         const commandFolders = fs.readdirSync(COMMANDS_PATH).filter(file => {
@@ -113,7 +109,7 @@ export class Commands {
         log.info(`Imported ${this.commands.size} commands`);
     }
 
-    private async importCommand(path: string) {
+    private async importCommand(path: string): Promise<void> {
         const command = (await import(path)).default;
 
         if(!(command instanceof BaseCommand)) {
@@ -135,12 +131,15 @@ export class Commands {
         this.commands.set(command.name, command);
     }
 
-    async refreshCommandsIfNeeded() {
+    private async redeployCommandsIfNeeded(): Promise<void> {
+        log.info(`Performing command re-deploy check`);
+
         const guilds = await this.client.guilds.fetch();
         for(const oAuthGuild of guilds.values()) {
             const guild = await oAuthGuild.fetch();
-            if(await this.isCommandRefreshNeeded(guild)) {
-                log.info(`Command refresh needed in guild ${guild.name}`);
+            const redeployNeeded = await this.isCommandRedeployNeeded(guild);
+            if(redeployNeeded) {
+                log.info(`Command re-deploy needed in guild ${guild.name}`);
                 await this.setCommandsInGuild(guild);
             } else {
                 log.info(`Commands are up to date in guild ${guild.name}`);
@@ -148,20 +147,17 @@ export class Commands {
         }
     }
 
+    private async isCommandRedeployNeeded(guild: Discord.Guild): Promise<boolean> {
+        const localCommandNames = Array.from(this.commands.mapValues(cmd => cmd.name).values());
 
-
-    private async isCommandRefreshNeeded(guild: Discord.Guild): Promise<boolean> {
-        const commands = this.commands;
         const deployedCommands = await guild.commands.fetch();
-
-        const commandNames = Array.from(commands.mapValues(cmd => cmd.name).values());
         const deployedCommandNames = Array.from(deployedCommands.mapValues(cmd => cmd.name).values());
 
-        if(commandNames.length !== deployedCommandNames.length) {
+        if(localCommandNames.length !== deployedCommandNames.length) {
             return true;
         }
 
-        for(const commandName of commandNames) {
+        for(const commandName of localCommandNames) {
             if(!deployedCommandNames.includes(commandName)) {
                 return true;
             }
@@ -169,13 +165,4 @@ export class Commands {
 
         return false;
     }
-
-    private async getGuildCommandIdByName(guild: Discord.Guild, name: string) {
-        const commands = await guild.commands.fetch();
-        return commands.find((cmd) => {
-            return cmd.name === name;
-        });
-    }
-
-
 }

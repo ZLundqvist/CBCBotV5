@@ -117,7 +117,7 @@ class ResourceHandler {
         response.data.pipe(fs.createWriteStream(path.join(this.sfx_folder, filename)));
     }
 
-    async addSFX(filename: string, data: Buffer) {
+    async addSFX(filename: string, data: Buffer): Promise<void> {
         if(this.sfxExists(filename)) throw new Error('SFX already exists');
         fs.writeFileSync(path.join(this.sfx_folder, filename), data);
     }

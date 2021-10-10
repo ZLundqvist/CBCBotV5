@@ -3,7 +3,7 @@ import path from 'path';
 import * as typeorm from 'typeorm';
 import getLogger from '@utils/logger';
 
-const log = getLogger('Database');
+const log = getLogger('database');
 
 // Create dir
 const PATH = path.resolve('./', 'database/');
