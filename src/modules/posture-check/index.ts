@@ -1,4 +1,5 @@
 import { Module } from '@core';
+import { getVoiceConnection } from '@discordjs/voice';
 import audio from '@modules/audio';
 import getLogger from '@utils/logger';
 import Discord from 'discord.js';
@@ -7,7 +8,7 @@ import { clearInterval } from 'timers';
 const log = getLogger(__dirname);
 
 interface GuildInterval {
-    readonly guildID: string;
+    readonly guildId: string;
     period: number;             // Zero if disabled
     timer: NodeJS.Timeout | null; // null if disabled
 }
@@ -48,7 +49,7 @@ class PostureCheckModule extends Module {
         }, interval.period * 1000 * 60);
         this.performPC(guild);
 
-        log.debug(`PostureCheck enabled in ${guild.name}: ${interval.period}`);
+        log.debug(`PostureCheck enabled (guild: ${guild.name}, interval: ${interval.period} minutes)`);
     }
 
     disable(guild: Discord.Guild) {
@@ -62,11 +63,11 @@ class PostureCheckModule extends Module {
     }
 
     private getGuildInterval(guild: Discord.Guild): GuildInterval {
-        let interval = this.guildIntervals.find(item => item.guildID === guild.id);
+        let interval = this.guildIntervals.find(item => item.guildId === guild.id);
 
         if(!interval) {
             interval = {
-                guildID: guild.id,
+                guildId: guild.id,
                 period: 0,
                 timer: null
             };
@@ -78,6 +79,14 @@ class PostureCheckModule extends Module {
     }
 
     private async performPC(guild: Discord.Guild) {
+        const vc = getVoiceConnection(guild.id);
+
+        if(!vc) {
+            log.debug(`Tried to perform PC without VoiceConnection, disabling (guild: ${guild.name})`);
+            this.disable(guild);
+            return;
+        }
+
         const guildAudio = audio.getGuildAudio(guild);
 
         if(guildAudio.isPlaying()) {

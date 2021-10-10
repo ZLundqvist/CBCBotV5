@@ -21,11 +21,11 @@ function attachVoiceStateUpdateTypeListener(client: Discord.Client<true>): void 
         // Only log update if was not bot that moved to reduce log spam
         if(newState.client.user?.id !== newState.member?.user.id) {
             if(type === 'connect') {
-                log.debug(`User connect (user: ${newState.member?.displayName}, guild: ${newState.guild.name}, channel: ${newState.channel?.name})`);
+                log.info(`User connect (user: ${newState.member?.displayName}, guild: ${newState.guild.name}, channel: ${newState.channel?.name})`);
             } else if(type === 'disconnect') {
-                log.debug(`User disconnect (user: ${newState.member?.displayName}, guild: ${newState.guild.name}, channel: ${oldState.channel?.name})`);
+                log.info(`User disconnect (user: ${newState.member?.displayName}, guild: ${newState.guild.name}, channel: ${oldState.channel?.name})`);
             } else if(type === 'transfer') {
-                log.debug(`User transfer (user: ${newState.member?.displayName}, guild: ${newState.guild.name}, old_channel: ${oldState.channel?.name}, new_channel: ${newState.channel?.name})`);
+                log.info(`User transfer (user: ${newState.member?.displayName}, guild: ${newState.guild.name}, old_channel: ${oldState.channel?.name}, new_channel: ${newState.channel?.name})`);
             }
         }
 

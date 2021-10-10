@@ -148,7 +148,7 @@ export class Commands {
     }
 
     private async isCommandRedeployNeeded(guild: Discord.Guild): Promise<boolean> {
-        const localCommandNames = Array.from(this.commands.mapValues(cmd => cmd.name).values());
+        const localCommandNames = this.getGuildCommands().map(cmd => cmd.name);
 
         const deployedCommands = await guild.commands.fetch();
         const deployedCommandNames = Array.from(deployedCommands.mapValues(cmd => cmd.name).values());
