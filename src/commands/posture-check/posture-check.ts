@@ -1,11 +1,12 @@
 import { CommandError, GuildCommand } from "@core";
 import { DBGuildUtils } from '@db/guild';
 import { SlashCommandBuilder } from '@discordjs/builders';
+import { getVoiceConnection } from '@discordjs/voice';
 import audio from '@modules/audio';
 import entrySound from '@modules/entry-sound';
 import postureCheck from '@modules/posture-check';
 import getLogger from '@utils/logger';
-import { connectIfAloneOrDisconnected, inSameChannelAs, inVoiceChannel } from "@utils/voice";
+import { connectIfAloneOrDisconnected, inSameChannelAs, inVoiceChannel, isAlone } from "@utils/voice";
 import ResourceHandler from 'core/resource-handler';
 import Discord, { CommandInteraction } from 'discord.js';
 
@@ -28,6 +29,14 @@ class PostureCheckCommand extends GuildCommand {
 
     async execute(interaction: CommandInteraction, guild: Discord.Guild, member: Discord.GuildMember): Promise<void> {
         const input = interaction.options.getInteger('interval', true);
+
+        
+        const vc = getVoiceConnection(guild.id);
+        if(!vc) {
+            await interaction.reply('I must be in a voice channel first');
+            return;
+        }
+
 
         if(input === 0) {
             postureCheck.disable(guild);
