@@ -9,7 +9,6 @@ import { BaseCommand } from './base-command';
 import { CommandError } from './command-error';
 
 const log = getLogger('Core');
-
 const COMMANDS_PATH = path.join(__dirname, '../commands/');
 
 export class Commands {
@@ -20,19 +19,44 @@ export class Commands {
         this.commands = new Collection();
     }
 
-    async init(client: Discord.Client<true>) {
+    async init(client: Discord.Client<true>): Promise<void> {
         this.client = client;
-        timeMeasurement.start('Command import');
 
         await this.importCommands();
-        this.attachInteractionListener();
 
-        timeMeasurement.end('Command import', log);
+        this.client.on('interactionCreate', (interaction) => {
+            if(interaction.isCommand()) {
+                this.onCommandInteractionCreate(interaction);
+            }
+        });
 
         await this.refreshCommandsIfNeeded();
     }
 
-    private async onCommandInteractionCreate(interaction: Discord.CommandInteraction) {
+    async setCommandsInGuild(guild: Discord.Guild): Promise<void> {
+        const commandData = this.getGuildCommands().map(cmd => cmd.toApplicationCommandData());
+        await guild.commands.set(commandData);
+        log.info(`Deployed ${commandData.length} commands to guild ${guild.name}`);
+    }
+
+    async clearCommandsInGuild(guild: Discord.Guild): Promise<void> {
+        await guild.commands.set([]);
+        log.info(`Commands cleared in guild ${guild.name}`);
+    }
+
+    getGuildCommands(): GuildCommand[] {
+        return Array.from(this.commands.filter((cmd): cmd is GuildCommand => cmd instanceof GuildCommand).values());
+    }
+
+    getGlobalCommands(): GlobalCommand[] {
+        return Array.from(this.commands.filter((cmd): cmd is GlobalCommand => cmd instanceof GlobalCommand).values());
+    }
+
+    async updateGuildCommandPermissions(guild: Discord.Guild, cmd: GuildCommand) {
+        const id = await this.getGuildCommandIdByName(guild, cmd.name);
+    }
+
+    private async onCommandInteractionCreate(interaction: Discord.CommandInteraction): Promise<void> {
         const command = this.commands.get(interaction.commandName);
 
         if(!command) {
@@ -63,15 +87,9 @@ export class Commands {
         }
     }
 
-    private attachInteractionListener() {
-        this.client.on('interactionCreate', (interaction) => {
-            if(interaction.isCommand()) {
-                this.onCommandInteractionCreate(interaction);
-            }
-        });
-    }
-
     private async importCommands() {
+        timeMeasurement.start('Command import');
+
         const commandFolders = fs.readdirSync(COMMANDS_PATH).filter(file => {
             const name = path.join(COMMANDS_PATH, file);
             return fs.lstatSync(name).isDirectory()
@@ -83,7 +101,7 @@ export class Commands {
             for(const commandFile of commandFiles) {
                 try {
                     await this.importCommand(path.join(COMMANDS_PATH, commandFolder, commandFile));
-                } catch (error) {
+                } catch(error) {
                     if(error instanceof Error) {
                         log.error(`Error importing command from file '${commandFile}' (${error.message})`);
                     }
@@ -91,6 +109,7 @@ export class Commands {
             }
         }
 
+        timeMeasurement.end('Command import', log);
         log.info(`Imported ${this.commands.size} commands`);
     }
 
@@ -129,16 +148,7 @@ export class Commands {
         }
     }
 
-    async setCommandsInGuild(guild: Discord.Guild) {
-        const commandData = this.getGuildCommands().map(cmd => cmd.toApplicationCommandData());
-        await guild.commands.set(commandData);
-        log.info(`Deployed ${commandData.length} commands to guild ${guild.name}`);
-    }
 
-    async clearCommandsInGuild(guild: Discord.Guild) {
-        await guild.commands.set([]);
-        log.info(`Commands cleared in guild ${guild.name}`);
-    }
 
     private async isCommandRefreshNeeded(guild: Discord.Guild): Promise<boolean> {
         const commands = this.commands;
@@ -167,15 +177,5 @@ export class Commands {
         });
     }
 
-    getGuildCommands(): GuildCommand[] {
-        return Array.from(this.commands.filter(cmd => cmd instanceof GuildCommand).values()) as GuildCommand[];
-    }
 
-    getGlobalCommands(): GlobalCommand[] {
-        return Array.from(this.commands.filter(cmd => cmd instanceof GlobalCommand).values()) as GlobalCommand[];
-    }
-
-    async updateGuildCommandPermissions(guild: Discord.Guild, cmd: GuildCommand) {
-        const id = await this.getGuildCommandIdByName(guild, cmd.name);
-    }
 }
