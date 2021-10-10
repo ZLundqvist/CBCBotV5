@@ -1,5 +1,5 @@
 import { EmojiCharacters } from '@constants';
-import { serializeCommands } from '@utils/command-deployment';
+import { GlobalCommand, GuildCommand } from '@core';
 import getLogger from '@utils/logger';
 import { measure } from '@utils/time';
 import Discord, { Collection } from 'discord.js';
@@ -95,10 +95,11 @@ export class Commands {
     }
 
     async refreshCommandsIfNeeded() {
-        for(const guild of this.client.guilds.cache.values()) {
+        const guilds = await this.client.guilds.fetch();
+        for(const oAuthGuild of guilds.values()) {
+            const guild = await oAuthGuild.fetch();
             if(await this.isCommandRefreshNeeded(guild)) {
                 log.info(`Command refresh needed in guild ${guild.name}`);
-                await this.clearCommandsInGuild(guild);
                 await this.setCommandsInGuild(guild);
             } else {
                 log.info(`Commands are up to date in guild ${guild.name}`);
@@ -107,9 +108,9 @@ export class Commands {
     }
 
     async setCommandsInGuild(guild: Discord.Guild) {
-        const serializedCommands = serializeCommands(this.commands);
-        await guild.commands.set(serializedCommands);
-        log.info(`Deployed ${serializedCommands.length} commands to guild ${guild.name}`);
+        const commandData = this.getGuildCommands().map(cmd => cmd.toApplicationCommandData());
+        await guild.commands.set(commandData);
+        log.info(`Deployed ${commandData.length} commands to guild ${guild.name}`);
     }
 
     async clearCommandsInGuild(guild: Discord.Guild) {
@@ -135,5 +136,24 @@ export class Commands {
         }
 
         return false;
+    }
+
+    private async getGuildCommandIdByName(guild: Discord.Guild, name: string) {
+        const commands = await guild.commands.fetch();
+        return commands.find((cmd) => {
+            return cmd.name === name;
+        });
+    }
+
+    getGuildCommands(): GuildCommand[] {
+        return Array.from(this.commands.filter(cmd => cmd instanceof GuildCommand).values()) as GuildCommand[];
+    }
+
+    getGlobalCommands(): GlobalCommand[] {
+        return Array.from(this.commands.filter(cmd => cmd instanceof GlobalCommand).values()) as GlobalCommand[];
+    }
+
+    async updateGuildCommandPermissions(guild: Discord.Guild, cmd: GuildCommand) {
+        const id = await this.getGuildCommandIdByName(guild, cmd.name);
     }
 }

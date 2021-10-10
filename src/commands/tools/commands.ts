@@ -37,7 +37,6 @@ class AliasCommand extends GuildCommand {
 
         try {
             for(const guild of interaction.client.guilds.cache.values()) {
-                await commandsHandler.clearCommandsInGuild(guild);
                 await commandsHandler.setCommandsInGuild(guild);
             }
             await interaction.editReply('Commands refreshed!');
