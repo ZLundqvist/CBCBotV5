@@ -1,10 +1,10 @@
 import { ClientIntents } from '@constants';
 import { DBGuildUtils } from '@db/guild';
-import config from '@utils/config';
 import getLogger from '@utils/logger';
 import Discord from 'discord.js';
 import * as db from '../database/database';
 import { Commands } from './commands';
+import configuration from './configuration';
 import { attachCustomEvents } from './custom-events';
 import { Modules } from './modules';
 
@@ -31,7 +31,7 @@ export async function start() {
     attachListeners(client);
     attachCustomEvents(client);
 
-    await client.login(config.getConfigValue('token'));
+    await client.login(Config.getConfigValue('token'));
 }
 
 
@@ -75,3 +75,4 @@ export * from './custom-events';
 export * from './global-command';
 export * from './guild-command';
 export * from './module';
+export const Config = configuration;

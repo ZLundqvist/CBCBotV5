@@ -1,5 +1,5 @@
 import { CommandError, Module } from "@core";
-import config from '@utils/config';
+import { Config } from '@core';
 import getLogger from '@utils/logger';
 import { pickRandom } from '@utils/random';
 import axios from 'axios';
@@ -24,14 +24,14 @@ class RedditModule extends Module {
         this.mode = RandomPostMode.RISING;
     }
 
-    async init(client: Discord.Client): Promise<void> {
+    async init(client: Discord.Client<true>): Promise<void> {
         this.reddit = new snoowrap({
             userAgent: 'put your user-agent string here',
-            clientId: config.getConfigValue('reddit-client-id'),
-            clientSecret: config.getConfigValue('reddit-client-secret'),
-            refreshToken: config.getConfigValue('reddit-refresh-token')
+            clientId: Config.getConfigValue('reddit-client-id'),
+            clientSecret: Config.getConfigValue('reddit-client-secret'),
+            refreshToken: Config.getConfigValue('reddit-refresh-token')
         });
-        log.trace('Reddit API wrapper initialized');
+        log.debug('Reddit API wrapper initialized');
     }
 
     setMode(mode: RandomPostMode) {

@@ -6,7 +6,7 @@ import ytSearch from 'youtube-search';
 import { Colors, EmojiCharacters, LocalAudioProvider, YoutubeAudioProvider } from '@constants';
 import { CommandError } from '../../core/command-error';
 import ResourceHandler from '../../core/resource-handler';
-import config from '../../utils/config';
+import { Config } from '@core';
 import { getSFXEmbed, getYoutubeEmbed } from './embed-generator';
 import { GuildQueueItem } from './guild-queue-item';
 import ytdl from 'ytdl-core';
@@ -15,7 +15,7 @@ import ytdl from 'ytdl-core';
 const searchOpts: ytSearch.YouTubeSearchOptions = {
     maxResults: 1,
     type: 'video',
-    key: config.getConfigValue('youtube-api-key')
+    key: Config.getConfigValue('youtube-api-key')
 };
 
 /**

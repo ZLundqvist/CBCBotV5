@@ -1,11 +1,11 @@
+import getLogger from '@utils/logger';
 import Discord from 'discord.js';
 import fs from 'fs';
 import path from 'path';
-import getLogger from './logger';
 
 const log = getLogger('Config');
 
-class Settings {
+class ConfigurationParameters {
     'token': string;
     'owner-id': string;
     'youtube-api-key': string;
@@ -23,13 +23,13 @@ class Settings {
     }
 }
 
-class Config {
+class Configuration {
     configPath: string;
-    settings: Settings;
+    settings: ConfigurationParameters;
 
     constructor(configPath: string = path.join(__dirname, '../../config.json')) {
         this.configPath = configPath;
-        this.settings = new Settings();
+        this.settings = new ConfigurationParameters();
         log.info(`Loading config: ${this.configPath}`);
         this.loadSettings();
     }
@@ -45,14 +45,14 @@ class Config {
         }
 
         try {
-            this.settings = <Settings>JSON.parse(fs.readFileSync(this.configPath, { encoding: 'utf-8' }));
+            this.settings = <ConfigurationParameters>JSON.parse(fs.readFileSync(this.configPath, { encoding: 'utf-8' }));
         } catch {
             log.fatal('Corrupted config file, forced to exit');
             process.exit(1);
         }
 
         try {
-            const missingKey = Config.getMissingKey(this.settings, Settings);
+            const missingKey = Configuration.getMissingKey(this.settings, ConfigurationParameters);
             if(missingKey) {
                 throw new Error(`Config is missing key: ${missingKey}`);
             }
@@ -67,13 +67,13 @@ class Config {
         fs.writeFileSync(this.configPath, JSON.stringify(this.settings, null, 2));
     }
 
-    setConfigValue<K extends keyof Settings>(key: K, value: string) {
+    setConfigValue<K extends keyof ConfigurationParameters>(key: K, value: string) {
         log.warn(`setConfigValue called. This should be avoided.`);
         this.settings[key] = value;
         this.saveSettings();
     }
 
-    getConfigValue<K extends keyof Settings>(key: K): string {
+    getConfigValue<K extends keyof ConfigurationParameters>(key: K): string {
         log.trace('getConfigValue::' + key);
         this.loadSettings();
         return this.settings[key];
@@ -103,4 +103,4 @@ class Config {
 
 }
 
-export default new Config();
+export default new Configuration();
