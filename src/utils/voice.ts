@@ -7,16 +7,13 @@ const log = getLogger('Voice');
 export type VoiceUpdateTypes = 'connect' | 'disconnect' | 'transfer' | 'stateChange';
 
 export function inVoiceChannel(guild: Discord.Guild): boolean {
-    return !!DiscordVoice.getVoiceConnection(guild.id);
+    return !!guild.me?.voice.channelId;
 }
 
 export function membersInMyVoiceChannel(guild: Discord.Guild): number {
-    const vc = DiscordVoice.getVoiceConnection(guild.id);
-    if(!vc) {
-        return 0;
-    }
-
     const clientVoiceChannel = guild.me?.voice.channel;
+    // If no VoiceState exists for the client user in the guild
+    // That means we have either not yet joined the guild or that we are not connected to any channel
     if(!clientVoiceChannel) {
         return 0;
     }
@@ -25,18 +22,26 @@ export function membersInMyVoiceChannel(guild: Discord.Guild): number {
 }
 
 export async function disconnect(guild: Discord.Guild) {
-    DiscordVoice.getVoiceConnection(guild.id)?.destroy();
-    log.debug('Disconnect: ' + guild.name);
+    const vc = DiscordVoice.getVoiceConnection(guild.id);
+    if(vc) {
+        vc.destroy();
+        log.info(`Disconnected (guild: ${guild.name})`);
+    } else {
+        log.debug(`Disconnect failed (guild: ${guild.name}, reason: not connected)`);
+    }
 }
 
 export async function connect(channel: Discord.VoiceChannel | Discord.StageChannel): Promise<DiscordVoice.VoiceConnection> {
-    log.debug('Connect: ' + channel.name);
+    log.trace(`Connecting (guild: ${channel.guild.name}, channel: ${channel.name})`);
+
     const connection = DiscordVoice.joinVoiceChannel({
         guildId: channel.guildId,
         channelId: channel.id,
-        adapterCreator: channel.guild.voiceAdapterCreator,
+        adapterCreator: channel.guild.voiceAdapterCreator as any // https://discord.com/channels/222078108977594368/852128888128929802/896644850898841610
     });
     await DiscordVoice.entersState(connection, DiscordVoice.VoiceConnectionStatus.Ready, 5000);
+
+    log.info(`Connected (guild: ${channel.guild.name}, channel: ${channel.name})`);
     return connection;
 }
 

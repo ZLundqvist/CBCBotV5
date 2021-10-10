@@ -1,3 +1,3 @@
 # CBCBotV5
-- Node: 16.8.0
+- Node: 16.11.0
 

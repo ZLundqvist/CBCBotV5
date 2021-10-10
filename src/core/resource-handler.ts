@@ -3,6 +3,7 @@ import path from 'path';
 import validator from 'validator';
 import getLogger from '../utils/logger';
 import axios from 'axios';
+import { Stream } from 'stream';
 
 const log = getLogger('ResourceHandler');
 
@@ -40,12 +41,10 @@ class ResourceHandler {
     }
 
     getImages(): string[] {
-        this.errorIfNotInitialized();
         return fs.readdirSync(this.img_folder);
     }
 
     getAllSFXExt(): string[] {
-        this.errorIfNotInitialized();
         return fs.readdirSync(this.sfx_folder);
     }
 
@@ -56,7 +55,6 @@ class ResourceHandler {
     }
 
     getSFXPath(name: string): string | undefined {
-        this.errorIfNotInitialized();
         const sfxs = this.getAllSFXExt();
 
         for(let sfx of sfxs) {
@@ -67,7 +65,6 @@ class ResourceHandler {
     }
 
     getImagePath(name: string): string {
-        this.errorIfNotInitialized();
         const imgs = this.getImages();
 
         for(let img of imgs) {
@@ -80,12 +77,10 @@ class ResourceHandler {
     }
 
     sfxExists(name: string): boolean {
-        this.errorIfNotInitialized();
         return this.getSFXPath(name) !== undefined;
     }
 
     imageExists(name: string): boolean {
-        this.errorIfNotInitialized();
         try {
             this.getImagePath(name);
             return true;
@@ -98,7 +93,6 @@ class ResourceHandler {
      * Given a URL, downloads it and adds the file to sfx folder
      */
     async downloadSFX(filename: string, link: string): Promise<void> {
-        this.errorIfNotInitialized();
 
         if(!validator.isURL(link)) {
             throw new Error(`Provided link is not a valid URI: ${link}`);
@@ -116,14 +110,11 @@ class ResourceHandler {
             throw new Error(`File already exists with name: ${filename}`);
         }
 
-        return new Promise((resolve, reject) => {
-            axios.get(link, {
-                responseType: 'stream'
-            }).then((response) => {
-                response.data.pipe(fs.createWriteStream(path.join(this.sfx_folder, filename)));
-                resolve();
-            }).catch(reject);
+        const response = await axios.get<Stream>(link, {
+            responseType: 'stream',
         });
+
+        response.data.pipe(fs.createWriteStream(path.join(this.sfx_folder, filename)));
     }
 
     async addSFX(filename: string, data: Buffer) {
@@ -135,7 +126,6 @@ class ResourceHandler {
      * 
      */
     removeSFX(name: string): void {
-        this.errorIfNotInitialized();
         const sfx = this.getSFXPath(name);
 
         if(!sfx) {
@@ -143,12 +133,6 @@ class ResourceHandler {
         }
 
         fs.removeSync(sfx);
-    }
-
-    private errorIfNotInitialized() {
-        if(false) {
-            throw new Error('ResourceHandler must be initialized before use.');
-        }
     }
 }
 
