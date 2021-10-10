@@ -21,7 +21,7 @@ export function secondsToMS(s: number): string {
     return `${minutes}:${seconds}`;
 }
 
-export const measure = {
+export const timeMeasurement = {
     _cache: {} as { [key: string]: number },
     start: function (key: string) {
         if(!this._cache[key]) {

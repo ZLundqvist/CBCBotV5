@@ -1,7 +1,7 @@
 import { EmojiCharacters } from '@constants';
 import { GlobalCommand, GuildCommand } from '@core';
 import getLogger from '@utils/logger';
-import { measure } from '@utils/time';
+import { timeMeasurement } from '@utils/time';
 import Discord, { Collection } from 'discord.js';
 import fs from 'fs';
 import path from 'path';
@@ -22,12 +22,12 @@ export class Commands {
 
     async init(client: Discord.Client<true>) {
         this.client = client;
-        measure.start('Command import');
+        timeMeasurement.start('Command import');
 
         await this.importCommands();
         this.attachInteractionListener();
 
-        measure.end('Command import', log);
+        timeMeasurement.end('Command import', log);
 
         await this.refreshCommandsIfNeeded();
     }
@@ -81,17 +81,39 @@ export class Commands {
             const commandFiles = fs.readdirSync(path.join(COMMANDS_PATH, commandFolder));
 
             for(const commandFile of commandFiles) {
-                const command = (await import(path.join(COMMANDS_PATH, commandFolder, commandFile))).default;
-
-                if(command instanceof BaseCommand) {
-                    this.commands.set(command.name, command);
-                } else {
-                    log.warn(`${commandFile} does not export an instance of BaseCommand. Skipping import.`);
+                try {
+                    await this.importCommand(path.join(COMMANDS_PATH, commandFolder, commandFile));
+                } catch (error) {
+                    if(error instanceof Error) {
+                        log.error(`Error importing command from file '${commandFile}' (${error.message})`);
+                    }
                 }
             }
         }
 
         log.info(`Imported ${this.commands.size} commands`);
+    }
+
+    private async importCommand(path: string) {
+        const command = (await import(path)).default;
+
+        if(!(command instanceof BaseCommand)) {
+            throw new Error('Not instance of BaseCommand');
+        }
+
+        if(this.commands.has(command.name)) {
+            throw new Error(`Duplicate command name: ${command.name}`);
+        }
+
+        if(command instanceof GuildCommand) {
+            log.info(`Importing GuildCommand: ${command.name}`);
+        } else if(command instanceof GlobalCommand) {
+            log.info(`Importing GlobalCommand: ${command.name}`);
+        } else {
+            throw new Error('Encountered unknown instance');
+        }
+
+        this.commands.set(command.name, command);
     }
 
     async refreshCommandsIfNeeded() {

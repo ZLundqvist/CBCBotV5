@@ -1,5 +1,5 @@
 import getLogger from '@utils/logger';
-import { measure } from '@utils/time';
+import { timeMeasurement } from '@utils/time';
 import Discord from 'discord.js';
 import fs from 'fs';
 import path from 'path';
@@ -20,7 +20,7 @@ export class Modules {
     }
 
     private async registerModules(client: Discord.Client<true>) {
-        measure.start('Module import');
+        timeMeasurement.start('Module import');
 
         const moduleFolders = fs.readdirSync(MODULES_PATH).filter(file => {
             const name = path.join(MODULES_PATH, file);
@@ -32,14 +32,17 @@ export class Modules {
 
             if(module instanceof Module) {
                 log.info(`Importing module: ${module.name}`);
-                await module.init(client);
                 this.modules.push(module);
             } else {
                 log.warn(`${folder} not instance of Module. Client injection will not occur.`);
             }
         }
 
-        measure.end('Module import', log);
+        for (const module of this.modules) {
+            await module.init(client);
+        }
+
+        timeMeasurement.end('Module import', log);
         log.info(`Imported ${this.modules.length} modules`);
     }
 }
