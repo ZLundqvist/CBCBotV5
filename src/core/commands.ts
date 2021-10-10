@@ -137,7 +137,7 @@ export class Commands {
         const guilds = await this.client.guilds.fetch();
         for(const oAuthGuild of guilds.values()) {
             const guild = await oAuthGuild.fetch();
-            const redeployNeeded = await this.isCommandRedeployNeeded(guild);
+            const redeployNeeded = await this.isGuildCommandRedeployNeeded(guild);
             if(redeployNeeded) {
                 log.info(`Command re-deploy needed in guild ${guild.name}`);
                 await this.setCommandsInGuild(guild);
@@ -147,7 +147,7 @@ export class Commands {
         }
     }
 
-    private async isCommandRedeployNeeded(guild: Discord.Guild): Promise<boolean> {
+    private async isGuildCommandRedeployNeeded(guild: Discord.Guild): Promise<boolean> {
         const localCommandNames = this.getGuildCommands().map(cmd => cmd.name);
 
         const deployedCommands = await guild.commands.fetch();
