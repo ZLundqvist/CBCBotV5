@@ -37,10 +37,10 @@ export async function start() {
 
 function attachListeners(client: Discord.Client) {
     client.on('ready', async (client) => {
+        log.info(`Connected to Discord and logged in as ${client.user?.tag}`);
         await modules.init(client);
         await commands.init(client);
         await DBGuildUtils.addMissingGuilds(Array.from(client.guilds.cache.values()));
-        log.info(`Connected to Discord and logged in as ${client.user?.tag}`);
     });
 
     client.on('guildCreate', async (guild) => {

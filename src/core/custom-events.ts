@@ -1,14 +1,20 @@
+import getLogger from '@utils/logger';
 import { getVoiceUpdateType, VoiceUpdateTypes } from '@utils/voice';
 import Discord from 'discord.js';
-import getLogger from '@utils/logger';
 
 const log = getLogger('Core');
 
-export function attachCustomEvents(client: Discord.Client) {
+export interface VoiceStateUpdateCustom {
+    oldState: Discord.VoiceState;
+    newState: Discord.VoiceState;
+    type: VoiceUpdateTypes;
+}
+
+export function attachCustomEvents(client: Discord.Client<true>): void {
     attachVoiceUpdateType(client);
 }
 
-function attachVoiceUpdateType(client: Discord.Client) {
+function attachVoiceUpdateType(client: Discord.Client<true>): void {
     client.on('voiceStateUpdate', (oldState: Discord.VoiceState, newState: Discord.VoiceState) => {
         const type = getVoiceUpdateType(oldState, newState);
 
@@ -21,8 +27,3 @@ function attachVoiceUpdateType(client: Discord.Client) {
     });
 }
 
-export interface VoiceStateUpdateCustom {
-    oldState: Discord.VoiceState;
-    newState: Discord.VoiceState;
-    type: VoiceUpdateTypes;
-}

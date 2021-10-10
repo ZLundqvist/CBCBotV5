@@ -30,12 +30,12 @@ export const timeMeasurement = {
             log.warn(`Time is already being measured for key: ${key}`);
         }
     },
-    end: function (key: string, customLogger?: log4js.Logger) {
+    end: function (key: string, customLog?: log4js.Logger) {
         if(this._cache[key]) {
             const diff = (Date.now() - this._cache[key]);
 
-            if(customLogger) {
-                customLogger.info(`${key}: ${diff}ms`);
+            if(customLog) {
+                customLog.info(`${key}: ${diff}ms`);
             } else {
                 log.info(`${key}: ${diff}ms`);
             }
