@@ -19,6 +19,13 @@ export class Modules {
         await this.registerModules(client);
     }
 
+    async destroy() {
+        log.info('Destroying modules');
+        for (const module of this.modules) {
+            await module.destroy();
+        }
+    }
+
     private async registerModules(client: Discord.Client<true>): Promise<void> {
         timeMeasurement.start('Module import');
 

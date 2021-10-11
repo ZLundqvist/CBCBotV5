@@ -12,6 +12,8 @@ class MemberStatsModule extends Module {
         });
     }
 
+    async destroy(): Promise<void> { }
+
     async getMemberStatsEmbed(m: Discord.GuildMember): Promise<Discord.MessageEmbed> {
         const member = await CBCBotCore.database.getMember(m);
         const fields: Discord.EmbedField[] = [];

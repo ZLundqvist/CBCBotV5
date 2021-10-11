@@ -19,6 +19,8 @@ class EntrySoundModule extends Module {
         });
     }
 
+    async destroy(): Promise<void> { }
+
     async setBotEntrySFX(g: Discord.Guild, newSFX: string) {
         if(!CBCBotCore.resources.sfxExists(newSFX)) {
             throw new CommandError(`Invalid SFX: ${newSFX}`);

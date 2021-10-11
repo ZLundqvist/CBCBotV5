@@ -14,14 +14,16 @@ class CurrencyModule extends Module {
     }
 
     async init(client: Discord.Client<true>): Promise<void> {
-        if(this.distributer) {
-            clearInterval(this.distributer);
-        }
-
         this.distributer = setInterval(() => {
             this.distributeGold(client);
         }, 60 * 1000);
         log.debug('Distributer enabled.');
+    }
+
+    async destroy(): Promise<void> {
+        if(this.distributer) {
+            clearInterval(this.distributer);
+        }
     }
 
     async getMemberEmbed(member: Discord.GuildMember): Promise<Discord.MessageEmbed> {

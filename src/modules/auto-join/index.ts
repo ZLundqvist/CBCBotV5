@@ -17,6 +17,8 @@ class AutoJoinModule extends Module {
         });
     }
 
+    async destroy(): Promise<void> { }
+
     /**
      * Function that handles logic that should run when a VoiceState change occurs
      * Does not run when the VoiceState belongs to me

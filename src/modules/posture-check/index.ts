@@ -22,6 +22,14 @@ class PostureCheckModule extends Module {
 
     async init(client: Discord.Client<true>): Promise<void> { }
 
+    async destroy(): Promise<void> { 
+        for (const interval of this.guildIntervals) {
+            if(interval.timer) {
+                clearInterval(interval.timer);
+            }
+        }
+    }
+
     isRunning(guild: Discord.Guild): boolean {
         return this.getGuildInterval(guild).timer !== null;
     }

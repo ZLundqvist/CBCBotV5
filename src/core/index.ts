@@ -68,6 +68,8 @@ class BotCore {
 
     async gracefulShutdown(): Promise<void> {
         log.info('Performing graceful shutdown');
+
+        await this.modules.destroy();
         await this.database.closeConnection();
 
         this.client.destroy();

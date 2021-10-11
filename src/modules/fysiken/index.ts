@@ -16,6 +16,7 @@ type FysikenUser = {
 class FysikenModule extends Module {
     users: FysikenUser[];
     client!: Discord.Client<true>;
+    interval: NodeJS.Timeout | null = null;
 
     constructor() {
         super('Fysiken');
@@ -24,7 +25,13 @@ class FysikenModule extends Module {
 
     async init(client: Discord.Client<true>): Promise<void> {
         this.client = client;
-        setInterval(() => this.check(), CHECK_INTERVAL_MINUTES * 60 * 1000);
+        this.interval = setInterval(() => this.check(), CHECK_INTERVAL_MINUTES * 60 * 1000);
+    }
+
+    async destroy(): Promise<void> {
+        if(this.interval) {
+            clearInterval(this.interval);
+        }
     }
 
     addUser(user: Discord.User, threshold: number) {

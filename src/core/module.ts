@@ -8,4 +8,5 @@ export abstract class Module {
     }
 
     abstract init(client: Discord.Client<true>): Promise<void>;
+    abstract destroy(): Promise<void>
 }

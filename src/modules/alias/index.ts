@@ -15,6 +15,8 @@ class AliasModule extends Module {
         });
     }
 
+    async destroy(): Promise<void> { }
+
     async addInGuild(guild: Discord.Guild, key: string, value: string) {
         let alias = await CBCBotCore.database.getAlias(guild, key);
 

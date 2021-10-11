@@ -14,6 +14,7 @@ class AudioModule extends Module {
     }
 
     async init(client: Discord.Client<true>): Promise<void> { }
+    async destroy(): Promise<void> { }
 
     getGuildAudio(guild: Discord.Guild): GuildAudio {
         let guildAudio = this.guildAudio.get(guild.id);

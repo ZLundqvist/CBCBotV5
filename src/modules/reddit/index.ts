@@ -27,6 +27,7 @@ class RedditModule extends Module {
     }
 
     async init(client: Discord.Client<true>): Promise<void> { }
+    async destroy(): Promise<void> { }
 
     setMode(mode: RandomPostMode) {
         this.mode = mode;
