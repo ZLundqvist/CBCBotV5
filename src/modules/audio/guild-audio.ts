@@ -2,9 +2,7 @@ import { AudioPlayer, AudioPlayerStatus, AudioResource, createAudioPlayer, creat
 import Discord from 'discord.js';
 import { Logger } from 'log4js';
 import { EmojiCharacters } from '../../constants';
-import { CommandError } from '../../core';
-import { DBGuildUtils } from '../../database/entity/guild';
-import { DBQueueHistoryUtils } from '../../database/entity/queue-history';
+import { CBCBotCore, CommandError } from '../../core';
 import getLogger from '../../utils/logger';
 import memberStats from '../member-stats';
 import * as EmbedGenerators from './embed-generator';
@@ -16,12 +14,12 @@ const MAX_QUEUE_LENGTH = 50;
 
 export class GuildAudio {
     private log: Logger;
-    private _guild: Discord.Guild;;
+    private _guild: Discord.Guild;
     private _player: AudioPlayer;
     private _queue: GuildQueue;
 
     constructor(guild: Discord.Guild) {
-        this.log = getLogger(`GuildAudio (${guild.name})`);
+        this.log = getLogger(`guild-audio (${guild.name})`);
         this._guild = guild;
         this._queue = new GuildQueue();
         this._player = createAudioPlayer({
@@ -54,7 +52,7 @@ export class GuildAudio {
 
         if(track) {
             await memberStats.incrementSongsQueued(member);
-            await DBQueueHistoryUtils.addGuildQueueItemToQueueHistory(member.guild, guildQueueItem);
+            await CBCBotCore.database.addGuildQueueItemToQueueHistory(member.guild, guildQueueItem.title, guildQueueItem.queuedByUserId);
         }
 
         if(!this.isPlaying) {
@@ -102,7 +100,7 @@ export class GuildAudio {
         const next = this._queue.peek();
         if(next) {
             // Get volume 
-            const volume = (await DBGuildUtils.getGuild(this._guild)).volume;
+            const volume = (await CBCBotCore.database.getGuild(this._guild)).volume;
 
             // Subscribe VC to player
             vc.subscribe(this._player);
@@ -221,12 +219,12 @@ export class GuildAudio {
     }
 
     async getVolume(): Promise<number> {
-        const guild = await DBGuildUtils.getGuild(this._guild);
+        const guild = await CBCBotCore.database.getGuild(this._guild);
         return guild.volume;
     }
 
     async setVolume(v: number) {
-        const guild = await DBGuildUtils.getGuild(this._guild);
+        const guild = await CBCBotCore.database.getGuild(this._guild);
         guild.volume = v;
         await guild.save();
 

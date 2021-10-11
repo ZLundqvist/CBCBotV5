@@ -7,7 +7,7 @@ export abstract class GuildCommand extends BaseCommand {
         super(data, ownerOnly, autoDefer);
     }
 
-    async onInteraction(interaction: Discord.CommandInteraction): Promise<void> {
+    async execute(interaction: Discord.CommandInteraction): Promise<void> {
         if(!interaction.inGuild()) {
             throw new CommandError('This is a guild-only command');
         }
@@ -23,12 +23,8 @@ export abstract class GuildCommand extends BaseCommand {
             throw new Error('unable to resolve member');
         }
 
-        if(this.autoDefer) {
-            await interaction.deferReply();
-        }
-
-        await this.execute(interaction, guild, member);
+        await this.executeGuildCommand(interaction, guild, member);
     }
 
-    protected abstract execute(interaction: CommandInteraction, guild: Discord.Guild, member: Discord.GuildMember): Promise<void>;
+    protected abstract executeGuildCommand(interaction: CommandInteraction, guild: Discord.Guild, member: Discord.GuildMember): Promise<void>;
 }

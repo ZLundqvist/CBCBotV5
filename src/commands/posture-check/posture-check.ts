@@ -3,9 +3,6 @@ import { getVoiceConnection } from '@discordjs/voice';
 import Discord, { CommandInteraction } from 'discord.js';
 import { GuildCommand } from "../../core";
 import postureCheck from '../../modules/posture-check';
-import getLogger from '../../utils/logger';
-
-const log = getLogger(__dirname);
 
 const command = new SlashCommandBuilder()
     .setName('pc')
@@ -22,7 +19,7 @@ class PostureCheckCommand extends GuildCommand {
         super(command, false, false);
     }
 
-    async execute(interaction: CommandInteraction, guild: Discord.Guild, member: Discord.GuildMember): Promise<void> {
+    async executeGuildCommand(interaction: CommandInteraction, guild: Discord.Guild, member: Discord.GuildMember): Promise<void> {
         const input = interaction.options.getInteger('interval', true);
 
 

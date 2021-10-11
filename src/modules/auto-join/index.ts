@@ -1,13 +1,9 @@
 import Discord from 'discord.js';
 import { Module, VoiceStateUpdateCustom } from '../../core';
-import getLogger from '../../utils/logger';
 import * as voice from "../../utils/voice";
 import postureCheck from '../posture-check';
 
-const log = getLogger(__dirname)
-
 class AutoJoinModule extends Module {
-
     private client!: Discord.Client<true>;
 
     constructor() {

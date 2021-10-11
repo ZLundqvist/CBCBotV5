@@ -3,7 +3,6 @@ import { nanoid } from 'nanoid';
 import { Readable } from 'stream';
 import { AudioProvider } from '../../constants';
 
-
 /**
  * Data class that stores info about a queued item 
  */
@@ -28,12 +27,12 @@ export class GuildQueueItem {
     embed: Discord.MessageEmbed | undefined;
     embedMsg: Discord.Message | undefined;
 
-    constructor(title: string, queuedById: string, queuedByName: string, createAudioResource: () => Readable, provider: AudioProvider, initialQueuePosition: number) {
+    constructor(title: string, queuedById: string, queuedByName: string, createReadable: () => Readable, provider: AudioProvider, initialQueuePosition: number) {
         this.id = nanoid();
         this.title = title;
         this.queuedByUserId = queuedById;
         this.queuedByName = queuedByName;
-        this.createReadable = createAudioResource;
+        this.createReadable = createReadable;
         this.provider = provider;
         this.initialQueuePosition = initialQueuePosition;
     }

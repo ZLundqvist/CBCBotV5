@@ -15,14 +15,14 @@ type FysikenUser = {
 
 class FysikenModule extends Module {
     users: FysikenUser[];
-    client!: Discord.Client;
+    client!: Discord.Client<true>;
 
     constructor() {
         super('Fysiken');
         this.users = [];
     }
 
-    async init(client: Discord.Client): Promise<void> {
+    async init(client: Discord.Client<true>): Promise<void> {
         this.client = client;
         setInterval(() => this.check(), CHECK_INTERVAL_MINUTES * 60 * 1000);
     }

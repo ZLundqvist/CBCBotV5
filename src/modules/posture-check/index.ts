@@ -9,7 +9,7 @@ const log = getLogger(__dirname);
 
 interface GuildInterval {
     readonly guildId: string;
-    period: number;             // Zero if disabled
+    period: number | null;             // Zero if disabled
     timer: NodeJS.Timeout | null; // null if disabled
 }
 
@@ -20,11 +20,7 @@ class PostureCheckModule extends Module {
         super('PostureCheck');
     }
 
-    async init(client: Discord.Client): Promise<void> { }
-
-    getPeriod(guild: Discord.Guild): number {
-        return this.getGuildInterval(guild).period;
-    }
+    async init(client: Discord.Client<true>): Promise<void> { }
 
     isRunning(guild: Discord.Guild): boolean {
         return this.getGuildInterval(guild).timer !== null;
@@ -45,9 +41,9 @@ class PostureCheckModule extends Module {
 
         interval.period = period;
         interval.timer = setInterval(() => {
-            this.performPC(guild);
+            this.doPostureCheck(guild);
         }, interval.period * 1000 * 60);
-        this.performPC(guild);
+        this.doPostureCheck(guild);
 
         log.debug(`PostureCheck enabled (guild: ${guild.name}, interval: ${interval.period} minutes)`);
     }
@@ -68,7 +64,7 @@ class PostureCheckModule extends Module {
         if(!interval) {
             interval = {
                 guildId: guild.id,
-                period: 0,
+                period: null,
                 timer: null
             };
 
@@ -78,7 +74,7 @@ class PostureCheckModule extends Module {
         return interval;
     }
 
-    private async performPC(guild: Discord.Guild) {
+    private async doPostureCheck(guild: Discord.Guild) {
         const vc = getVoiceConnection(guild.id);
 
         if(!vc) {
@@ -98,7 +94,11 @@ class PostureCheckModule extends Module {
             return;
         }
 
-        await guildAudio.queue(guild.me, 'pc', false, false);
+        try {
+            await guildAudio.queue(guild.me, 'pc', false, false);
+        } catch(error: any) {
+            log.warn(`Unable to queue PostureCheck: ${error.message}`);
+        }
     }
 }
 

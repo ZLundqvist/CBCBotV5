@@ -2,10 +2,7 @@ import { SlashCommandBuilder } from '@discordjs/builders';
 import Discord, { CommandInteraction } from 'discord.js';
 import { CommandError, GuildCommand } from "../../core";
 import audio from '../../modules/audio';
-import getLogger from '../../utils/logger';
 import { connect, inSameChannelAs } from "../../utils/voice";
-
-const log = getLogger(__dirname);
 
 const command = new SlashCommandBuilder()
     .setName('join')
@@ -16,7 +13,7 @@ class JoinCommand extends GuildCommand {
         super(command, false, true);
     }
 
-    async execute(interaction: CommandInteraction, guild: Discord.Guild, member: Discord.GuildMember) {
+    async executeGuildCommand(interaction: CommandInteraction, guild: Discord.Guild, member: Discord.GuildMember) {
         if(inSameChannelAs(member)) {
             throw new CommandError('Already in your channel');
         }

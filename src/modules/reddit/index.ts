@@ -1,11 +1,8 @@
 import axios from 'axios';
 import Discord from 'discord.js';
 import snoowrap from 'snoowrap';
-import { CommandError, Config, Module } from '../../core';
-import getLogger from '../../utils/logger';
+import { CBCBotCore, CommandError, Module } from '../../core';
 import { pickRandom } from '../../utils/random';
-
-const log = getLogger(__dirname);
 
 export enum RandomPostMode {
     NEW = 'getNew',
@@ -14,24 +11,22 @@ export enum RandomPostMode {
 }
 
 class RedditModule extends Module {
-    reddit?: snoowrap;
+    reddit: snoowrap;
     mode: RandomPostMode;
 
     constructor() {
         super('Reddit');
 
         this.mode = RandomPostMode.RISING;
-    }
-
-    async init(client: Discord.Client<true>): Promise<void> {
         this.reddit = new snoowrap({
             userAgent: 'put your user-agent string here',
-            clientId: Config.getConfigValue('reddit-client-id'),
-            clientSecret: Config.getConfigValue('reddit-client-secret'),
-            refreshToken: Config.getConfigValue('reddit-refresh-token')
+            clientId: CBCBotCore.config.getConfigValue('reddit-client-id'),
+            clientSecret: CBCBotCore.config.getConfigValue('reddit-client-secret'),
+            refreshToken: CBCBotCore.config.getConfigValue('reddit-refresh-token')
         });
-        log.debug('Reddit API wrapper initialized');
     }
+
+    async init(client: Discord.Client<true>): Promise<void> { }
 
     setMode(mode: RandomPostMode) {
         this.mode = mode;
@@ -42,8 +37,6 @@ class RedditModule extends Module {
     }
 
     async getRandom(subreddit: string, mode?: RandomPostMode): Promise<Buffer> {
-        if(!this.reddit) throw new CommandError('Reddit API not ready yet');
-
         // Get all urls from posts which links to pictures
         const urls = (await this.reddit[mode || this.mode](subreddit, { limit: 100 }))
             .map(post => post.url)

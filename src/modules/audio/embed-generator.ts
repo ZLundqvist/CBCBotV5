@@ -5,7 +5,7 @@ import { resolveEmojiString } from "../../utils/emoji";
 import { secondsToMS } from "../../utils/time";
 import { GuildQueueItem } from './guild-queue-item';
 
-const QUEUE_DISPLAY_LIMIT = 15;
+const QUEUE_DISPLAY_LIMIT = 10;
 
 export function getYoutubeEmbed(guild: Discord.Guild, item: GuildQueueItem): Discord.MessageEmbed {
     const emoji = resolveEmojiString(item.provider.emoji, guild);

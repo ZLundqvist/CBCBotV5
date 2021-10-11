@@ -1,7 +1,6 @@
-import getLogger from '../utils/logger';
 import Discord from 'discord.js';
 import fs from 'fs';
-import path from 'path';
+import getLogger from '../utils/logger';
 
 const log = getLogger('config');
 
@@ -23,60 +22,52 @@ class ConfigurationParameters {
     }
 }
 
-class Configuration {
-    configPath: string;
-    settings: ConfigurationParameters;
+export class Configuration {
+    private settings: ConfigurationParameters;
 
-    constructor(configPath: string = path.join(__dirname, '../../config.json')) {
-        this.configPath = configPath;
+    constructor() {
         this.settings = new ConfigurationParameters();
-        log.info(`Loading config: ${this.configPath}`);
-        this.loadSettings();
     }
 
-    private loadSettings(): void {
-        log.trace(`loadSettings: ${this.configPath}`);
-
-        if(!fs.existsSync(this.configPath)) {
-            log.fatal('No config file was found, creating one...');
-            fs.writeFileSync(this.configPath, JSON.stringify(this.settings, null, 2));
-            log.fatal('Empty config file was created. Populate it and restart the bot.');
-            process.exit(1);
-        }
-
-        try {
-            this.settings = <ConfigurationParameters>JSON.parse(fs.readFileSync(this.configPath, { encoding: 'utf-8' }));
-        } catch {
-            log.fatal('Corrupted config file, forced to exit');
-            process.exit(1);
-        }
-
-        try {
-            const missingKey = Configuration.getMissingKey(this.settings, ConfigurationParameters);
-            if(missingKey) {
-                throw new Error(`Config is missing key: ${missingKey}`);
-            }
-        } catch(error) {
-            log.fatal('Error parsing config file: ' + error);
-            process.exit(1);
-        }
-    }
-
-    private saveSettings(): void {
-        log.trace('Config::saveSettings');
-        fs.writeFileSync(this.configPath, JSON.stringify(this.settings, null, 2));
+    /**
+     * Validate the config, throw error if config is invalid
+     */
+    validate() {
+        log.trace('validate');
+        this.load();
     }
 
     setConfigValue<K extends keyof ConfigurationParameters>(key: K, value: string) {
         log.warn(`setConfigValue called. This should be avoided.`);
         this.settings[key] = value;
-        this.saveSettings();
+        this.save();
     }
 
     getConfigValue<K extends keyof ConfigurationParameters>(key: K): string {
         log.trace('getConfigValue::' + key);
-        this.loadSettings();
+        this.load();
         return this.settings[key];
+    }
+
+    isDevEnv(): boolean {
+        return this.getNodeEnv() === 'development';
+    }
+
+    getNodeEnv(): 'production' | 'development' {
+        return process.env['NODE_ENV'] === 'production' ? 'production' : 'development';
+    }
+
+    getEnv(key: string): string | undefined {
+        return process.env[key];
+    }
+
+    getVersion(): string {
+        return this.getEnv('npm_package_version') || this.getEnv('version') || 'NO_VERSION';
+    }
+
+    isOwner(user: Discord.User): boolean {
+        log.trace('isOwner::' + user.id);
+        return this.getConfigValue('owner-id') === user.id;
     }
 
     /**
@@ -85,7 +76,7 @@ class Configuration {
      * @param jsonObject 
      * @param instanceType 
      */
-    private static getMissingKey<T>(jsonObject: Object, instanceType: { new(): T; }): string | undefined {
+    private getMissingKey<T>(jsonObject: Object, instanceType: { new(): T; }): string | undefined {
         // Check that all the properties of the JSON Object are also available in the Class.
         const instanceObject = new instanceType();
         for(let propertyName in instanceObject) {
@@ -96,11 +87,36 @@ class Configuration {
         }
     }
 
-    isOwner(user: Discord.User): boolean {
-        log.trace('isOwner::' + user.id);
-        return this.getConfigValue('owner-id') === user.id;
+    private save(): void {
+        log.trace('Config::saveSettings');
+        fs.writeFileSync('./config.json', JSON.stringify(this.settings, null, 2));
     }
 
-}
+    private load(): void {
+        log.trace('load');
 
-export default new Configuration();
+        if(!fs.existsSync('./config.json')) {
+            log.fatal('No config file was found, creating one...');
+            fs.writeFileSync('./config.json', JSON.stringify(this.settings, null, 2));
+            log.fatal('Empty config file was created. Populate it and restart the bot.');
+            process.exit(1);
+        }
+
+        try {
+            this.settings = <ConfigurationParameters>JSON.parse(fs.readFileSync('./config.json', { encoding: 'utf-8' }));
+        } catch {
+            log.fatal('Corrupted configuration file');
+            process.exit(1);
+        }
+
+        try {
+            const missingKey = this.getMissingKey(this.settings, ConfigurationParameters);
+            if(missingKey) {
+                throw new Error(`Config is missing key: ${missingKey}`);
+            }
+        } catch(error) {
+            log.fatal('Error parsing config file: ' + error);
+            process.exit(1);
+        }
+    }
+}

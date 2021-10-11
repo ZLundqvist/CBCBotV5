@@ -2,9 +2,6 @@ import { SlashCommandBuilder } from '@discordjs/builders';
 import Discord, { CommandInteraction } from 'discord.js';
 import { getConnection } from 'typeorm';
 import { CommandError, GlobalCommand } from "../../core";
-import getLogger from '../../utils/logger';
-
-const log = getLogger(__dirname);
 
 const command = new SlashCommandBuilder()
     .setName('sql')
@@ -21,7 +18,7 @@ class SQLCommand extends GlobalCommand {
         super(command, true, false);
     }
 
-    async execute(interaction: CommandInteraction) {
+    async executeGlobalCommand(interaction: CommandInteraction) {
         const query = interaction.options.getString('query', true);
 
         try {

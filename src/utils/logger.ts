@@ -18,9 +18,6 @@ export default function getLogger(name: string) {
         formattedName = formattedName.split('.')[0];
     }
 
-    // Uppercase first letter
-    formattedName = formattedName.charAt(0).toUpperCase() + formattedName.slice(1);
-
     const logger = log4js.getLogger(path.basename(formattedName));
     logger.level = level;
 

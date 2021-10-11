@@ -1,11 +1,7 @@
-import getLogger from '../../utils/logger';
-import Discord from 'discord.js';
 import { BaseEntity, Column, CreateDateColumn, Entity, OneToMany, PrimaryColumn, UpdateDateColumn } from "typeorm";
 import { Alias } from "./alias";
 import { Member } from "./member";
 import { QueueHistory } from './queue-history';
-
-const log = getLogger('database');
 
 @Entity()
 export class Guild extends BaseEntity {
@@ -39,31 +35,3 @@ export class Guild extends BaseEntity {
     @UpdateDateColumn()
     updatedDate!: Date;
 }
-
-/**
- * Adds guilds which bot is part of to DB if it isn't already in the db
- * @param client 
- */
-async function addMissingGuilds(guilds: Discord.Guild[]): Promise<void> {
-    for(let guild of guilds) {
-        await getGuild(guild);
-    }
-}
-
-async function getGuild(guild: Discord.Guild): Promise<Guild> {
-    let dbGuild = await Guild.findOne(guild.id);
-
-    if(!dbGuild) {
-        dbGuild = new Guild();
-        dbGuild.id = guild.id;
-        await dbGuild.save();
-        log.info(`Added guild ${guild.name} to database.`);
-    }
-
-    return dbGuild;
-}
-
-export const DBGuildUtils = {
-    addMissingGuilds,
-    getGuild
-};

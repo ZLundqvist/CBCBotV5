@@ -1,10 +1,6 @@
 import { codeBlock, SlashCommandBuilder, SlashCommandSubcommandBuilder } from '@discordjs/builders';
-import Discord, { CommandInteraction } from 'discord.js';
-import { GuildCommand } from "../../core";
-import ResourceHandler from '../../core/resource-handler';
-import getLogger from '../../utils/logger';
-
-const log = getLogger('SFX');
+import { CommandInteraction } from 'discord.js';
+import { CBCBotCore, GlobalCommand } from "../../core";
 
 const listCommand = new SlashCommandSubcommandBuilder()
     .setName('list')
@@ -15,15 +11,15 @@ const command = new SlashCommandBuilder()
     .setDescription('SFX related commands')
     .addSubcommand(listCommand);
 
-class ListSFXCommand extends GuildCommand {
+class SFXCommand extends GlobalCommand {
     constructor() {
         super(command, false, false);
     }
 
-    async execute(interaction: CommandInteraction, guild: Discord.Guild, member: Discord.GuildMember): Promise<void> {
-        const sfxs = ResourceHandler.getAllSFX();
+    async executeGlobalCommand(interaction: CommandInteraction): Promise<void> {
+        const sfxs = CBCBotCore.resources.getSFXNames();
         await interaction.reply(codeBlock(sfxs.join(', ')));
     }
 }
 
-export default new ListSFXCommand();
+export default new SFXCommand();

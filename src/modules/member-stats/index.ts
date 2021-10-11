@@ -1,23 +1,19 @@
 import Discord from 'discord.js';
-import { Module } from '../../core';
-import { DBMemberUtils } from '../../database/entity/member';
-import getLogger from '../../utils/logger';
-
-const log = getLogger(__dirname);
+import { CBCBotCore, Module } from '../../core';
 
 class MemberStatsModule extends Module {
     constructor() {
         super('MemberStats');
     }
 
-    async init(client: Discord.Client): Promise<void> {
+    async init(client: Discord.Client<true>): Promise<void> {
         client.on('messageCreate', (msg: Discord.Message) => {
             this.processMessage(msg);
         });
     }
 
     async getMemberStatsEmbed(m: Discord.GuildMember): Promise<Discord.MessageEmbed> {
-        const member = await DBMemberUtils.getMember(m);
+        const member = await CBCBotCore.database.getMember(m);
         const fields: Discord.EmbedField[] = [];
         const embed = new Discord.MessageEmbed();
         const avatarURL = m.user.avatarURL();
@@ -43,14 +39,14 @@ class MemberStatsModule extends Module {
 
     // Increments given stat by one
     async incrementMessagesSent(m: Discord.GuildMember): Promise<void> {
-        const member = await DBMemberUtils.getMember(m);
+        const member = await CBCBotCore.database.getMember(m);
 
         member.messages_sent += 1;
         await member.save();
     }
 
     async incrementSongsQueued(m: Discord.GuildMember): Promise<void> {
-        const member = await DBMemberUtils.getMember(m);
+        const member = await CBCBotCore.database.getMember(m);
 
         member.songs_queued += 1;
         await member.save();

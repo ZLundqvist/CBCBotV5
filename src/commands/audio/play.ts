@@ -3,7 +3,7 @@ import Discord, { CommandInteraction } from 'discord.js';
 import { GuildCommand } from "../../core";
 import audio from '../../modules/audio';
 import getLogger from '../../utils/logger';
-import { connectIfAloneOrDisconnected, inSameChannelAs, inVoiceChannel } from "../../utils/voice";
+import { connectIfAloneOrDisconnected, inSameChannelAs } from "../../utils/voice";
 
 const log = getLogger(__dirname);
 
@@ -13,7 +13,7 @@ const command = new SlashCommandBuilder()
     .addStringOption((option) => {
         option
             .setName('audio')
-            .setDescription('Link to video or search string')
+            .setDescription('Link to video or search text')
             .setRequired(true);
         return option;
     });
@@ -24,33 +24,32 @@ class PlayCommand extends GuildCommand {
         super(command, false, true);
     }
 
-    async execute(interaction: CommandInteraction, guild: Discord.Guild, member: Discord.GuildMember): Promise<void> {
-        if(!inVoiceChannel(guild) && member.voice.channel) {
+    async executeGuildCommand(interaction: CommandInteraction, guild: Discord.Guild, member: Discord.GuildMember): Promise<void> {
+        if(member.voice.channel) {
             await connectIfAloneOrDisconnected(member.voice.channel);
         }
 
         if(!inSameChannelAs(member)) {
-            await interaction.editReply({
-                content: 'We must be in the same channel'
-            });
+            await interaction.editReply('We must be in the same channel');
             return;
         }
 
-        const guildAudio = audio.getGuildAudio(guild);
-
         const query = interaction.options.getString('audio', true);
-        const item = await guildAudio.queue(member, query, true, true);
 
+        const guildAudio = audio.getGuildAudio(guild);
+        const queuedItem = await guildAudio.queue(member, query, true, true);
 
-        if(item.embed) {
-            const reply = await interaction.editReply({ embeds: [item.embed] });
+        if(queuedItem.embed) {
+            const reply = await interaction.editReply({ embeds: [queuedItem.embed] });
 
             if(reply instanceof Discord.Message) {
-                item.setEmbedMessage(reply);
-                await guildAudio.attachSkipReaction(item);
+                queuedItem.setEmbedMessage(reply);
+                await guildAudio.attachSkipReaction(queuedItem);
             } else {
                 log.warn('Not instance of Discord.Message. Cannot attach skip reaction.');
             }
+        } else {
+            await interaction.editReply(`Queued ${queuedItem.title}`);
         }
     }
 }

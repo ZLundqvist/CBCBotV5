@@ -2,9 +2,6 @@ import { SlashCommandBuilder } from '@discordjs/builders';
 import Discord, { CommandInteraction } from 'discord.js';
 import { CommandError, GuildCommand } from "../../core";
 import entrySound from '../../modules/entry-sound';
-import getLogger from '../../utils/logger';
-
-const log = getLogger(__dirname);
 
 const command = new SlashCommandBuilder()
     .setName('botentry')
@@ -23,7 +20,7 @@ class BotEntrySoundCommand extends GuildCommand {
         super(command, false, false);
     }
 
-    async execute(interaction: CommandInteraction, guild: Discord.Guild, member: Discord.GuildMember): Promise<void> {
+    async executeGuildCommand(interaction: CommandInteraction, guild: Discord.Guild, member: Discord.GuildMember): Promise<void> {
         const newSFX = interaction.options.getString('sfx', false);
 
         if(newSFX) {

@@ -6,13 +6,10 @@ export abstract class GlobalCommand extends BaseCommand {
         super(data, ownerOnly, autoDefer);
     }
 
-    async onInteraction(interaction: Discord.CommandInteraction): Promise<void> {
-        if(this.autoDefer) {
-            await interaction.deferReply();
-        }
-
-        await this.execute(interaction);
+    async execute(interaction: Discord.CommandInteraction): Promise<void> {
+        // No pre-processing needs to be done here (yet)
+        await this.executeGlobalCommand(interaction);
     }
 
-    protected abstract execute(interaction: Discord.CommandInteraction): Promise<void>;
+    protected abstract executeGlobalCommand(interaction: Discord.CommandInteraction): Promise<void>;
 }

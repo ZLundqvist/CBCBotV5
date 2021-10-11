@@ -1,10 +1,7 @@
 import { codeBlock, SlashCommandBuilder, SlashCommandSubcommandBuilder } from '@discordjs/builders';
-import { CommandInteraction } from 'discord.js';
+import Discord, { CommandInteraction } from 'discord.js';
 import { CommandError, GuildCommand } from "../../core";
 import alias from "../../modules/alias";
-import getLogger from '../../utils/logger';
-
-const log = getLogger(__dirname);
 
 const listCommand = new SlashCommandSubcommandBuilder()
     .setName('list')
@@ -51,56 +48,38 @@ class AliasCommand extends GuildCommand {
         super(command, false, false);
     }
 
-    async execute(interaction: CommandInteraction) {
+    async executeGuildCommand(interaction: CommandInteraction, guild: Discord.Guild, member: Discord.GuildMember) {
         const subcommand = interaction.options.getSubcommand();
 
         switch(subcommand) {
             case 'add':
-                await this.add(interaction);
+                await this.add(interaction, guild);
                 break;
             case 'remove':
-                await this.remove(interaction);
+                await this.remove(interaction, guild);
                 break;
             case 'list':
-                await this.list(interaction);
+                await this.list(interaction, guild);
                 break;
         }
     }
 
-    private async add(interaction: CommandInteraction) {
-        const guildId = interaction.guildId;
-        if(!guildId) {
-            log.warn('No guild present in alias add cmd');
-            return;
-        }
-
+    private async add(interaction: CommandInteraction, guild: Discord.Guild) {
         const key = interaction.options.getString('key', true);
         const value = interaction.options.getString('value', true);
 
-        const created = await alias.addInGuild(guildId, key, value);
+        const created = await alias.addInGuild(guild, key, value);
         await interaction.reply(`Alias ${created.key} added with value ${created.value}`);
     }
 
-    private async remove(interaction: CommandInteraction) {
-        const guildId = interaction.guildId;
-        if(!guildId) {
-            log.warn('No guild present in alias add cmd');
-            return;
-        }
-
+    private async remove(interaction: CommandInteraction, guild: Discord.Guild) {
         const key = interaction.options.getString('key', true);
-        await alias.removeInGuild(guildId, key);
+        await alias.removeInGuild(guild, key);
         await interaction.reply(`Alias ${key} removed`);
     }
 
-    private async list(interaction: CommandInteraction) {
-        const guildId = interaction.guildId;
-        if(!guildId) {
-            log.warn('No guild present in alias add cmd');
-            return;
-        }
-
-        const aliases = await alias.getAllInGuild(guildId);
+    private async list(interaction: CommandInteraction, guild: Discord.Guild) {
+        const aliases = await alias.getAllInGuild(guild);
 
         if(aliases.length === 0) {
             throw new CommandError('Add an alias first retard.');

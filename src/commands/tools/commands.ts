@@ -1,13 +1,10 @@
 import { SlashCommandBuilder, SlashCommandSubcommandBuilder } from '@discordjs/builders';
 import { CommandInteraction } from 'discord.js';
-import { getCommandsHandler, GuildCommand } from "../../core";
-import getLogger from '../../utils/logger';
-
-const log = getLogger(__dirname);
+import { CBCBotCore, GlobalCommand } from "../../core";
 
 const refreshCommand = new SlashCommandSubcommandBuilder()
     .setName('refresh')
-    .setDescription('[ADMIN] Refresh the commands');
+    .setDescription('[ADMIN] Refresh the bot-commands');
 
 const command = new SlashCommandBuilder()
     .setName('commands')
@@ -15,12 +12,12 @@ const command = new SlashCommandBuilder()
     .addSubcommand(refreshCommand);
 
 
-class AliasCommand extends GuildCommand {
+class CommandsCommand extends GlobalCommand {
     constructor() {
         super(command, true, false);
     }
 
-    async execute(interaction: CommandInteraction) {
+    async executeGlobalCommand(interaction: CommandInteraction) {
         const subcommand = interaction.options.getSubcommand();
 
         switch(subcommand) {
@@ -33,14 +30,14 @@ class AliasCommand extends GuildCommand {
     private async refresh(interaction: CommandInteraction) {
         await interaction.deferReply({ ephemeral: true });
 
-        const commandsHandler = getCommandsHandler();
+        const commandsHandler = CBCBotCore.commands;
 
         try {
             for(const guild of interaction.client.guilds.cache.values()) {
-                await commandsHandler.setGuildCommands(guild);
+                await commandsHandler.deployGuildCommands(guild);
             }
 
-            await commandsHandler.setApplicationCommands();
+            await commandsHandler.deployGlobalCommands();
 
             await interaction.editReply('Commands refreshed!');
         } catch(error: any) {
@@ -49,4 +46,4 @@ class AliasCommand extends GuildCommand {
     }
 }
 
-export default new AliasCommand();
+export default new CommandsCommand();

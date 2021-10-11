@@ -1,9 +1,6 @@
 import { SlashCommandBuilder } from '@discordjs/builders';
 import { CommandInteraction, Permissions } from 'discord.js';
 import { GlobalCommand } from "../../core";
-import getLogger from '../../utils/logger';
-
-const log = getLogger(__dirname);
 
 const command = new SlashCommandBuilder()
     .setName('invite')
@@ -14,7 +11,7 @@ class GetInvinteLinkCommand extends GlobalCommand {
         super(command, false, false);
     }
 
-    async execute(interaction: CommandInteraction) {
+    async executeGlobalCommand(interaction: CommandInteraction) {
         const inviteUrl = interaction.client.generateInvite({
             scopes: [
                 'bot',

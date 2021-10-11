@@ -1,10 +1,7 @@
 import { SlashCommandBuilder } from '@discordjs/builders';
 import Discord, { CommandInteraction } from 'discord.js';
 import { CommandError, GuildCommand } from "../../core";
-import getLogger from '../../utils/logger';
 import { disconnect, inSameChannelAs, isAlone } from "../../utils/voice";
-
-const log = getLogger(__dirname);
 
 const command = new SlashCommandBuilder()
     .setName('leave')
@@ -15,7 +12,7 @@ class LeaveCommand extends GuildCommand {
         super(command, false, true);
     }
 
-    async execute(interaction: CommandInteraction, guild: Discord.Guild, member: Discord.GuildMember) {
+    async executeGuildCommand(interaction: CommandInteraction, guild: Discord.Guild, member: Discord.GuildMember) {
         if(inSameChannelAs(member) || isAlone(guild)) {
             await disconnect(guild);
             await interaction.deleteReply();

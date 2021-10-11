@@ -1,15 +1,11 @@
 import Discord from 'discord.js';
-import { CommandError, Module, VoiceStateUpdateCustom } from "../../core";
-import ResourceHandler from '../../core/resource-handler';
-import { DBGuildUtils } from "../../database/entity/guild";
-import { DBMemberUtils } from '../../database/entity/member';
+import { CBCBotCore, CommandError, Module, VoiceStateUpdateCustom } from "../../core";
 import getLogger from '../../utils/logger';
 import audio from '../audio';
 
 const log = getLogger(__dirname);
 
 class EntrySoundModule extends Module {
-
     private client!: Discord.Client<true>;
 
     constructor() {
@@ -24,32 +20,32 @@ class EntrySoundModule extends Module {
     }
 
     async setBotEntrySFX(g: Discord.Guild, newSFX: string) {
-        if(!ResourceHandler.sfxExists(newSFX)) {
+        if(!CBCBotCore.resources.sfxExists(newSFX)) {
             throw new CommandError(`Invalid SFX: ${newSFX}`);
         }
 
-        const guild = await DBGuildUtils.getGuild(g);
+        const guild = await CBCBotCore.database.getGuild(g);
         guild.entrysound = newSFX;
         await guild.save();
     }
 
     async setMemberEntrySFX(m: Discord.GuildMember, newSFX: string) {
-        if(!ResourceHandler.sfxExists(newSFX)) {
+        if(!CBCBotCore.resources.sfxExists(newSFX)) {
             throw new CommandError(`Invalid SFX: ${newSFX}`);
         }
 
-        const member = await DBMemberUtils.getMember(m);
+        const member = await CBCBotCore.database.getMember(m);
         member.entrysound = newSFX;
         await member.save();
     }
 
     async getBotEntrySFX(g: Discord.Guild): Promise<string | null> {
-        const guild = await DBGuildUtils.getGuild(g);
+        const guild = await CBCBotCore.database.getGuild(g);
         return guild.entrysound;
     }
 
     async getMemberEntrySFX(m: Discord.GuildMember): Promise<string | null> {
-        const member = await DBMemberUtils.getMember(m);
+        const member = await CBCBotCore.database.getMember(m);
         return member.entrysound;
     }
 
@@ -68,7 +64,7 @@ class EntrySoundModule extends Module {
     }
 
     private async playBotEntry(guild: Discord.Guild) {
-        const guildDB = await DBGuildUtils.getGuild(guild);
+        const guildDB = await CBCBotCore.database.getGuild(guild);
 
         if(!guildDB.entrysound) {
             log.debug(`No entrysound set: ${guild.name}`);
@@ -82,12 +78,16 @@ class EntrySoundModule extends Module {
         const guildAudio = audio.getGuildAudio(guild);
 
         if(!guildAudio.isPlaying) {
-            await guildAudio.queue(guild.me, guildDB.entrysound, false, false);
+            try {
+                await guildAudio.queue(guild.me, guildDB.entrysound, false, false);
+            } catch(error: any) {
+                log.warn(`Unable to queue bot entry: ${error.message}`);
+            }
         }
     }
 
     private async playMemberEntry(m: Discord.GuildMember) {
-        let member = await DBMemberUtils.getMember(m);
+        let member = await CBCBotCore.database.getMember(m);
 
         if(!member.entrysound) {
             log.debug(`No entrysound set: ${member.id}`);
@@ -96,7 +96,11 @@ class EntrySoundModule extends Module {
 
         const guildAudio = audio.getGuildAudio(m.guild);
         if(!guildAudio.isPlaying) {
-            await guildAudio.queue(m, member.entrysound, false, false);
+            try {
+                await guildAudio.queue(m, member.entrysound, false, false);
+            } catch(error: any) {
+                log.warn(`Unable to queue member entry: ${error.message}`);
+            }
         }
     }
 }
