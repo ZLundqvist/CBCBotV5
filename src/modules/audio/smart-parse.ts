@@ -51,7 +51,7 @@ export async function smartParse(member: Discord.GuildMember, query: string, gen
         let info = await ytdl.getInfo(link);
 
         const readableCreator = () => {
-            return ytdl.downloadFromInfo(info, { quality: 'highestaudio', filter: 'audioonly' });
+            return ytdl.downloadFromInfo(info, { quality: 'highestaudio', filter: 'audioonly', highWaterMark: 1048576 /* 1MB */ });
         };
 
         const item = new GuildQueueItem(
