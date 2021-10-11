@@ -9,7 +9,6 @@ const log = getLogger(__dirname);
 const command = new SlashCommandBuilder()
     .setName('sql')
     .setDescription('Run a custom SQL query')
-    .setDefaultPermission(false)
     .addStringOption((option) => {
         return option
             .setName('query')

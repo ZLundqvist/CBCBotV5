@@ -72,7 +72,14 @@ export class Commands {
         }
 
         try {
-            await command.onInteraction(interaction);
+            if(command.hasPermissions(interaction.user)) {
+                await command.onInteraction(interaction);
+            } else {
+                await interaction.reply({
+                    content: `${EmojiCharacters.deny} **You do not have permissions for this command**`,
+                    ephemeral: true
+                });
+            } 
         } catch(error) {
             const replyFn = async (msg: string) => {
                 if(interaction.replied || interaction.deferred) {
@@ -144,10 +151,8 @@ export class Commands {
 
     private async redeployCommandsIfNeeded(): Promise<void> {
         log.info(`Performing command re-deploy check`);
-
-        const guilds = await this.client.guilds.fetch();
-        for(const oAuthGuild of guilds.values()) {
-            const guild = await oAuthGuild.fetch();
+        const guilds = this.client.guilds.cache.values();
+        for(const guild of guilds) {
             const redeployNeeded = await this.isGuildCommandRedeployNeeded(guild);
             if(redeployNeeded) {
                 log.info(`Command re-deploy needed in guild ${guild.name}`);

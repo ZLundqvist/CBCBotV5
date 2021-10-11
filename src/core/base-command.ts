@@ -1,4 +1,6 @@
+import { Config } from '@core';
 import { SlashCommandBuilder } from '@discordjs/builders';
+import { timeMeasurement } from '@utils/time';
 import Discord from 'discord.js';
 
 export type BaseCommandData = {
@@ -19,6 +21,14 @@ export abstract class BaseCommand {
 
     get name(): string {
         return this.data.name;
+    }
+
+    hasPermissions(user: Discord.User): boolean {
+        if(this.ownerOnly && !Config.isOwner(user)) {
+            return false;
+        }
+
+        return true;
     }
 
     toJSON() {

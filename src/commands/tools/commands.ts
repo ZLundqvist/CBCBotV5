@@ -12,7 +12,6 @@ const refreshCommand = new SlashCommandSubcommandBuilder()
 const command = new SlashCommandBuilder()
     .setName('commands')
     .setDescription('Handle command deployment')
-    .setDefaultPermission(false)
     .addSubcommand(refreshCommand);
 
 
