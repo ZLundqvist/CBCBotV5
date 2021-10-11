@@ -9,12 +9,12 @@ const log = getLogger(__dirname);
 const command = new SlashCommandBuilder()
     .setName('sql')
     .setDescription('Run a custom SQL query')
+    .setDefaultPermission(false)
     .addStringOption((option) => {
-        option
+        return option
             .setName('query')
             .setDescription('Query to run')
-            .setRequired(true)
-        return option;
+            .setRequired(true);
     });
 
 class SQLCommand extends GlobalCommand {

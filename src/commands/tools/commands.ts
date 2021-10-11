@@ -12,12 +12,13 @@ const refreshCommand = new SlashCommandSubcommandBuilder()
 const command = new SlashCommandBuilder()
     .setName('commands')
     .setDescription('Handle command deployment')
+    .setDefaultPermission(false)
     .addSubcommand(refreshCommand);
 
 
 class AliasCommand extends GuildCommand {
     constructor() {
-        super(command, false, false);
+        super(command, true, false);
     }
 
     async execute(interaction: CommandInteraction) {
@@ -37,8 +38,11 @@ class AliasCommand extends GuildCommand {
 
         try {
             for(const guild of interaction.client.guilds.cache.values()) {
-                await commandsHandler.setCommandsInGuild(guild);
+                await commandsHandler.setGuildCommands(guild);
             }
+
+            await commandsHandler.setApplicationCommands();
+
             await interaction.editReply('Commands refreshed!');
         } catch (error: any) {
             await interaction.editReply(`Error refreshing commands: ${error.message}`);

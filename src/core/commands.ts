@@ -33,13 +33,24 @@ export class Commands {
         await this.redeployCommandsIfNeeded();
     }
 
-    async setCommandsInGuild(guild: Discord.Guild): Promise<void> {
+    async setApplicationCommands(): Promise<void> {
+        const commandData = this.getGlobalCommands().map(cmd => cmd.toApplicationCommandData());
+        await this.client.application.commands.set(commandData);
+        log.info(`Deployed ${commandData.length} application commands`);
+    }
+
+    async clearApplicationCommands(): Promise<void> {
+        await this.client.application.commands.set([]);
+        log.info('Application commands cleared');
+    }
+
+    async setGuildCommands(guild: Discord.Guild): Promise<void> {
         const commandData = this.getGuildCommands().map(cmd => cmd.toApplicationCommandData());
         await guild.commands.set(commandData);
         log.info(`Deployed ${commandData.length} commands to guild ${guild.name}`);
     }
 
-    async clearCommandsInGuild(guild: Discord.Guild): Promise<void> {
+    async clearGuildCommands(guild: Discord.Guild): Promise<void> {
         await guild.commands.set([]);
         log.info(`Commands cleared in guild ${guild.name}`);
     }
@@ -140,11 +151,37 @@ export class Commands {
             const redeployNeeded = await this.isGuildCommandRedeployNeeded(guild);
             if(redeployNeeded) {
                 log.info(`Command re-deploy needed in guild ${guild.name}`);
-                await this.setCommandsInGuild(guild);
+                await this.setGuildCommands(guild);
             } else {
                 log.info(`Commands are up to date in guild ${guild.name}`);
             }
         }
+
+        if(await this.isApplicationCommandRedeployNeeded()) {
+            log.info('Application command re-deploy needed');
+            await this.setApplicationCommands();
+        } else {
+            log.info('Application commands are up to date');
+        }
+    }
+
+    private async isApplicationCommandRedeployNeeded(): Promise<boolean> {
+        const localCommandNames = this.getGlobalCommands().map(cmd => cmd.name);
+
+        const deployedCommands = await this.client.application.commands.fetch();
+        const deployedCommandNames = Array.from(deployedCommands.mapValues(cmd => cmd.name).values());
+
+        if(localCommandNames.length !== deployedCommandNames.length) {
+            return true;
+        }
+
+        for(const commandName of localCommandNames) {
+            if(!deployedCommandNames.includes(commandName)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private async isGuildCommandRedeployNeeded(guild: Discord.Guild): Promise<boolean> {
