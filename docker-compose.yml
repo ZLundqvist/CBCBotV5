@@ -3,6 +3,7 @@ version: "3.9"
 services:
   cbcbotv4:
     build: .
+    restart: always
     volumes:
       - ./database:/usr/app/database
       - ./resources:/usr/app/resources

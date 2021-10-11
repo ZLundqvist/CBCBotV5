@@ -1,18 +1,17 @@
 import { EmojiCharacters } from '@constants';
 import { CommandError } from '@core';
+import { DBGuildUtils } from '@db/guild';
 import { DBQueueHistoryUtils } from '@db/queue-history';
 import { AudioPlayer, AudioPlayerStatus, AudioResource, createAudioPlayer, createAudioResource, demuxProbe, entersState, getVoiceConnection, NoSubscriberBehavior, VoiceConnectionStatus } from '@discordjs/voice';
 import memberStats from '@modules/member-stats';
 import Discord from 'discord.js';
 import { Logger } from 'log4js';
 import getLogger from '../../utils/logger';
-import { smartParse } from './smart-parse';
 import * as EmbedGenerators from './embed-generator';
 import { GuildQueue } from './guild-queue';
 import { GuildQueueItem } from './guild-queue-item';
-import { DBGuildUtils } from '@db/guild';
+import { smartParse } from './smart-parse';
 
-const VOLUME_FACTOR = 100;
 const MAX_QUEUE_LENGTH = 50;
 
 export class GuildAudio {
@@ -76,7 +75,7 @@ export class GuildAudio {
             if(item.embedMsg) {
                 this.removeSkipReaction(item.embedMsg);
             }
-    
+
             this.log.debug(`Finished: ${item?.title} (remaining queue: ${this._queue.size})`);
         }
 
@@ -236,26 +235,10 @@ export class GuildAudio {
         if(resource) {
             if(resource.volume) {
                 resource.volume.setVolume(v / 100);
-                this.log.debug(`Volume set: ${v}`);
+                this.log.debug(`Volume set: ${v}%`);
             } else {
                 this.log.warn(`setVolume called on resource without`);
             }
         }
     }
-
-    // async setVolume(guild: Discord.Guild, volume: number): Promise<void> {
-    //     if(guild.voice?.connection?.dispatcher) {
-    //         guild.voice.connection.dispatcher.setVolume(volume / VOLUME_FACTOR);
-    //     }
-
-    //     const g = await Guild.findOneOrFail(guild.id);
-    //     g.volume = volume;
-    //     await g.save();
-    // }
-
-    // async getVolume(guild: Discord.Guild): Promise<number> {
-    //     const g = await Guild.findOneOrFail(guild.id);
-    //     return g.volume;
-    // }
-
 }

@@ -1,4 +1,4 @@
-FROM node:14.17.6-slim
+FROM node:16.11.0-slim
 
 RUN apt-get update -y
 RUN apt-get install -y build-essential libtool autoconf python3
