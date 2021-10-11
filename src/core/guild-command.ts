@@ -13,11 +13,12 @@ export abstract class GuildCommand extends BaseCommand {
         }
 
         const guild = await interaction.client.guilds.fetch(interaction.guildId);
-        const member = await guild.members.fetch(interaction.user);
 
         if(!guild) {
             throw new Error('unable to resolve guild');
         }
+
+        const member = await guild.members.fetch(interaction.user);
 
         if(!member) {
             throw new Error('unable to resolve member');
