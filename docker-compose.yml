@@ -2,6 +2,7 @@ version: "3.9"
 
 services:
   cbcbotv5:
+    container_name: 'CBCBotV5'
     build: .
     restart: always
     volumes:
