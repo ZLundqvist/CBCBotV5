@@ -6,11 +6,12 @@ RUN apt-get install -y --no-install-recommends build-essential libtool autoconf 
 
 WORKDIR /usr/app
 
-COPY src src
 COPY tsconfig.json tsconfig.json
 COPY package.json package.json
 
 RUN npm install
+
+COPY src src
 RUN npm run build
 RUN npm prune --production
 
