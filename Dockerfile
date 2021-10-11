@@ -15,4 +15,4 @@ COPY src src
 RUN npm run build
 RUN npm prune --production
 
-CMD ["npm", "start"]
+CMD ["node", "dist/main.js"]
