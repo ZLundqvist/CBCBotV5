@@ -15,13 +15,13 @@ export class Guild extends BaseEntity {
     @Column('int', { default: 1 })
     gpm!: number;
 
-    @Column('int', { default: 20 })
+    @Column('int', { default: 100 })
     volume!: number;
 
-    @Column('text', { nullable: true })
+    @Column('text', { nullable: true, default: 'hiagain' })
     entrysound!: string | null;
 
-    @Column('text', { nullable: true })
+    @Column('text', { nullable: true, default: 'pc' })
     pcsound!: string | null;
 
     @OneToMany(type => Member, member => member.guild)
