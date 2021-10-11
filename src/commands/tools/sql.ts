@@ -8,7 +8,7 @@ const log = getLogger(__dirname);
 
 const command = new SlashCommandBuilder()
     .setName('sql')
-    .setDescription('Run a custom SQL query')
+    .setDescription('[ADMIN] Run a custom SQL query')
     .addStringOption((option) => {
         return option
             .setName('query')

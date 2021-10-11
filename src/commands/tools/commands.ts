@@ -7,7 +7,7 @@ const log = getLogger(__dirname);
 
 const refreshCommand = new SlashCommandSubcommandBuilder()
     .setName('refresh')
-    .setDescription('Refresh the commands');
+    .setDescription('[ADMIN] Refresh the commands');
 
 const command = new SlashCommandBuilder()
     .setName('commands')
