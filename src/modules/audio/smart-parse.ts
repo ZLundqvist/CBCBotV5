@@ -1,7 +1,8 @@
 import { LocalAudioProvider, YoutubeAudioProvider } from '@constants';
 import { Config } from '@core';
-import { createAudioResource } from '@discordjs/voice';
+import { createAudioResource, demuxProbe } from '@discordjs/voice';
 import Discord from 'discord.js';
+import { createReadStream } from 'fs';
 import validator from 'validator';
 import ytSearch from 'youtube-search';
 import ytdl from 'ytdl-core';
@@ -26,15 +27,15 @@ export async function smartParse(member: Discord.GuildMember, query: string, gen
     // If resource matches an sfx
     const sfxPath = ResourceHandler.getSFXPath(query);
     if(sfxPath) {
-        const audioResourceCreator = () => {
-            return createAudioResource(sfxPath);
+        const readableCreator = () => {
+            return createReadStream(sfxPath);
         };
 
         const item = new GuildQueueItem(
             query,
             member.user.id,
             member.displayName,
-            audioResourceCreator,
+            readableCreator,
             LocalAudioProvider,
             currentQueueSize + 1
         );
@@ -53,16 +54,15 @@ export async function smartParse(member: Discord.GuildMember, query: string, gen
     if(ytdl.validateURL(link)) {
         let info = await ytdl.getInfo(link);
 
-        const audioResourceCreator = () => {
-            const stream = ytdl.downloadFromInfo(info, { quality: 'highestaudio', filter: 'audioonly' });
-            return createAudioResource(stream);
+        const readableCreator = () => {
+            return ytdl.downloadFromInfo(info, { quality: 'highestaudio', filter: 'audioonly' });
         };
 
         const item = new GuildQueueItem(
             info.player_response.videoDetails.title,
             member.user.id,
             member.displayName,
-            audioResourceCreator,
+            readableCreator,
             YoutubeAudioProvider,
             currentQueueSize + 1
         );

@@ -28,15 +28,13 @@ class VolumeCommand extends GuildCommand {
         if(newVolume) {
             guildAudio.setVolume(newVolume);
 
-            await interaction.reply('Volume set to: :100:%');
-
-            // if(newVolume === 100) {
-            //     await interaction.reply('Volume set to: :100:%');
-            // } else {
-            //     await interaction.reply(`Volume set to: ${newVolume}%`);
-            // }
+            if(newVolume === 100) {
+                await interaction.reply('Volume set to: :100:%');
+            } else {
+                await interaction.reply(`Volume set to: ${newVolume}%`);
+            }
         } else {
-            const currentVolume = guildAudio.getVolume();
+            const currentVolume = await guildAudio.getVolume();
             if(currentVolume === 100) {
                 await interaction.reply('Current volume: :100:%');
             } else {

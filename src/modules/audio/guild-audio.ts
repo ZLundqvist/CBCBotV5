@@ -1,7 +1,7 @@
 import { EmojiCharacters } from '@constants';
 import { CommandError } from '@core';
 import { DBQueueHistoryUtils } from '@db/queue-history';
-import { AudioPlayer, AudioPlayerStatus, createAudioPlayer, entersState, getVoiceConnection, NoSubscriberBehavior, VoiceConnectionStatus } from '@discordjs/voice';
+import { AudioPlayer, AudioPlayerStatus, AudioResource, createAudioPlayer, createAudioResource, demuxProbe, entersState, getVoiceConnection, NoSubscriberBehavior, VoiceConnectionStatus } from '@discordjs/voice';
 import memberStats from '@modules/member-stats';
 import Discord from 'discord.js';
 import { Logger } from 'log4js';
@@ -10,6 +10,7 @@ import { smartParse } from './smart-parse';
 import * as EmbedGenerators from './embed-generator';
 import { GuildQueue } from './guild-queue';
 import { GuildQueueItem } from './guild-queue-item';
+import { DBGuildUtils } from '@db/guild';
 
 const VOLUME_FACTOR = 100;
 const MAX_QUEUE_LENGTH = 50;
@@ -71,14 +72,12 @@ export class GuildAudio {
         // Remove first item in queue
         const item = this._queue.pop();
 
-        if(!item) {
-            this.log.warn('onPlayingEnd called with empty queue');
-        } else {
+        if(item) {
             if(item.embedMsg) {
                 this.removeSkipReaction(item.embedMsg);
             }
     
-            this.log.debug(`Finished: ${item?.title} (queue size: ${this._queue.size})`);
+            this.log.debug(`Finished: ${item?.title} (remaining queue: ${this._queue.size})`);
         }
 
         this.playNext();
@@ -99,13 +98,26 @@ export class GuildAudio {
             this.log.warn('Waited 5s for VoiceConnection to become ready, playNext aborted');
             return;
         }
-        
+
 
         const next = this._queue.peek();
         if(next) {
-            this.log.info(`Playing: ${next.title}`);
+            // Get volume 
+            const volume = (await DBGuildUtils.getGuild(this._guild)).volume;
+
+            // Subscribe VC to player
             vc.subscribe(this._player);
-            this._player.play(next.createAudioResource());
+
+            // Create AudioResource
+            const readable = next.createReadable();
+            const { stream, type } = await demuxProbe(readable);
+            const resource = createAudioResource(stream, { inputType: type, inlineVolume: true });
+
+            // Set Volume
+            resource.volume?.setVolume(volume / 100);
+
+            this._player.play(resource);
+            this.log.info(`Playing: ${next.title} (type: ${type})`);
         }
     }
 
@@ -164,7 +176,7 @@ export class GuildAudio {
         const itemToSkip = this._queue.peek();
 
         if(!itemToSkip) {
-            this.log.debug('skip called with empty queue');
+            this.log.debug('skipCurrent called with empty queue');
             return;
         }
 
@@ -205,12 +217,45 @@ export class GuildAudio {
         return EmbedGenerators.getQueueEmbed(this._guild, this._queue.getQueue());
     }
 
-    // TODO: Implement volume
-    getVolume(): number {
-        return 100;
+    getCurrentAudioResource(): AudioResource | undefined {
+        return this._player.state.status === AudioPlayerStatus.Idle ? undefined : this._player.state.resource;
     }
 
-    setVolume(v: number) {
-
+    async getVolume(): Promise<number> {
+        const guild = await DBGuildUtils.getGuild(this._guild);
+        return guild.volume;
     }
+
+    async setVolume(v: number) {
+        const guild = await DBGuildUtils.getGuild(this._guild);
+        guild.volume = v;
+        await guild.save();
+
+        // Update current playing volume if playing
+        const resource = this.getCurrentAudioResource();
+        if(resource) {
+            if(resource.volume) {
+                resource.volume.setVolume(v / 100);
+                this.log.debug(`Volume set: ${v}`);
+            } else {
+                this.log.warn(`setVolume called on resource without`);
+            }
+        }
+    }
+
+    // async setVolume(guild: Discord.Guild, volume: number): Promise<void> {
+    //     if(guild.voice?.connection?.dispatcher) {
+    //         guild.voice.connection.dispatcher.setVolume(volume / VOLUME_FACTOR);
+    //     }
+
+    //     const g = await Guild.findOneOrFail(guild.id);
+    //     g.volume = volume;
+    //     await g.save();
+    // }
+
+    // async getVolume(guild: Discord.Guild): Promise<number> {
+    //     const g = await Guild.findOneOrFail(guild.id);
+    //     return g.volume;
+    // }
+
 }

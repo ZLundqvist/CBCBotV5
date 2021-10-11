@@ -1,7 +1,7 @@
 import { AudioProvider } from '@constants';
-import { AudioResource } from '@discordjs/voice';
 import Discord from 'discord.js';
 import { nanoid } from 'nanoid';
+import { Readable } from 'stream';
 
 
 /**
@@ -19,7 +19,7 @@ export class GuildQueueItem {
     provider: AudioProvider;
     initialQueuePosition: number;
 
-    createAudioResource: () => AudioResource;
+    createReadable: () => Readable;
 
     length: number | undefined;
     thumbnail: string | undefined;
@@ -28,12 +28,12 @@ export class GuildQueueItem {
     embed: Discord.MessageEmbed | undefined;
     embedMsg: Discord.Message | undefined;
 
-    constructor(title: string, queuedById: string, queuedByName: string, createAudioResource: () => AudioResource, provider: AudioProvider, initialQueuePosition: number) {
+    constructor(title: string, queuedById: string, queuedByName: string, createAudioResource: () => Readable, provider: AudioProvider, initialQueuePosition: number) {
         this.id = nanoid();
         this.title = title;
         this.queuedByUserId = queuedById;
         this.queuedByName = queuedByName;
-        this.createAudioResource = createAudioResource;
+        this.createReadable = createAudioResource;
         this.provider = provider;
         this.initialQueuePosition = initialQueuePosition;
     }
