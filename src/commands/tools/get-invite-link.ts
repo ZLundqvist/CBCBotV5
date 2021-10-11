@@ -1,7 +1,7 @@
-import { GlobalCommand } from "@core";
 import { SlashCommandBuilder } from '@discordjs/builders';
-import getLogger from '@utils/logger';
 import { CommandInteraction, Permissions } from 'discord.js';
+import { GlobalCommand } from "../../core";
+import getLogger from '../../utils/logger';
 
 const log = getLogger(__dirname);
 
@@ -20,9 +20,9 @@ class GetInvinteLinkCommand extends GlobalCommand {
                 'bot',
                 'applications.commands'
             ],
-            permissions: Permissions.ALL 
+            permissions: Permissions.ALL
         });
-        
+
         await interaction.reply({
             content: inviteUrl,
             ephemeral: true

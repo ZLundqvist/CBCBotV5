@@ -1,8 +1,8 @@
-import { CommandError, GlobalCommand } from "@core";
 import { SlashCommandBuilder } from '@discordjs/builders';
-import getLogger from '@utils/logger';
 import Discord, { CommandInteraction } from 'discord.js';
 import { getConnection } from 'typeorm';
+import { CommandError, GlobalCommand } from "../../core";
+import getLogger from '../../utils/logger';
 
 const log = getLogger(__dirname);
 

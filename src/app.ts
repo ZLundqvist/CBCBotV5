@@ -1,7 +1,7 @@
 import 'reflect-metadata';
-import * as core from '@core';
+import * as core from './core';
 import getLogger from './utils/logger';
-import { getNodeEnv, getEnv } from '@utils/environment';
+import { getNodeEnv, getEnv } from './utils/environment';
 
 const log = getLogger('core');
 

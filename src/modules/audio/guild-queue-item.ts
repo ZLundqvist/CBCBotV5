@@ -1,7 +1,7 @@
-import { AudioProvider } from '@constants';
 import Discord from 'discord.js';
 import { nanoid } from 'nanoid';
 import { Readable } from 'stream';
+import { AudioProvider } from '../../constants';
 
 
 /**

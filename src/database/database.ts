@@ -1,7 +1,7 @@
 import fs from 'fs-extra';
 import path from 'path';
 import * as typeorm from 'typeorm';
-import getLogger from '@utils/logger';
+import getLogger from '../utils/logger';
 
 const log = getLogger('database');
 

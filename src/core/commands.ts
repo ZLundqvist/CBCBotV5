@@ -1,10 +1,10 @@
-import { EmojiCharacters } from '@constants';
-import { GlobalCommand, GuildCommand } from '@core';
-import getLogger from '@utils/logger';
-import { timeMeasurement } from '@utils/time';
 import Discord, { Collection } from 'discord.js';
 import fs from 'fs';
 import path from 'path';
+import { EmojiCharacters } from '../constants';
+import { GlobalCommand, GuildCommand } from '../core';
+import getLogger from '../utils/logger';
+import { timeMeasurement } from '../utils/time';
 import { BaseCommand } from './base-command';
 import { CommandError } from './command-error';
 
@@ -79,7 +79,7 @@ export class Commands {
                     content: `${EmojiCharacters.deny} **You do not have permissions for this command**`,
                     ephemeral: true
                 });
-            } 
+            }
         } catch(error) {
             const replyFn = async (msg: string) => {
                 if(interaction.replied || interaction.deferred) {

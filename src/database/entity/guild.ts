@@ -1,4 +1,4 @@
-import getLogger from '@utils/logger';
+import getLogger from '../../utils/logger';
 import Discord from 'discord.js';
 import { BaseEntity, Column, CreateDateColumn, Entity, OneToMany, PrimaryColumn, UpdateDateColumn } from "typeorm";
 import { Alias } from "./alias";

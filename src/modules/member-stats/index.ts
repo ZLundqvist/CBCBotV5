@@ -1,7 +1,7 @@
-import { Module } from '@core';
-import { DBMemberUtils } from '@db/member';
-import getLogger from '@utils/logger';
 import Discord from 'discord.js';
+import { Module } from '../../core';
+import { DBMemberUtils } from '../../database/entity/member';
+import getLogger from '../../utils/logger';
 
 const log = getLogger(__dirname);
 

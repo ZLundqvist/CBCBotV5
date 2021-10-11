@@ -5,7 +5,7 @@
   "main": "src/app.js",
   "scripts": {
     "start": "node dist/app.js",
-    "dev": "tsnd --respawn -r tsconfig-paths/register src/app.ts",
+    "dev": "tsnd --respawn src/app.ts",
     "build": "tsc",
     "test": "npx jest",
     "docker-build": "docker build -t CBCBotV5:$npm_package_version ."
@@ -31,7 +31,6 @@
     "jest": "^27.2.5",
     "ts-jest": "^27.0.5",
     "ts-node-dev": "^1.1.8",
-    "tsconfig-paths": "^3.11.0",
     "typescript": "^4.4.3"
   },
   "dependencies": {

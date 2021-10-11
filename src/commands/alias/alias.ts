@@ -1,8 +1,8 @@
-import { CommandError, GuildCommand } from "@core";
 import { codeBlock, SlashCommandBuilder, SlashCommandSubcommandBuilder } from '@discordjs/builders';
-import alias from "@modules/alias";
-import getLogger from '@utils/logger';
 import { CommandInteraction } from 'discord.js';
+import { CommandError, GuildCommand } from "../../core";
+import alias from "../../modules/alias";
+import getLogger from '../../utils/logger';
 
 const log = getLogger(__dirname);
 

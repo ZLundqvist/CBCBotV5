@@ -1,8 +1,8 @@
-import getLogger from '@utils/logger';
-import { timeMeasurement } from '@utils/time';
 import Discord from 'discord.js';
 import fs from 'fs';
 import path from 'path';
+import getLogger from '../utils/logger';
+import { timeMeasurement } from '../utils/time';
 import { Module } from './module';
 
 const log = getLogger('core');
@@ -38,7 +38,7 @@ export class Modules {
             }
         }
 
-        for (const module of this.modules) {
+        for(const module of this.modules) {
             await module.init(client);
         }
 

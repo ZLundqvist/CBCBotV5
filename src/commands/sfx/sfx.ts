@@ -1,8 +1,8 @@
-import { GuildCommand } from "@core";
 import { codeBlock, SlashCommandBuilder, SlashCommandSubcommandBuilder } from '@discordjs/builders';
-import getLogger from '@utils/logger';
-import ResourceHandler from 'core/resource-handler';
 import Discord, { CommandInteraction } from 'discord.js';
+import { GuildCommand } from "../../core";
+import ResourceHandler from '../../core/resource-handler';
+import getLogger from '../../utils/logger';
 
 const log = getLogger('SFX');
 

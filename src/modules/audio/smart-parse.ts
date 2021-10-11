@@ -1,11 +1,10 @@
-import { LocalAudioProvider, YoutubeAudioProvider } from '@constants';
-import { Config } from '@core';
-import { createAudioResource, demuxProbe } from '@discordjs/voice';
 import Discord from 'discord.js';
 import { createReadStream } from 'fs';
 import validator from 'validator';
 import ytSearch from 'youtube-search';
 import ytdl from 'ytdl-core';
+import { LocalAudioProvider, YoutubeAudioProvider } from '../../constants';
+import { Config } from '../../core';
 import { CommandError } from '../../core/command-error';
 import ResourceHandler from '../../core/resource-handler';
 import { getSFXEmbed, getYoutubeEmbed } from './embed-generator';

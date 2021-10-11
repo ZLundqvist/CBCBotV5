@@ -1,8 +1,8 @@
-import { CommandError, GuildCommand } from "@core";
 import { SlashCommandBuilder } from '@discordjs/builders';
-import getLogger from '@utils/logger';
-import { disconnect, inSameChannelAs, isAlone } from "@utils/voice";
 import Discord, { CommandInteraction } from 'discord.js';
+import { CommandError, GuildCommand } from "../../core";
+import getLogger from '../../utils/logger';
+import { disconnect, inSameChannelAs, isAlone } from "../../utils/voice";
 
 const log = getLogger(__dirname);
 

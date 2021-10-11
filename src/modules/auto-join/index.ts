@@ -1,8 +1,7 @@
-import { Module, VoiceStateUpdateCustom } from '@core';
-import getLogger from '@utils/logger';
-import * as voice from "@utils/voice";
 import Discord from 'discord.js';
-// import audio from '../audio';
+import { Module, VoiceStateUpdateCustom } from '../../core';
+import getLogger from '../../utils/logger';
+import * as voice from "../../utils/voice";
 import postureCheck from '../posture-check';
 
 const log = getLogger(__dirname)

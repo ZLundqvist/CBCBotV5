@@ -1,12 +1,12 @@
-import { EmojiCharacters } from '@constants';
-import { CommandError } from '@core';
-import { DBGuildUtils } from '@db/guild';
-import { DBQueueHistoryUtils } from '@db/queue-history';
 import { AudioPlayer, AudioPlayerStatus, AudioResource, createAudioPlayer, createAudioResource, demuxProbe, entersState, getVoiceConnection, NoSubscriberBehavior, VoiceConnectionStatus } from '@discordjs/voice';
-import memberStats from '@modules/member-stats';
 import Discord from 'discord.js';
 import { Logger } from 'log4js';
+import { EmojiCharacters } from '../../constants';
+import { CommandError } from '../../core';
+import { DBGuildUtils } from '../../database/entity/guild';
+import { DBQueueHistoryUtils } from '../../database/entity/queue-history';
 import getLogger from '../../utils/logger';
+import memberStats from '../member-stats';
 import * as EmbedGenerators from './embed-generator';
 import { GuildQueue } from './guild-queue';
 import { GuildQueueItem } from './guild-queue-item';

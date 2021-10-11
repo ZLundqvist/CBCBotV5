@@ -1,6 +1,6 @@
-import getLogger from '@utils/logger';
-import { getVoiceUpdateType, VoiceUpdateTypes } from '@utils/voice';
 import Discord from 'discord.js';
+import getLogger from '../utils/logger';
+import { getVoiceUpdateType, VoiceUpdateTypes } from '../utils/voice';
 
 const log = getLogger('voice');
 

@@ -1,7 +1,7 @@
-import { getCommandsHandler, GuildCommand } from "@core";
 import { SlashCommandBuilder, SlashCommandSubcommandBuilder } from '@discordjs/builders';
-import getLogger from '@utils/logger';
 import { CommandInteraction } from 'discord.js';
+import { getCommandsHandler, GuildCommand } from "../../core";
+import getLogger from '../../utils/logger';
 
 const log = getLogger(__dirname);
 
@@ -43,7 +43,7 @@ class AliasCommand extends GuildCommand {
             await commandsHandler.setApplicationCommands();
 
             await interaction.editReply('Commands refreshed!');
-        } catch (error: any) {
+        } catch(error: any) {
             await interaction.editReply(`Error refreshing commands: ${error.message}`);
         }
     }

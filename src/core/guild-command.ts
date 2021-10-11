@@ -1,4 +1,4 @@
-import { CommandError } from '@core';
+import { CommandError } from '../core';
 import Discord, { CommandInteraction } from 'discord.js';
 import { BaseCommand, BaseCommandData } from './base-command';
 

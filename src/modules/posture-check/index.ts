@@ -1,9 +1,9 @@
-import { Module } from '@core';
 import { getVoiceConnection } from '@discordjs/voice';
-import audio from '@modules/audio';
-import getLogger from '@utils/logger';
 import Discord from 'discord.js';
 import { clearInterval } from 'timers';
+import { Module } from '../../core';
+import getLogger from '../../utils/logger';
+import audio from '../audio';
 
 const log = getLogger(__dirname);
 

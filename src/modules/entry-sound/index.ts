@@ -1,11 +1,10 @@
-import { CommandError, Module, VoiceStateUpdateCustom } from "@core";
-import { DBGuildUtils, Guild } from "@db/guild";
-import { DBMemberUtils } from '@db/member';
-import { getVoiceConnection, VoiceConnectionStatus } from '@discordjs/voice';
-import audio from '@modules/audio';
-import getLogger from '@utils/logger';
 import Discord from 'discord.js';
+import { CommandError, Module, VoiceStateUpdateCustom } from "../../core";
 import ResourceHandler from '../../core/resource-handler';
+import { DBGuildUtils } from "../../database/entity/guild";
+import { DBMemberUtils } from '../../database/entity/member';
+import getLogger from '../../utils/logger';
+import audio from '../audio';
 
 const log = getLogger(__dirname);
 

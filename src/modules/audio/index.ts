@@ -1,6 +1,6 @@
-import { Module } from "@core";
-import getLogger from '@utils/logger';
 import Discord from 'discord.js';
+import { Module } from "../../core";
+import getLogger from '../../utils/logger';
 import { GuildAudio } from "./guild-audio";
 
 const log = getLogger(__dirname);

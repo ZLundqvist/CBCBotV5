@@ -1,12 +1,8 @@
-import { CommandError, GuildCommand } from "@core";
-import { DBGuildUtils } from '@db/guild';
 import { SlashCommandBuilder } from '@discordjs/builders';
-import audio from '@modules/audio';
-import entrySound from '@modules/entry-sound';
-import getLogger from '@utils/logger';
-import { connectIfAloneOrDisconnected, inSameChannelAs, inVoiceChannel } from "@utils/voice";
-import ResourceHandler from 'core/resource-handler';
 import Discord, { CommandInteraction } from 'discord.js';
+import { CommandError, GuildCommand } from "../../core";
+import entrySound from '../../modules/entry-sound';
+import getLogger from '../../utils/logger';
 
 const log = getLogger(__dirname);
 

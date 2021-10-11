@@ -1,8 +1,8 @@
-import { CommandError, Module } from '@core';
-import { Alias } from '@db/alias';
-import { Guild } from '@db/guild';
-import getLogger from '@utils/logger';
 import Discord from 'discord.js';
+import { CommandError, Module } from '../../core';
+import { Alias } from '../../database/entity/alias';
+import { Guild } from '../../database/entity/guild';
+import getLogger from '../../utils/logger';
 
 const log = getLogger(__dirname);
 

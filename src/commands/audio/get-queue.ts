@@ -1,8 +1,8 @@
-import { GuildCommand } from "@core";
 import { SlashCommandBuilder } from '@discordjs/builders';
-import audio from '@modules/audio';
-import getLogger from '@utils/logger';
 import Discord, { CommandInteraction } from 'discord.js';
+import { GuildCommand } from "../../core";
+import audio from '../../modules/audio';
+import getLogger from '../../utils/logger';
 
 const log = getLogger(__dirname);
 

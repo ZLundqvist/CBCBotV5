@@ -1,7 +1,6 @@
-import { Config } from '@core';
 import { SlashCommandBuilder } from '@discordjs/builders';
-import { timeMeasurement } from '@utils/time';
 import Discord from 'discord.js';
+import { Config } from '../core';
 
 export type BaseCommandData = {
     name: string;

@@ -1,10 +1,9 @@
-import { CommandError, Module } from "@core";
-import { Config } from '@core';
-import getLogger from '@utils/logger';
-import { pickRandom } from '@utils/random';
 import axios from 'axios';
 import Discord from 'discord.js';
 import snoowrap from 'snoowrap';
+import { CommandError, Config, Module } from '../../core';
+import getLogger from '../../utils/logger';
+import { pickRandom } from '../../utils/random';
 
 const log = getLogger(__dirname);
 

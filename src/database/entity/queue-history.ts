@@ -1,7 +1,7 @@
-import { GuildQueueItem } from '@modules/audio/guild-queue-item';
-import { BaseEntity, Column, CreateDateColumn, Entity, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
-import { Guild } from "./guild";
 import Discord from 'discord.js';
+import { BaseEntity, Column, CreateDateColumn, Entity, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
+import { GuildQueueItem } from '../../modules/audio/guild-queue-item';
+import { Guild } from "./guild";
 
 @Entity()
 export class QueueHistory extends BaseEntity {

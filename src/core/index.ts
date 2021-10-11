@@ -1,8 +1,8 @@
-import { ClientIntents } from '@constants';
-import { DBGuildUtils } from '@db/guild';
-import getLogger from '@utils/logger';
 import Discord from 'discord.js';
+import { ClientIntents } from '../constants';
 import * as db from '../database/database';
+import { DBGuildUtils } from '../database/entity/guild';
+import getLogger from '../utils/logger';
 import { Commands } from './commands';
 import configuration from './configuration';
 import { attachCustomEvents } from './custom-events';

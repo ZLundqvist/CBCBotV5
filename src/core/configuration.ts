@@ -1,4 +1,4 @@
-import getLogger from '@utils/logger';
+import getLogger from '../utils/logger';
 import Discord from 'discord.js';
 import fs from 'fs';
 import path from 'path';

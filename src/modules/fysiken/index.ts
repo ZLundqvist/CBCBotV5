@@ -1,7 +1,7 @@
-import { Module } from "@core";
-import getLogger from '@utils/logger';
 import axios from 'axios';
 import Discord from 'discord.js';
+import { Module } from "../../core";
+import getLogger from '../../utils/logger';
 
 const log = getLogger(__dirname);
 

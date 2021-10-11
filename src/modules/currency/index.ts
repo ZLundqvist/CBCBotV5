@@ -1,10 +1,10 @@
-import { Colors, Images } from '@constants';
-import { Module } from "@core";
-import { Guild } from "@db/guild";
-import { DBMemberUtils } from '@db/member';
-import getLogger from '@utils/logger';
 import Discord, { EmbedField } from 'discord.js';
 import moment from 'moment';
+import { Colors, Images } from '../../constants';
+import { Module } from "../../core";
+import { Guild } from "../../database/entity/guild";
+import { DBMemberUtils } from '../../database/entity/member';
+import getLogger from '../../utils/logger';
 
 const log = getLogger(__dirname);
 
