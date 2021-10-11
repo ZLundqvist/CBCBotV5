@@ -82,7 +82,7 @@ class EntrySoundModule extends Module {
 
         const guildAudio = audio.getGuildAudio(guild);
 
-        if(!guildAudio.isPlaying()) {
+        if(!guildAudio.isPlaying) {
             await guildAudio.queue(guild.me, guildDB.entrysound, false, false);
         }
     }
@@ -96,7 +96,7 @@ class EntrySoundModule extends Module {
         }
 
         const guildAudio = audio.getGuildAudio(m.guild);
-        if(!guildAudio.isPlaying()) {
+        if(!guildAudio.isPlaying) {
             await guildAudio.queue(m, member.entrysound, false, false);
         }
     }

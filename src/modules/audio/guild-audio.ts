@@ -65,7 +65,7 @@ export class GuildAudio {
             await DBQueueHistoryUtils.addGuildQueueItemToQueueHistory(member.guild, guildQueueItem);
         }
 
-        if(!this.isPlaying()) {
+        if(!this.isPlaying) {
             this.playNext();
         }
 
@@ -79,7 +79,7 @@ export class GuildAudio {
             this.removeSkipReaction(item.embedMsg);
         }
 
-        this.log.debug(`Finished: ${item?.title}`);
+        this.log.debug(`Finished: ${item?.title} (queue size: ${this._queue.size})`);
         this.playNext();
     }
 
@@ -105,8 +105,6 @@ export class GuildAudio {
             this.log.info(`Playing: ${next.title}`);
             vc.subscribe(this._player);
             this._player.play(next.createAudioResource());
-        } else {
-            this.log.debug('Queue empty');
         }
     }
 
@@ -120,9 +118,8 @@ export class GuildAudio {
      * Checks if currently playing or buffering the resource
      * @param guild 
      */
-    isPlaying(): boolean {
-        const status = this._player.state.status
-        return status === AudioPlayerStatus.Playing || status === AudioPlayerStatus.Buffering;
+    get isPlaying(): boolean {
+        return this._player.state.status !== AudioPlayerStatus.Idle;
     }
 
     stop() {

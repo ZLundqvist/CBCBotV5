@@ -26,7 +26,7 @@ class JoinCommand extends GuildCommand {
         }
 
         const guildAudio = audio.getGuildAudio(guild);
-        if(guildAudio.isPlaying()) {
+        if(guildAudio.isPlaying) {
             throw new CommandError('Unable to join your channel (currently playing audio)');
         }
 

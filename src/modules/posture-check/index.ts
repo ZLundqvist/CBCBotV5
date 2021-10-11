@@ -89,7 +89,7 @@ class PostureCheckModule extends Module {
 
         const guildAudio = audio.getGuildAudio(guild);
 
-        if(guildAudio.isPlaying()) {
+        if(guildAudio.isPlaying) {
             return;
         }
 
