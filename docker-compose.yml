@@ -1,7 +1,7 @@
 version: "3.9"
 
 services:
-  cbcbotv4:
+  cbcbotv5:
     build: .
     restart: always
     volumes:
