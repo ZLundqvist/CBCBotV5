@@ -45,6 +45,7 @@ function attachListeners(client: Discord.Client): void {
 
     client.on('guildCreate', async (guild) => {
         await DBGuildUtils.addMissingGuilds([guild]);
+        await commands.setGuildCommands(guild);
     });
 
     process.once('SIGUSR2', async () => {
