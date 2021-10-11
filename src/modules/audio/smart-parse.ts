@@ -1,15 +1,14 @@
+import { LocalAudioProvider, YoutubeAudioProvider } from '@constants';
+import { Config } from '@core';
 import { createAudioResource } from '@discordjs/voice';
-import Discord, { Guild } from 'discord.js';
-import { nanoid } from 'nanoid';
+import Discord from 'discord.js';
 import validator from 'validator';
 import ytSearch from 'youtube-search';
-import { Colors, EmojiCharacters, LocalAudioProvider, YoutubeAudioProvider } from '@constants';
+import ytdl from 'ytdl-core';
 import { CommandError } from '../../core/command-error';
 import ResourceHandler from '../../core/resource-handler';
-import { Config } from '@core';
 import { getSFXEmbed, getYoutubeEmbed } from './embed-generator';
 import { GuildQueueItem } from './guild-queue-item';
-import ytdl from 'ytdl-core';
 
 
 const searchOpts: ytSearch.YouTubeSearchOptions = {

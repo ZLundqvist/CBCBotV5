@@ -6,21 +6,13 @@ import memberStats from '@modules/member-stats';
 import Discord from 'discord.js';
 import { Logger } from 'log4js';
 import getLogger from '../../utils/logger';
-import { smartParse } from './audio-resource-parser';
+import { smartParse } from './smart-parse';
 import * as EmbedGenerators from './embed-generator';
 import { GuildQueue } from './guild-queue';
 import { GuildQueueItem } from './guild-queue-item';
 
 const VOLUME_FACTOR = 100;
 const MAX_QUEUE_LENGTH = 50;
-
-type QueueOptions = {
-    member: Discord.GuildMember;
-    input: string;
-    embed: {
-
-    } | undefined;
-};
 
 export class GuildAudio {
     private log: Logger;
@@ -34,7 +26,7 @@ export class GuildAudio {
         this._queue = new GuildQueue();
         this._player = createAudioPlayer({
             behaviors: {
-                noSubscriber: NoSubscriberBehavior.Stop
+                noSubscriber: NoSubscriberBehavior.Stop // Stop player when there are no active subscription-listeneres
             }
         });
 
@@ -72,14 +64,23 @@ export class GuildAudio {
         return guildQueueItem;
     }
 
-    onPlayingEnd() {
+    /**
+     * Gets called when the AudioPlayer stops playing an AudioResource
+     */
+    private onPlayingEnd() {
+        // Remove first item in queue
         const item = this._queue.pop();
 
-        if(item && item.embedMsg) {
-            this.removeSkipReaction(item.embedMsg);
+        if(!item) {
+            this.log.warn('onPlayingEnd called with empty queue');
+        } else {
+            if(item.embedMsg) {
+                this.removeSkipReaction(item.embedMsg);
+            }
+    
+            this.log.debug(`Finished: ${item?.title} (queue size: ${this._queue.size})`);
         }
 
-        this.log.debug(`Finished: ${item?.title} (queue size: ${this._queue.size})`);
         this.playNext();
     }
 
@@ -95,7 +96,7 @@ export class GuildAudio {
             await entersState(vc, VoiceConnectionStatus.Ready, 5000);
         } catch {
             this.clearQueue();
-            this.log.warn('Waited 5s for VoiceConnection to become ready, playNext aborted.');
+            this.log.warn('Waited 5s for VoiceConnection to become ready, playNext aborted');
             return;
         }
         

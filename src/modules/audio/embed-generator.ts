@@ -1,10 +1,9 @@
+import { Colors, EmojiCharacters } from '@constants';
+import { resolveEmojiString } from "@utils/emoji";
+import { secondsToMS } from "@utils/time";
 import Discord, { EmbedField } from 'discord.js';
 import { YoutubeAudioProvider } from '../../constants/audio-provider';
-import audio from "../../modules/audio";
-import { resolveEmojiString, uploadEmoji } from "@utils/emoji";
-import { secondsToMS } from "@utils/time";
 import { GuildQueueItem } from './guild-queue-item';
-import { Colors, EmojiCharacters } from '@constants';
 
 const QUEUE_DISPLAY_LIMIT = 15;
 
