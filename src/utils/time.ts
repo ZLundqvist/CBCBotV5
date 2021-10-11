@@ -25,14 +25,14 @@ export const timeMeasurement = {
     _cache: {} as { [key: string]: number },
     start: function (key: string) {
         if(!this._cache[key]) {
-            this._cache[key] = Date.now();
+            this._cache[key] = performance.now();
         } else {
             log.warn(`Time is already being measured for key: ${key}`);
         }
     },
     end: function (key: string, customLog?: log4js.Logger) {
         if(this._cache[key]) {
-            const diff = (Date.now() - this._cache[key]);
+            const diff = Math.ceil(performance.now() - this._cache[key]);
 
             if(customLog) {
                 customLog.info(`${key}: ${diff}ms`);
