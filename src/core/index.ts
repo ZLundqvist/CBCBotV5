@@ -11,19 +11,12 @@ import { ResourceHandler } from './resource-handler';
 const log = getLogger('core');
 
 class BotCore {
-    private readonly _client: Discord.Client<true> = new Discord.Client({ intents: ClientIntents });
-    private readonly _database: Database = new Database('cbcbotv5');
-    private readonly _config: Configuration = new Configuration();
-    private readonly _resources: ResourceHandler = new ResourceHandler();
-    private readonly _modules: Modules = new Modules();
-    private readonly _commands: Commands = new Commands();
-
-    public get client(): Discord.Client<true> { return this._client; }
-    public get database(): Database { return this._database; }
-    public get config(): Configuration { return this._config; }
-    public get resources(): ResourceHandler { return this._resources; }
-    public get modules(): Modules { return this._modules; }
-    public get commands(): Commands { return this._commands; }
+    private readonly client: Discord.Client<true> = new Discord.Client({ intents: ClientIntents });
+    readonly database: Database = new Database('cbcbotv5');
+    readonly config: Configuration = new Configuration();
+    readonly resources: ResourceHandler = new ResourceHandler();
+    readonly modules: Modules = new Modules();
+    readonly commands: Commands = new Commands();
 
     constructor() {
         log.info('Starting CBCBotV5');
