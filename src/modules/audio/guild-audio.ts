@@ -52,7 +52,7 @@ export class GuildAudio {
 
         if(track) {
             await memberStats.incrementSongsQueued(member);
-            await CBCBotCore.database.addGuildQueueItemToQueueHistory(member.guild, guildQueueItem.title, guildQueueItem.queuedByUserId);
+            await CBCBotCore.database.addGuildQueueItemToQueueHistory(member.guild, guildQueueItem.title, guildQueueItem.queuedBy.user.id);
         }
 
         if(!this.isPlaying) {
@@ -135,7 +135,7 @@ export class GuildAudio {
     stop() {
         this.clearQueue();
         this._player.stop();
-        this.log.debug('Stopped');
+        this.log.debug('Stop');
     }
 
     clearQueue() {
@@ -191,7 +191,7 @@ export class GuildAudio {
 
         // Filter that only allows the user that queued the item to pass
         const queuedByFilter = (reaction: Discord.MessageReaction, user: Discord.User) => {
-            if(user.id !== item.queuedByUserId) return false;
+            if(user.id !== item.queuedBy.user.id) return false;
             if(reaction.emoji.name !== EmojiCharacters.reject) return false;
 
             return true;

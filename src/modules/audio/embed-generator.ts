@@ -38,7 +38,7 @@ export function getYoutubeEmbed(guild: Discord.Guild, item: GuildQueueItem): Dis
 
     fields.push({
         name: 'Queued by',
-        value: item.queuedByName,
+        value: item.queuedBy.displayName,
         inline: true
     })
 
@@ -74,7 +74,7 @@ export function getSFXEmbed(guild: Discord.Guild, item: GuildQueueItem): Discord
 
     fields.push({
         name: 'Queued by',
-        value: item.queuedByName,
+        value: item.queuedBy.displayName,
         inline: true
     })
 
@@ -94,7 +94,7 @@ export function getQueueEmbed(guild: Discord.Guild, items: GuildQueueItem[]): Di
             upperField = 'Current';
             let lowerField = `${emoji} ${item.title} `;
             lowerField += item.length ? `[${secondsToMS(item.length)}] ` : '';
-            lowerField += `(${item.queuedByName})`;
+            lowerField += `(${item.queuedBy.displayName})`;
 
             fields.push({
                 name: upperField,
@@ -103,7 +103,7 @@ export function getQueueEmbed(guild: Discord.Guild, items: GuildQueueItem[]): Di
         } else {
             let lowerField = `${emoji} ${item.title} `;
             lowerField += item.length ? `[${secondsToMS(item.length)}] ` : '';
-            lowerField += `(${item.queuedByName})`;
+            lowerField += `(${item.queuedBy.displayName})`;
 
             fields.push({
                 name: upperField,

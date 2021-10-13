@@ -29,8 +29,7 @@ export async function smartParse(member: Discord.GuildMember, query: string, gen
 
         const item = new GuildQueueItem(
             query,
-            member.user.id,
-            member.displayName,
+            member,
             readableCreator,
             LocalAudioProvider,
             currentQueueSize + 1
@@ -51,13 +50,12 @@ export async function smartParse(member: Discord.GuildMember, query: string, gen
         let info = await ytdl.getInfo(link);
 
         const readableCreator = () => {
-            return ytdl.downloadFromInfo(info, { quality: 'highestaudio', filter: 'audioonly', highWaterMark: 2097152 /* 2 MB */ });
+            return ytdl.downloadFromInfo(info, { quality: 'highestaudio', filter: 'audioonly', highWaterMark: 1 << 23 /* 8 MB */ });
         };
 
         const item = new GuildQueueItem(
             info.player_response.videoDetails.title,
-            member.user.id,
-            member.displayName,
+            member,
             readableCreator,
             YoutubeAudioProvider,
             currentQueueSize + 1

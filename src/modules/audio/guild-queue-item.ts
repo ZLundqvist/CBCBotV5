@@ -13,8 +13,7 @@ export class GuildQueueItem {
     /**
      * The id of the Discord.User who queued the item
      */
-    queuedByUserId: string;
-    queuedByName: string;
+    queuedBy: Discord.GuildMember;
     provider: AudioProvider;
     initialQueuePosition: number;
 
@@ -27,11 +26,10 @@ export class GuildQueueItem {
     embed: Discord.MessageEmbed | undefined;
     embedMsg: Discord.Message | undefined;
 
-    constructor(title: string, queuedById: string, queuedByName: string, createReadable: () => Readable, provider: AudioProvider, initialQueuePosition: number) {
+    constructor(title: string, queuedBy: Discord.GuildMember, createReadable: () => Readable, provider: AudioProvider, initialQueuePosition: number) {
         this.id = nanoid();
         this.title = title;
-        this.queuedByUserId = queuedById;
-        this.queuedByName = queuedByName;
+        this.queuedBy = queuedBy;
         this.createReadable = createReadable;
         this.provider = provider;
         this.initialQueuePosition = initialQueuePosition;
