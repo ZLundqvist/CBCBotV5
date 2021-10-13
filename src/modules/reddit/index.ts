@@ -46,8 +46,8 @@ class RedditModule extends Module {
         const url = pickRandom(urls);
         if(!url) throw new CommandError('No posts found');
 
-        const data = await axios.get(url, { responseType: 'arraybuffer' });
-        return Buffer.from(data.data);
+        const response = await axios.get<ArrayBuffer>(url, { responseType: 'arraybuffer' });
+        return Buffer.from(response.data);
     }
 }
 
