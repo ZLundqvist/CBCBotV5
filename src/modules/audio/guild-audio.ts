@@ -2,7 +2,7 @@ import { AudioPlayer, AudioPlayerStatus, AudioResource, createAudioPlayer, creat
 import Discord from 'discord.js';
 import { Logger } from 'log4js';
 import { EmojiCharacters } from '../../constants';
-import { CBCBotCore, CommandError } from '../../core';
+import { BotCore, CommandError } from '../../core';
 import getLogger from '../../utils/logger';
 import memberStats from '../member-stats';
 import * as EmbedGenerators from './embed-generator';
@@ -52,7 +52,7 @@ export class GuildAudio {
 
         if(track) {
             await memberStats.incrementSongsQueued(member);
-            await CBCBotCore.database.addGuildQueueItemToQueueHistory(member.guild, guildQueueItem.title, guildQueueItem.queuedBy.user.id);
+            await BotCore.database.addGuildQueueItemToQueueHistory(member.guild, guildQueueItem.title, guildQueueItem.queuedBy.user.id);
         }
 
         if(!this.isPlaying) {
@@ -100,7 +100,7 @@ export class GuildAudio {
         const next = this._queue.peek();
         if(next) {
             // Get volume 
-            const volume = (await CBCBotCore.database.getGuild(this._guild)).volume;
+            const volume = (await BotCore.database.getGuild(this._guild)).volume;
 
             // Subscribe VC to player
             vc.subscribe(this._player);
@@ -219,12 +219,12 @@ export class GuildAudio {
     }
 
     async getVolume(): Promise<number> {
-        const guild = await CBCBotCore.database.getGuild(this._guild);
+        const guild = await BotCore.database.getGuild(this._guild);
         return guild.volume;
     }
 
     async setVolume(v: number) {
-        const guild = await CBCBotCore.database.getGuild(this._guild);
+        const guild = await BotCore.database.getGuild(this._guild);
         guild.volume = v;
         await guild.save();
 

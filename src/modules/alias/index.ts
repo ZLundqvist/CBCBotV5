@@ -1,5 +1,5 @@
 import Discord from 'discord.js';
-import { CBCBotCore, CommandError, Module } from '../../core';
+import { BotCore, CommandError, Module } from '../../core';
 import getLogger from '../../utils/logger';
 
 const log = getLogger(__dirname);
@@ -18,13 +18,13 @@ class AliasModule extends Module {
     async destroy(): Promise<void> { }
 
     async addInGuild(guild: Discord.Guild, key: string, value: string) {
-        let alias = await CBCBotCore.database.getAlias(guild, key);
+        let alias = await BotCore.database.getAlias(guild, key);
 
         if(alias) {
             alias.key = key;
             alias.value = value;
         } else {
-            alias = await CBCBotCore.database.buildAlias(guild, key, value);
+            alias = await BotCore.database.buildAlias(guild, key, value);
         }
 
         await alias.save();
@@ -33,7 +33,7 @@ class AliasModule extends Module {
     }
 
     async removeInGuild(guild: Discord.Guild, key: string) {
-        const alias = await CBCBotCore.database.getAlias(guild, key);
+        const alias = await BotCore.database.getAlias(guild, key);
 
         if(!alias)
             throw new CommandError(`Alias does not exist: ${key}`);
@@ -43,7 +43,7 @@ class AliasModule extends Module {
     }
 
     async getAllInGuild(guild: Discord.Guild) {
-        return await CBCBotCore.database.getGuildAliases(guild);
+        return await BotCore.database.getGuildAliases(guild);
     }
 
     private async onMessageCreate(msg: Discord.Message) {
@@ -59,7 +59,7 @@ class AliasModule extends Module {
             return;
         }
 
-        const alias = await CBCBotCore.database.getAlias(msg.guild, msg.content.trim());
+        const alias = await BotCore.database.getAlias(msg.guild, msg.content.trim());
 
         if(alias) {
             await msg.channel.send(alias.value);

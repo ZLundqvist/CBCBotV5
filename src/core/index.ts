@@ -10,7 +10,7 @@ import { ResourceHandler } from './resource-handler';
 
 const log = getLogger('core');
 
-class BotCore {
+class CBCBotCore {
     private readonly client: Discord.Client<true> = new Discord.Client({ intents: ClientIntents });
     readonly database: Database = new Database('cbcbotv5');
     readonly config: Configuration = new Configuration();
@@ -72,7 +72,7 @@ class BotCore {
     }
 }
 
-export const CBCBotCore = new BotCore();
+export const BotCore = new CBCBotCore();
 export * from './custom-errors';
 export * from './custom-events';
 export * from './global-command';

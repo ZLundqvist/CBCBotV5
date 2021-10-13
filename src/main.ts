@@ -1,4 +1,4 @@
 import 'reflect-metadata';
-import { CBCBotCore } from './core';
+import { BotCore } from './core';
 
-CBCBotCore.start();
+BotCore.start();

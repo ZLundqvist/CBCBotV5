@@ -1,6 +1,6 @@
 import { SlashCommandBuilder } from '@discordjs/builders';
 import { CommandInteraction } from 'discord.js';
-import { CBCBotCore, GlobalCommand } from "../../core";
+import { BotCore, GlobalCommand } from "../../core";
 
 const command = new SlashCommandBuilder()
     .setName('restart')
@@ -13,7 +13,7 @@ class RestartCommand extends GlobalCommand {
 
     async executeGlobalCommand(interaction: CommandInteraction) {
         await interaction.reply('Restart coming up');
-        CBCBotCore.gracefulShutdown();
+        BotCore.gracefulShutdown();
     }
 }
 

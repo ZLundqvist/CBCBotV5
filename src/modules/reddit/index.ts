@@ -1,7 +1,7 @@
 import axios from 'axios';
 import Discord from 'discord.js';
 import snoowrap from 'snoowrap';
-import { CBCBotCore, CommandError, Module } from '../../core';
+import { BotCore, CommandError, Module } from '../../core';
 import { pickRandom } from '../../utils/random';
 
 export enum RandomPostMode {
@@ -20,9 +20,9 @@ class RedditModule extends Module {
         this.mode = RandomPostMode.RISING;
         this.reddit = new snoowrap({
             userAgent: 'put your user-agent string here',
-            clientId: CBCBotCore.config.getConfigValue('reddit-client-id'),
-            clientSecret: CBCBotCore.config.getConfigValue('reddit-client-secret'),
-            refreshToken: CBCBotCore.config.getConfigValue('reddit-refresh-token')
+            clientId: BotCore.config.getConfigValue('reddit-client-id'),
+            clientSecret: BotCore.config.getConfigValue('reddit-client-secret'),
+            refreshToken: BotCore.config.getConfigValue('reddit-refresh-token')
         });
     }
 

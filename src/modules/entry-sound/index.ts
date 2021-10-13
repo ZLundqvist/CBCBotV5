@@ -1,5 +1,5 @@
 import Discord from 'discord.js';
-import { CBCBotCore, CommandError, Module, VoiceStateUpdateCustom } from "../../core";
+import { BotCore, CommandError, Module, VoiceStateUpdateCustom } from "../../core";
 import getLogger from '../../utils/logger';
 import audio from '../audio';
 
@@ -22,32 +22,32 @@ class EntrySoundModule extends Module {
     async destroy(): Promise<void> { }
 
     async setBotEntrySFX(g: Discord.Guild, newSFX: string) {
-        if(!CBCBotCore.resources.sfxExists(newSFX)) {
+        if(!BotCore.resources.sfxExists(newSFX)) {
             throw new CommandError(`Invalid SFX: ${newSFX}`);
         }
 
-        const guild = await CBCBotCore.database.getGuild(g);
+        const guild = await BotCore.database.getGuild(g);
         guild.entrysound = newSFX;
         await guild.save();
     }
 
     async setMemberEntrySFX(m: Discord.GuildMember, newSFX: string) {
-        if(!CBCBotCore.resources.sfxExists(newSFX)) {
+        if(!BotCore.resources.sfxExists(newSFX)) {
             throw new CommandError(`Invalid SFX: ${newSFX}`);
         }
 
-        const member = await CBCBotCore.database.getMember(m);
+        const member = await BotCore.database.getMember(m);
         member.entrysound = newSFX;
         await member.save();
     }
 
     async getBotEntrySFX(g: Discord.Guild): Promise<string | null> {
-        const guild = await CBCBotCore.database.getGuild(g);
+        const guild = await BotCore.database.getGuild(g);
         return guild.entrysound;
     }
 
     async getMemberEntrySFX(m: Discord.GuildMember): Promise<string | null> {
-        const member = await CBCBotCore.database.getMember(m);
+        const member = await BotCore.database.getMember(m);
         return member.entrysound;
     }
 
@@ -66,7 +66,7 @@ class EntrySoundModule extends Module {
     }
 
     private async playBotEntry(guild: Discord.Guild) {
-        const guildDB = await CBCBotCore.database.getGuild(guild);
+        const guildDB = await BotCore.database.getGuild(guild);
 
         if(!guildDB.entrysound) {
             log.debug(`No entrysound set: ${guild.name}`);
@@ -89,7 +89,7 @@ class EntrySoundModule extends Module {
     }
 
     private async playMemberEntry(m: Discord.GuildMember) {
-        let member = await CBCBotCore.database.getMember(m);
+        let member = await BotCore.database.getMember(m);
 
         if(!member.entrysound) {
             log.debug(`No entrysound set: ${member.id}`);

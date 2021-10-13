@@ -4,14 +4,14 @@ import validator from 'validator';
 import ytSearch from 'youtube-search';
 import ytdl from 'ytdl-core';
 import { LocalAudioProvider, YoutubeAudioProvider } from '../../constants';
-import { CBCBotCore, CommandError } from '../../core';
+import { BotCore, CommandError } from '../../core';
 import { getSFXEmbed, getYoutubeEmbed } from './embed-generator';
 import { GuildQueueItem } from './guild-queue-item';
 
 const SEARCH_OPTIONS: ytSearch.YouTubeSearchOptions = {
     maxResults: 1,
     type: 'video',
-    key: CBCBotCore.config.getConfigValue('youtube-api-key')
+    key: BotCore.config.getConfigValue('youtube-api-key')
 };
 
 /**
@@ -21,7 +21,7 @@ const SEARCH_OPTIONS: ytSearch.YouTubeSearchOptions = {
  */
 export async function smartParse(member: Discord.GuildMember, query: string, generateEmbed: boolean, currentQueueSize: number): Promise<GuildQueueItem> {
     // If resource matches an sfx
-    const sfxPath = CBCBotCore.resources.getSFXPath(query);
+    const sfxPath = BotCore.resources.getSFXPath(query);
     if(sfxPath) {
         const readableCreator = () => {
             return createReadStream(sfxPath);

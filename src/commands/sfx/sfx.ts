@@ -1,6 +1,6 @@
 import { codeBlock, SlashCommandBuilder, SlashCommandSubcommandBuilder } from '@discordjs/builders';
 import { CommandInteraction } from 'discord.js';
-import { CBCBotCore, GlobalCommand } from "../../core";
+import { BotCore, GlobalCommand } from "../../core";
 
 const listCommand = new SlashCommandSubcommandBuilder()
     .setName('list')
@@ -17,7 +17,7 @@ class SFXCommand extends GlobalCommand {
     }
 
     async executeGlobalCommand(interaction: CommandInteraction): Promise<void> {
-        const sfxs = CBCBotCore.resources.getSFXNames();
+        const sfxs = BotCore.resources.getSFXNames();
         await interaction.reply(codeBlock(sfxs.join(', ')));
     }
 }

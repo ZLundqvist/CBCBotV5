@@ -1,7 +1,7 @@
 import Discord, { EmbedField } from 'discord.js';
 import moment from 'moment';
 import { Colors, Images } from '../../constants';
-import { CBCBotCore, Module } from "../../core";
+import { BotCore, Module } from "../../core";
 import getLogger from '../../utils/logger';
 
 const log = getLogger(__dirname);
@@ -27,7 +27,7 @@ class CurrencyModule extends Module {
     }
 
     async getMemberEmbed(member: Discord.GuildMember): Promise<Discord.MessageEmbed> {
-        const currency = await CBCBotCore.database.getMember(member);
+        const currency = await BotCore.database.getMember(member);
 
         const embed = new Discord.MessageEmbed();
         embed.setAuthor(member.displayName, Images.currencyLogo);
@@ -45,7 +45,7 @@ class CurrencyModule extends Module {
     }
 
     async getTopEmbed(guild: Discord.Guild, spots: number = 10): Promise<Discord.MessageEmbed> {
-        const top = await CBCBotCore.database.getMemberCurrencyTop(guild, spots);
+        const top = await BotCore.database.getMemberCurrencyTop(guild, spots);
 
         const fields: Discord.EmbedField[] = [];
         const embed = new Discord.MessageEmbed();
@@ -66,12 +66,12 @@ class CurrencyModule extends Module {
     }
 
     async getGPM(guild: Discord.Guild): Promise<number> {
-        const guildDB = await CBCBotCore.database.getGuild(guild);
+        const guildDB = await BotCore.database.getGuild(guild);
         return guildDB.gpm;
     }
 
     async setGPM(guild: Discord.Guild, newValue: number) {
-        const guildDB = await CBCBotCore.database.getGuild(guild);
+        const guildDB = await BotCore.database.getGuild(guild);
         guildDB.gpm = newValue;
         await guildDB.save();
     }
@@ -84,7 +84,7 @@ class CurrencyModule extends Module {
 
         for(let guild of client.guilds.cache.values()) {
             try {
-                const guildSettings = await CBCBotCore.database.getGuild(guild);
+                const guildSettings = await BotCore.database.getGuild(guild);
 
                 let vcs: Discord.VoiceChannel[] = Array.from(guild.channels.cache.filter(c => c.type === 'GUILD_VOICE').values()) as Discord.VoiceChannel[];
 
@@ -95,7 +95,7 @@ class CurrencyModule extends Module {
                 let connectedMembers = vcs.map(vc => Array.from(vc.members.values())).reduce((acc, cur) => acc.concat(cur), []);
 
                 for(let member of connectedMembers) {
-                    await CBCBotCore.database.addMemberCurrency(member, guildSettings.gpm);
+                    await BotCore.database.addMemberCurrency(member, guildSettings.gpm);
                 }
             } catch(error) {
                 if(error instanceof Error) {

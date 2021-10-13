@@ -1,6 +1,6 @@
 import { SlashCommandBuilder, SlashCommandSubcommandBuilder } from '@discordjs/builders';
 import { CommandInteraction } from 'discord.js';
-import { CBCBotCore, GlobalCommand } from "../../core";
+import { BotCore, GlobalCommand } from "../../core";
 
 const refreshCommand = new SlashCommandSubcommandBuilder()
     .setName('refresh')
@@ -30,14 +30,12 @@ class CommandsCommand extends GlobalCommand {
     private async refresh(interaction: CommandInteraction) {
         await interaction.deferReply({ ephemeral: true });
 
-        const commandsHandler = CBCBotCore.commands;
-
         try {
             for(const guild of interaction.client.guilds.cache.values()) {
-                await commandsHandler.deployGuildCommands(guild);
+                await BotCore.commands.deployGuildCommands(guild);
             }
 
-            await commandsHandler.deployGlobalCommands();
+            await BotCore.commands.deployGlobalCommands();
 
             await interaction.editReply('Commands refreshed!');
         } catch(error: any) {

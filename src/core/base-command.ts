@@ -1,6 +1,6 @@
 import { SlashCommandBuilder } from '@discordjs/builders';
 import Discord from 'discord.js';
-import { CBCBotCore } from '../core';
+import { BotCore } from '../core';
 import { CommandError } from './custom-errors';
 
 export type BaseCommandData = {
@@ -40,7 +40,7 @@ export abstract class BaseCommand {
     }
 
     async onInteraction(interaction: Discord.CommandInteraction) {
-        if(this.ownerOnly && !CBCBotCore.config.isOwner(interaction.user)) {
+        if(this.ownerOnly && !BotCore.config.isOwner(interaction.user)) {
             throw new CommandError('You do not have permission to do this, fucking loser');
         }
 
