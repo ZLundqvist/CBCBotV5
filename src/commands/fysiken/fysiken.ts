@@ -23,7 +23,7 @@ class FysikenCommand extends GlobalCommand {
         const threshold = interaction.options.getInteger('threshold', false);
 
         if(threshold) {
-            Fysiken.addUser(interaction.user, threshold);
+            Fysiken.setThresholdForUser(interaction.user, threshold);
             await interaction.reply('noted');
         } else {
             const current = await Fysiken.getCurrentValue();

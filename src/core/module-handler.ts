@@ -8,7 +8,7 @@ import { Module } from './module';
 const log = getLogger('core');
 const MODULES_PATH = path.join(__dirname, '../modules/');
 
-export class Modules {
+export class ModuleHandler {
     private modules: Module[];
 
     constructor() {

@@ -7,7 +7,7 @@ import getLogger from '../../utils/logger';
 const log = getLogger(__dirname);
 
 class CurrencyModule extends Module {
-    distributer: NodeJS.Timeout | null = null;
+    distributer?: NodeJS.Timeout;
 
     constructor() {
         super('Currency');
@@ -76,25 +76,20 @@ class CurrencyModule extends Module {
         await guildDB.save();
     }
 
-    async distributeGold(client: Discord.Client) {
-        if(!client.readyAt) {
-            log.warn('Client not ready, cannot distribute.');
-            return;
-        }
-
-        for(let guild of client.guilds.cache.values()) {
+    async distributeGold(client: Discord.Client<true>) {
+        for(const guild of client.guilds.cache.values()) {
             try {
                 const guildSettings = await BotCore.database.getGuild(guild);
 
-                let vcs: Discord.VoiceChannel[] = Array.from(guild.channels.cache.filter(c => c.type === 'GUILD_VOICE').values()) as Discord.VoiceChannel[];
+                const voiceChannels = Array.from(guild.channels.cache.values())
+                    .filter((channel): channel is Discord.BaseGuildVoiceChannel => channel.isVoice()) // Only take VoiceChannel
+                    .filter(vc => vc.guild.afkChannelId !== vc.id);  // Remove AFK channels
 
-                // Remove AFK channels
-                vcs = vcs.filter(vc => vc.guild.afkChannelId !== vc.id);
 
                 // Gathers all connected members and flattens that array
-                let connectedMembers = vcs.map(vc => Array.from(vc.members.values())).reduce((acc, cur) => acc.concat(cur), []);
+                const connectedMembers = voiceChannels.map(vc => Array.from(vc.members.values())).reduce((acc, cur) => acc.concat(cur), []);
 
-                for(let member of connectedMembers) {
+                for(const member of connectedMembers) {
                     await BotCore.database.addMemberCurrency(member, guildSettings.gpm);
                 }
             } catch(error) {

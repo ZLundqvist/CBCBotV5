@@ -2,7 +2,7 @@ import Discord, { Collection } from 'discord.js';
 import fs from 'fs';
 import path from 'path';
 import { EmojiCharacters } from '../constants';
-import { CommandError, GlobalCommand, GuildCommand } from '../core';
+import { CommandError, GlobalCommand, GuildCommand } from '.';
 import getLogger from '../utils/logger';
 import { timeMeasurement } from '../utils/time';
 import { BaseCommand } from './base-command';
@@ -11,7 +11,7 @@ import { ImportError } from './custom-errors';
 const log = getLogger('core');
 const COMMANDS_PATH = path.join(__dirname, '../commands/');
 
-export class Commands {
+export class CommandHandler {
     private commands: Collection<string, BaseCommand>;
     private client!: Discord.Client<true>;
 

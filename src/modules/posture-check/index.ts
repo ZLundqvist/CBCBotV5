@@ -1,37 +1,33 @@
-import { getVoiceConnection } from '@discordjs/voice';
 import Discord from 'discord.js';
 import { clearInterval } from 'timers';
 import { Module } from '../../core';
 import getLogger from '../../utils/logger';
+import { inVoiceChannel } from '../../utils/voice';
 import audio from '../audio';
 
 const log = getLogger(__dirname);
 
-interface GuildInterval {
-    readonly guildId: string;
-    period: number | null;             // Zero if disabled
-    timer: NodeJS.Timeout | null; // null if disabled
-}
+type PostureCheckInterval = {
+    id: NodeJS.Timeout; // intervalId
+    period: number;     // Period in minutes
+};
 
 class PostureCheckModule extends Module {
-    private guildIntervals: GuildInterval[] = [];
+    private guildIntervals: Discord.Collection<string, PostureCheckInterval>;
 
     constructor() {
         super('PostureCheck');
+        this.guildIntervals = new Discord.Collection();
     }
 
     async init(client: Discord.Client<true>): Promise<void> { }
 
-    async destroy(): Promise<void> { 
-        for (const interval of this.guildIntervals) {
-            if(interval.timer) {
-                clearInterval(interval.timer);
-            }
+    async destroy(): Promise<void> {
+        for(const interval of this.guildIntervals.values()) {
+            clearInterval(interval.id);
         }
-    }
 
-    isRunning(guild: Discord.Guild): boolean {
-        return this.getGuildInterval(guild).timer !== null;
+        this.guildIntervals.clear();
     }
 
     /**
@@ -40,52 +36,44 @@ class PostureCheckModule extends Module {
      * @param period Period in minutes between PC's 
      */
     async enable(guild: Discord.Guild, period: number) {
-        let interval = this.getGuildInterval(guild);
+        const currentInterval = this.guildIntervals.get(guild.id);
 
         // Disable old timer if it exists
-        if(this.isRunning(guild)) {
+        if(currentInterval) {
             this.disable(guild);
         }
 
-        interval.period = period;
-        interval.timer = setInterval(() => {
+        const intervalId = setInterval(() => {
             this.doPostureCheck(guild);
-        }, interval.period * 1000 * 60);
-        this.doPostureCheck(guild);
+        }, period * 1000 * 60);
 
-        log.debug(`PostureCheck enabled (guild: ${guild.name}, interval: ${interval.period} minutes)`);
+        this.guildIntervals.set(guild.id, {
+            id: intervalId,
+            period: period
+        })
+
+        log.debug(`Enabled (guild: ${guild.name}, interval: ${period} minutes)`);
+
+        this.doPostureCheck(guild);
     }
 
     disable(guild: Discord.Guild) {
-        let interval = this.getGuildInterval(guild);
+        const interval = this.guildIntervals.get(guild.id);
 
-        if(interval.timer) {
-            clearInterval(interval.timer);
-            interval.period = 0;
-            interval.timer = null;
+        if(interval) {
+            clearInterval(interval.id);
+            this.guildIntervals.delete(guild.id);
+            log.debug(`Disabled (guild: ${guild.name})`);
         }
     }
 
-    private getGuildInterval(guild: Discord.Guild): GuildInterval {
-        let interval = this.guildIntervals.find(item => item.guildId === guild.id);
-
-        if(!interval) {
-            interval = {
-                guildId: guild.id,
-                period: null,
-                timer: null
-            };
-
-            this.guildIntervals.push(interval);
+    private async doPostureCheck(guild: Discord.Guild): Promise<void> {
+        if(!guild.me) {
+            log.warn('guild.me is null, cannot play PC');
+            return;
         }
 
-        return interval;
-    }
-
-    private async doPostureCheck(guild: Discord.Guild) {
-        const vc = getVoiceConnection(guild.id);
-
-        if(!vc) {
+        if(!inVoiceChannel(guild)) {
             log.debug(`Tried to perform PC without VoiceConnection, disabling (guild: ${guild.name})`);
             this.disable(guild);
             return;
@@ -94,15 +82,12 @@ class PostureCheckModule extends Module {
         const guildAudio = audio.getGuildAudio(guild);
 
         if(guildAudio.isPlaying) {
-            return;
-        }
-
-        if(!guild.me) {
-            log.warn('guild.me is null, cannot play PC');
+            log.debug(`Audio playing in guild, skipping (guild: ${guild.name})`);
             return;
         }
 
         try {
+            log.debug(`Performing PostureCheck (guild: ${guild.name})`);
             await guildAudio.smartQueue('pc', guild.me, false);
         } catch(error: any) {
             log.warn(`Unable to queue PostureCheck: ${error.message}`);

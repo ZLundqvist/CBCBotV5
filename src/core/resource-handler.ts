@@ -1,166 +1,103 @@
-import axios from 'axios';
 import fs from 'fs';
 import path from 'path';
-import { Stream } from 'stream';
-import validator from 'validator';
 import getLogger from '../utils/logger';
 
 const log = getLogger('resource-handler');
 
-export class ResourceHandler {
-    private root!: string;
-    private sfx_folder!: string;
-    private img_folder!: string;
+type Resource = {
+    /**
+     * Filename of resource, excluding extension
+     */
+    name: string;
 
-    constructor() {
-        this.root = path.resolve('./resources');
-        this.sfx_folder = path.join(this.root, 'sfx');
-        this.img_folder = path.join(this.root, 'img');
+    /**
+     * Filename of resource, including extension
+     */
+    base: string;
+
+    /**
+     * Full path of resource, including filename
+     */
+    path: string;
+};
+
+type SFXResource = 'hiagain' | 'pc' | string;
+type ImageResource = 'soundcloud-logo' | 'yt-logo';
+
+export class ResourceHandler {
+    private readonly rootDir: string;
+    private readonly customSFXDir: string;
+    private readonly sfxDir: string;
+    private readonly imageDir: string;
+
+    /**
+     * @param rootDir Relative path to root directory of resource
+     */
+    constructor(rootDir: string) {
+        this.rootDir = path.resolve(rootDir);
+        this.customSFXDir = path.join(this.rootDir, 'custom_sfx');
+        this.sfxDir = path.join(this.rootDir, 'sfx');
+        this.imageDir = path.join(this.rootDir, 'img');
     }
 
     setup() {
-        if(!fs.existsSync(this.root)) {
-            fs.mkdirSync(this.root);
-            log.debug(`Created resource directory: ${this.root}`);
+        log.debug(`Using root directory: ${this.rootDir}`);
+
+        if(!fs.existsSync(this.customSFXDir)) {
+            fs.mkdirSync(this.customSFXDir);
+            log.debug(`Created custom SFX directory: ${this.customSFXDir}`);
         }
 
-        if(!fs.existsSync(this.sfx_folder)) {
-            fs.mkdirSync(this.sfx_folder);
-            log.debug(`Created sfx folder: ${this.sfx_folder}`);
-        }
-        log.info(`SFX folder contains ${fs.readdirSync(this.sfx_folder).length} files.`);
-
-        if(!fs.existsSync(this.img_folder)) {
-            fs.mkdirSync(this.img_folder);
-            log.debug(`Created image folder: ${this.img_folder}`);
-        }
-        log.info(`Image folder contains ${fs.readdirSync(this.img_folder).length} files.`);
+        log.debug(`Custom SFX count: ${fs.readdirSync(this.customSFXDir).length}`);
+        log.debug(`SFX count: ${fs.readdirSync(this.sfxDir).length}`);
+        log.debug(`Image count: ${fs.readdirSync(this.imageDir).length}`);
     }
 
     /**
-     * Returns all names of images in the image resource folder (including extensions)
+     * Returns resource of image with given name
+     * Throws if image cannot be found
      * @returns 
      */
-    getImages(): string[] {
-        return fs.readdirSync(this.img_folder);
+    getImage(name: ImageResource): Resource {
+        const images = this.getFilesInDir(this.imageDir);
+        const image = images.find(img => img.name === name);
+
+        if(!image)
+            throw new Error(`Missing image: ${name}`);
+
+        return image;
     }
 
     /**
-     * Returns all names of SFXs in the sfx resource folder (including extensions)
+     * Returns resource of SFX with given name
      * @returns 
      */
-    getSFXNamesExt(): string[] {
-        return fs.readdirSync(this.sfx_folder);
+    getSFX(name: SFXResource): Resource | undefined {
+        return this.getSFXs().find(img => img.name === name);
     }
 
     /**
-     * Returns all names of SFXs in the sfx resource folder (excluding extensions)
+     * Returns a sorted list of SFX resources
      * @returns 
      */
-    getSFXNames(): string[] {
-        return this.getSFXNamesExt().map(file => {
-            return file.replace('.mp3', '');
+    getSFXs(): Resource[] {
+        const sfxs = this.getFilesInDir(this.sfxDir).concat(this.getFilesInDir(this.customSFXDir));
+        return sfxs.sort((a, b) => {
+            return a.base.localeCompare(b.name);
         });
     }
 
-    /**
-     * Returns the absolute path (including extension) of the sfx with the given name (without extension)
-     * @param name 
-     * @returns 
-     */
-    getSFXPath(name: string): string | undefined {
-        const sfxs = this.getSFXNamesExt();
+    private getFilesInDir(dirPath: string): Resource[] {
+        const files = fs.readdirSync(dirPath);
 
-        for(let sfx of sfxs) {
-            if(sfx === name || sfx.replace('.mp3', '') === name) {
-                return path.join(this.sfx_folder, sfx);
-            }
-        }
-    }
+        return files.map(file => {
+            const parsed = path.parse(path.resolve(dirPath, file));
 
-    /**
-     * Resolve the absolute path of an image with the given name (including extension). Throws error if image does not exist
-     * @param name 
-     * @returns 
-     */
-    getImagePath(name: string): string {
-        const imgs = this.getImages();
-
-        for(let img of imgs) {
-            if(img === name) {
-                return path.join(this.img_folder, img);
-            }
-        }
-
-        throw new Error(`File not found: ${name}`);
-    }
-
-    /**
-     * Checks if an SFX with the given name exists
-     * @param name 
-     * @returns 
-     */
-    sfxExists(name: string): boolean {
-        return this.getSFXPath(name) !== undefined;
-    }
-
-    /**
-     * Checks if an image with the given name exists (including extension)
-     * @param name 
-     * @returns 
-     */
-    imageExists(name: string): boolean {
-        try {
-            this.getImagePath(name);
-            return true;
-        } catch {
-            return false;
-        }
-    }
-
-    /**
-     * Given a URL, downloads it and adds the file to sfx folder
-     */
-    async downloadSFX(filename: string, link: string): Promise<void> {
-
-        if(!validator.isURL(link)) {
-            throw new Error(`Provided link is not a valid URI: ${link}`);
-        }
-
-        if(path.extname(link) !== '.mp3') {
-            throw new Error(`File to download must have .mp3 extension: ${link}`);
-        }
-
-        if(path.extname(filename) !== '.mp3') {
-            throw new Error(`File must have .mp3 extension: ${filename}`);
-        }
-
-        if(this.sfxExists(filename)) {
-            throw new Error(`File already exists with name: ${filename}`);
-        }
-
-        const response = await axios.get<Stream>(link, {
-            responseType: 'stream'
+            return {
+                name: parsed.name,
+                base: parsed.base,
+                path: `${parsed.dir}/${parsed.base}`
+            };
         });
-
-        response.data.pipe(fs.createWriteStream(path.join(this.sfx_folder, filename)));
-    }
-
-    async addSFX(filename: string, data: Buffer): Promise<void> {
-        if(this.sfxExists(filename)) throw new Error('SFX already exists');
-        fs.writeFileSync(path.join(this.sfx_folder, filename), data);
-    }
-
-    /**
-     * 
-     */
-    removeSFX(name: string): void {
-        const sfx = this.getSFXPath(name);
-
-        if(!sfx) {
-            throw new Error(`SFX does not exist: ${name}`);
-        }
-
-        fs.unlinkSync(sfx);
     }
 }

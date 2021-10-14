@@ -1,7 +1,7 @@
 import Discord from 'discord.js';
 import { Module, VoiceStateUpdateCustom } from '../../core';
-import * as voice from "../../utils/voice";
-import postureCheck from '../posture-check';
+import * as VoiceUtil from "../../utils/voice";
+import PostureCheck from '../posture-check';
 
 class AutoJoinModule extends Module {
     private client!: Discord.Client<true>;
@@ -43,37 +43,36 @@ class AutoJoinModule extends Module {
 
     /**
      * Runs when another member connects to a VC
-     * @param state 
+     * @param newState 
      */
-    private onConnect(state: Discord.VoiceState) {
-        if(state.channel && state.channelId !== state.guild.afkChannelId && state.channel.type === 'GUILD_VOICE') {
-            voice.connectIfAloneOrDisconnected(state.channel);
+    private onConnect(newState: Discord.VoiceState) {
+        if(newState.channel && !VoiceUtil.isAFKChannel(newState.channel)) {
+            VoiceUtil.connectIfAloneOrDisconnected(newState.channel);
         } else {
-            voice.disconnectIfAlone(state.guild);
+            VoiceUtil.disconnectIfAlone(newState.guild);
         }
     }
 
     /**
      * Runs when another member disconnects from a VC
-     * @param state 
+     * @param newState 
      */
-    private onDisconnect(state: Discord.VoiceState) {
-        if(voice.isAlone(state.guild)) {
-            // audio.stop(state.guild);
-            postureCheck.disable(state.guild);
-            voice.disconnect(state.guild);
+    private onDisconnect(newState: Discord.VoiceState) {
+        if(VoiceUtil.isAlone(newState.guild)) {
+            PostureCheck.disable(newState.guild);
+            VoiceUtil.disconnect(newState.guild);
         }
     }
 
     /**
      * Runs when another member transfers from one VC to another(!) VC
-     * @param state 
+     * @param newState 
      */
-    private onTransfer(state: Discord.VoiceState) {
-        if(state.channel && state.channelId !== state.guild.afkChannelId && state.channel.type === 'GUILD_VOICE') {
-            voice.connectIfAloneOrDisconnected(state.channel);
+    private onTransfer(newState: Discord.VoiceState) {
+        if(newState.channel && !VoiceUtil.isAFKChannel(newState.channel)) {
+            VoiceUtil.connectIfAloneOrDisconnected(newState.channel);
         } else {
-            voice.disconnectIfAlone(state.guild);
+            VoiceUtil.disconnectIfAlone(newState.guild);
         }
     }
 }

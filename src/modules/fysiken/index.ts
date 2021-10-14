@@ -8,19 +8,15 @@ const log = getLogger(__dirname);
 const CHECK_INTERVAL_MINUTES = 2;
 const URL = 'http://api.rscount.se/rs/count/000B91906EDA';
 
-type FysikenUser = {
-    id: string;
-    threshold: number;
-};
 
 class FysikenModule extends Module {
-    users: FysikenUser[];
     client!: Discord.Client<true>;
-    interval: NodeJS.Timeout | null = null;
+    interval?: NodeJS.Timeout;
+    thresholds: Discord.Collection<string, number>;
 
     constructor() {
         super('Fysiken');
-        this.users = [];
+        this.thresholds = new Discord.Collection();
     }
 
     async init(client: Discord.Client<true>): Promise<void> {
@@ -34,19 +30,9 @@ class FysikenModule extends Module {
         }
     }
 
-    addUser(user: Discord.User, threshold: number) {
-        const existingUser = this.users.find(u => u.id === user.id);
-
-        if(existingUser) {
-            existingUser.threshold = threshold;
-        } else {
-            this.users.push({
-                id: user.id,
-                threshold: threshold
-            });
-        }
-
-        log.debug(`addUser (id=${user.id}, threshold=${threshold})`);
+    setThresholdForUser(user: Discord.User, threshold: number) {
+        this.thresholds.set(user.id, threshold);
+        log.debug(`setThresholdForUser (id=${user.id}, threshold=${threshold})`);
     }
 
     async getCurrentValue(): Promise<number> {
@@ -61,32 +47,28 @@ class FysikenModule extends Module {
     }
 
     async check() {
-        if(!this.users.length) return;
+        const users = this.thresholds.map((value, key) => {
+            return {
+                userId: key,
+                threshold: value
+            };
+        });
 
         try {
             const currentVal = await this.getCurrentValue();
-
-            const usersToNotify = this.users.filter(u => u.threshold >= currentVal);
-            const otherUsers = this.users.filter(u => u.threshold < currentVal);
-
+            const usersToNotify = users.filter(u => u.threshold >= currentVal);
             for(const user of usersToNotify) {
-                await this.notifyUser(user, currentVal);
+                await this.notifyUser(user.userId, user.threshold, currentVal);
+                this.thresholds.delete(user.userId);
             }
-
-            // Users not notified gets saved until next check
-            this.users = otherUsers;
-        } catch(e) {
-            if(e instanceof Error) {
-                log.error(e.message);
-            } else {
-                log.error(e);
-            }
+        } catch(error) {
+            log.error(error);
         }
     }
 
-    async notifyUser(user: FysikenUser, currentVal: number) {
-        log.debug(`notifyUser (id=${user.id}, current=${currentVal}, threshold=${user.threshold})`);
-        const discordUser = await this.client.users.fetch(user.id);
+    async notifyUser(userId: string, threshold: number, currentVal: number) {
+        log.debug(`notifyUser (id=${userId}, current=${currentVal}, threshold=${threshold})`);
+        const discordUser = await this.client.users.fetch(userId);
         await discordUser.send(`WORKOUT TIME SOYBOY! Only ${currentVal} sweaty nerds @ Fysiken`);
     }
 }

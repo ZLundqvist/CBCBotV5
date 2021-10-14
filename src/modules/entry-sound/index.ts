@@ -22,7 +22,7 @@ class EntrySoundModule extends Module {
     async destroy(): Promise<void> { }
 
     async setBotEntrySFX(g: Discord.Guild, newSFX: string) {
-        if(!BotCore.resources.sfxExists(newSFX)) {
+        if(!BotCore.resources.getSFX(newSFX)) {
             throw new CommandError(`Invalid SFX: ${newSFX}`);
         }
 
@@ -32,7 +32,7 @@ class EntrySoundModule extends Module {
     }
 
     async setMemberEntrySFX(m: Discord.GuildMember, newSFX: string) {
-        if(!BotCore.resources.sfxExists(newSFX)) {
+        if(!BotCore.resources.getSFX(newSFX)) {
             throw new CommandError(`Invalid SFX: ${newSFX}`);
         }
 

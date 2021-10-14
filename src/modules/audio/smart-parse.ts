@@ -20,9 +20,9 @@ const SEARCH_OPTIONS: ytSearch.YouTubeSearchOptions = {
  */
 export async function smartParse(query: string, member: Discord.GuildMember, currentQueueSize: number): Promise<GuildQueueItem> {
     // If resource matches an sfx
-    const sfxPath = BotCore.resources.getSFXPath(query);
-    if(sfxPath) {
-        return new GuildQueueLocalItem(sfxPath, member, currentQueueSize + 1);
+    const sfx = BotCore.resources.getSFX(query);
+    if(sfx) {
+        return new GuildQueueLocalItem(sfx.path, member, currentQueueSize + 1);
     }
 
     // Get link from query

@@ -2,10 +2,10 @@ import Discord from 'discord.js';
 import { ClientIntents } from '../constants';
 import { Database } from '../database/database';
 import getLogger from '../utils/logger';
-import { Commands } from './commands';
+import { CommandHandler } from './command-handler';
 import { Configuration } from './configuration';
 import { attachCustomEvents } from './custom-events';
-import { Modules } from './modules';
+import { ModuleHandler } from './module-handler';
 import { ResourceHandler } from './resource-handler';
 
 const log = getLogger('core');
@@ -13,20 +13,20 @@ const log = getLogger('core');
 class CBCBotCore {
     private readonly client: Discord.Client<true> = new Discord.Client({ intents: ClientIntents });
     readonly database: Database = new Database('cbcbotv5');
-    readonly config: Configuration = new Configuration();
-    readonly resources: ResourceHandler = new ResourceHandler();
-    readonly modules: Modules = new Modules();
-    readonly commands: Commands = new Commands();
+    readonly config: Configuration = new Configuration('config.json');
+    readonly resources: ResourceHandler = new ResourceHandler('resources');
+    readonly modules: ModuleHandler = new ModuleHandler();
+    readonly commands: CommandHandler = new CommandHandler();
 
     constructor() {
         log.info('Starting CBCBotV5');
-        log.info(`Version: ${this.config.getEnv('npm_package_version') || this.config.getEnv('version')}`);
+        log.info(`Version: ${this.config.getVersion()}`);
         log.info(`Running in ${this.config.getNodeEnv()} mode`);
     }
 
     async start() {
-        this.config.validate();
         this.resources.setup();
+        this.config.loadAndValidate();
         await this.database.createConnection();
 
         // Attach various listeners

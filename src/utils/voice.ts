@@ -4,24 +4,24 @@ import getLogger from './logger';
 
 const log = getLogger('voice');
 
-export type VoiceUpdateTypes = 'connect' | 'disconnect' | 'transfer' | 'stateChange';
+export type VoiceStateUpdateTypes = 'connect' | 'disconnect' | 'transfer' | 'stateChange';
 
 export function inVoiceChannel(guild: Discord.Guild): boolean {
     return !!guild.me?.voice.channelId;
 }
 
 export function membersInMyVoiceChannel(guild: Discord.Guild): number {
-    const clientVoiceChannel = guild.me?.voice.channel;
+    const currentVoiceChannel = guild.me?.voice.channel;
     // If no VoiceState exists for the client user in the guild
     // That means we have either not yet joined the guild or that we are not connected to any channel
-    if(!clientVoiceChannel) {
+    if(!currentVoiceChannel) {
         return 0;
     }
 
-    return clientVoiceChannel.members.size;
+    return currentVoiceChannel.members.size;
 }
 
-export async function disconnect(guild: Discord.Guild) {
+export function disconnect(guild: Discord.Guild) {
     const vc = DiscordVoice.getVoiceConnection(guild.id);
     if(vc) {
         vc.destroy();
@@ -31,9 +31,7 @@ export async function disconnect(guild: Discord.Guild) {
     }
 }
 
-export async function connect(channel: Discord.VoiceChannel | Discord.StageChannel): Promise<DiscordVoice.VoiceConnection> {
-    log.trace(`Connecting (guild: ${channel.guild.name}, channel: ${channel.name})`);
-
+export async function connect(channel: Discord.BaseGuildVoiceChannel): Promise<DiscordVoice.VoiceConnection> {
     const connection = DiscordVoice.joinVoiceChannel({
         guildId: channel.guildId,
         channelId: channel.id,
@@ -55,7 +53,7 @@ export function disconnectIfAlone(guild: Discord.Guild) {
     }
 }
 
-export async function connectIfAloneOrDisconnected(vc: Discord.VoiceChannel | Discord.StageChannel) {
+export async function connectIfAloneOrDisconnected(vc: Discord.BaseGuildVoiceChannel) {
     if(membersInMyVoiceChannel(vc.guild) <= 1) {
         await connect(vc);
     }
@@ -76,13 +74,15 @@ export function inSameChannelAs(member: Discord.GuildMember): boolean {
         return false;
     }
 
-    const vc = DiscordVoice.getVoiceConnection(member.guild.id);
-
-    // If my voicechannel is not the same as the members voicechannel
-    return vc?.joinConfig.channelId === member.voice.channelId
+    // If my voicechannel is the same as the members voicechannel
+    return member.guild.me?.voice.channelId === member.voice.channelId;
 }
 
-export function getVoiceUpdateType(oldState: Discord.VoiceState, newState: Discord.VoiceState): VoiceUpdateTypes {
+export function isAFKChannel(vc: Discord.BaseGuildVoiceChannel): boolean {
+    return vc.guild.afkChannelId === vc.id;
+}
+
+export function getVoiceStateUpdateType(oldState: Discord.VoiceState, newState: Discord.VoiceState): VoiceStateUpdateTypes {
     const oldVC = oldState.channel;
     const newVC = newState.channel;
 

@@ -14,7 +14,7 @@ class LeaveCommand extends GuildCommand {
 
     async executeGuildCommand(interaction: CommandInteraction, guild: Discord.Guild, member: Discord.GuildMember) {
         if(inSameChannelAs(member) || isAlone(guild)) {
-            await disconnect(guild);
+            disconnect(guild);
             await interaction.deleteReply();
         } else {
             throw new CommandError('Unable to leave current channel');

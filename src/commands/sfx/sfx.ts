@@ -17,7 +17,7 @@ class SFXCommand extends GlobalCommand {
     }
 
     async executeGlobalCommand(interaction: CommandInteraction): Promise<void> {
-        const sfxs = BotCore.resources.getSFXNames();
+        const sfxs = BotCore.resources.getSFXs().map(sfx => sfx.name);
         await interaction.reply(codeBlock(sfxs.join(', ')));
     }
 }

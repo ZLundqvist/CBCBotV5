@@ -1,13 +1,13 @@
 import Discord from 'discord.js';
 import getLogger from '../utils/logger';
-import { getVoiceUpdateType, VoiceUpdateTypes } from '../utils/voice';
+import { getVoiceStateUpdateType, VoiceStateUpdateTypes } from '../utils/voice';
 
 const log = getLogger('voice');
 
 export interface VoiceStateUpdateCustom {
     oldState: Discord.VoiceState;
     newState: Discord.VoiceState;
-    type: VoiceUpdateTypes;
+    type: VoiceStateUpdateTypes;
 }
 
 export function attachCustomEvents(client: Discord.Client<true>): void {
@@ -16,7 +16,7 @@ export function attachCustomEvents(client: Discord.Client<true>): void {
 
 function attachVoiceStateUpdateTypeListener(client: Discord.Client<true>): void {
     client.on('voiceStateUpdate', (oldState: Discord.VoiceState, newState: Discord.VoiceState) => {
-        const type = getVoiceUpdateType(oldState, newState);
+        const type = getVoiceStateUpdateType(oldState, newState);
 
         // Only log update if was not bot that moved to reduce log spam
         if(newState.client.user?.id !== newState.member?.user.id) {
