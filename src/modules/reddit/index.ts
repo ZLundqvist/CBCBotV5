@@ -10,9 +10,15 @@ export enum RedditPostMode {
     HOT = 'getHot'
 }
 
+type RedditImagePost = {
+    buffer: Buffer;
+    url: string;
+    title: string;
+};
+
 class RedditModule extends Module {
-    reddit: snoowrap;
-    defaultMode: RedditPostMode;
+    private readonly reddit: snoowrap;
+    private defaultMode: RedditPostMode;
 
     constructor() {
         super('Reddit');
@@ -28,17 +34,20 @@ class RedditModule extends Module {
     async init(client: Discord.Client<true>): Promise<void> { }
     async destroy(): Promise<void> { }
 
-    async getRandom(subreddit: string, mode?: RedditPostMode): Promise<Buffer> {
+    async getRandom(subreddit: string, mode?: RedditPostMode): Promise<RedditImagePost> {
         // Get all urls from posts which links to pictures
-        const urls = (await this.reddit[mode || this.defaultMode](subreddit, { limit: 100 }))
-            .map(post => post.url)
-            .filter(url => url.endsWith('.png') || url.endsWith('.jpg'));
+        const posts = (await this.reddit[mode || this.defaultMode](subreddit, { limit: 100 }))
+            .filter(post => post.url.endsWith('.png') || post.url.endsWith('.jpg'));
 
-        const url = pickRandom(urls);
-        if(!url) throw new CommandError('No posts found');
+        const post = pickRandom(posts);
+        if(!post) throw new CommandError('No posts found');
 
-        const response = await axios.get<ArrayBuffer>(url, { responseType: 'arraybuffer' });
-        return Buffer.from(response.data);
+        const response = await axios.get<ArrayBuffer>(post.url, { responseType: 'arraybuffer' });
+        return {
+            buffer: Buffer.from(response.data),
+            url: post.url,
+            title: post.title
+        };
     }
 }
 
