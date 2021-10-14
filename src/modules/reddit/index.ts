@@ -4,7 +4,7 @@ import snoowrap from 'snoowrap';
 import { BotCore, CommandError, Module } from '../../core';
 import { pickRandom } from '../../utils/random';
 
-export enum RandomPostMode {
+export enum RedditPostMode {
     NEW = 'getNew',
     RISING = 'getRising',
     HOT = 'getHot'
@@ -12,34 +12,25 @@ export enum RandomPostMode {
 
 class RedditModule extends Module {
     reddit: snoowrap;
-    mode: RandomPostMode;
+    defaultMode: RedditPostMode;
 
     constructor() {
         super('Reddit');
-
-        this.mode = RandomPostMode.RISING;
         this.reddit = new snoowrap({
             userAgent: 'put your user-agent string here',
             clientId: BotCore.config.getConfigValue('reddit-client-id'),
             clientSecret: BotCore.config.getConfigValue('reddit-client-secret'),
             refreshToken: BotCore.config.getConfigValue('reddit-refresh-token')
         });
+        this.defaultMode = RedditPostMode.RISING;
     }
 
     async init(client: Discord.Client<true>): Promise<void> { }
     async destroy(): Promise<void> { }
 
-    setMode(mode: RandomPostMode) {
-        this.mode = mode;
-    }
-
-    getMode(): RandomPostMode {
-        return this.mode;
-    }
-
-    async getRandom(subreddit: string, mode?: RandomPostMode): Promise<Buffer> {
+    async getRandom(subreddit: string, mode?: RedditPostMode): Promise<Buffer> {
         // Get all urls from posts which links to pictures
-        const urls = (await this.reddit[mode || this.mode](subreddit, { limit: 100 }))
+        const urls = (await this.reddit[mode || this.defaultMode](subreddit, { limit: 100 }))
             .map(post => post.url)
             .filter(url => url.endsWith('.png') || url.endsWith('.jpg'));
 

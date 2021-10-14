@@ -8,7 +8,7 @@ class MemberStatsModule extends Module {
 
     async init(client: Discord.Client<true>): Promise<void> {
         client.on('messageCreate', (msg: Discord.Message) => {
-            this.processMessage(msg);
+            this.onMessageCreate(msg);
         });
     }
 
@@ -54,7 +54,7 @@ class MemberStatsModule extends Module {
         await member.save();
     }
 
-    async processMessage(msg: Discord.Message) {
+    async onMessageCreate(msg: Discord.Message) {
         if(!msg.member)
             return;
 

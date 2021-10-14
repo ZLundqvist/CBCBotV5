@@ -87,7 +87,7 @@ class CurrencyModule extends Module {
 
 
                 // Gathers all connected members and flattens that array
-                const connectedMembers = voiceChannels.map(vc => Array.from(vc.members.values())).reduce((acc, cur) => acc.concat(cur), []);
+                const connectedMembers = voiceChannels.map(vc => Array.from(vc.members.values())).flat();
 
                 for(const member of connectedMembers) {
                     await BotCore.database.addMemberCurrency(member, guildSettings.gpm);

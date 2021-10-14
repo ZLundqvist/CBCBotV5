@@ -1,6 +1,6 @@
 import { codeBlock, SlashCommandBuilder, SlashCommandSubcommandBuilder } from '@discordjs/builders';
 import Discord, { CommandInteraction } from 'discord.js';
-import { CommandError, GuildCommand } from "../../core";
+import { BotCore, CommandError, GuildCommand } from "../../core";
 import alias from "../../modules/alias";
 
 const listCommand = new SlashCommandSubcommandBuilder()
@@ -79,7 +79,7 @@ class AliasCommand extends GuildCommand {
     }
 
     private async list(interaction: CommandInteraction, guild: Discord.Guild) {
-        const aliases = await alias.getAllInGuild(guild);
+        const aliases = await BotCore.database.getGuildAliases(guild);
 
         if(aliases.length === 0) {
             throw new CommandError('Add an alias first retard.');

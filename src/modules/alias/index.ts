@@ -5,6 +5,8 @@ import getLogger from '../../utils/logger';
 const log = getLogger(__dirname);
 
 class AliasModule extends Module {
+    private client!: Discord.Client<true>;
+
     constructor() {
         super('Alias');
     }
@@ -13,6 +15,8 @@ class AliasModule extends Module {
         client.on('messageCreate', (msg: Discord.Message) => {
             this.onMessageCreate(msg);
         });
+
+        this.client = client;
     }
 
     async destroy(): Promise<void> { }
@@ -21,14 +25,15 @@ class AliasModule extends Module {
         let alias = await BotCore.database.getAlias(guild, key);
 
         if(alias) {
-            alias.key = key;
+            const oldValue = alias.value;
             alias.value = value;
+            log.info(`Alias value updated: ${oldValue} -> ${alias.value}`);
         } else {
             alias = await BotCore.database.buildAlias(guild, key, value);
+            log.info(`Alias added: ${alias.key} -> ${alias.value}`);
         }
 
         await alias.save();
-        log.info(`Alias added: ${alias.key} -> ${alias.value}`);
         return alias;
     }
 
@@ -42,20 +47,12 @@ class AliasModule extends Module {
         log.info(`Alias removed: ${alias.key}`);
     }
 
-    async getAllInGuild(guild: Discord.Guild) {
-        return await BotCore.database.getGuildAliases(guild);
-    }
-
-    private async onMessageCreate(msg: Discord.Message) {
-        if(!msg.client.isReady()) {
-            return;
-        }
-        
+    private async onMessageCreate(msg: Discord.Message) {        
         if(!msg.guild) {
             return;
         }
 
-        if(msg.author.id === msg.client.user.id) {
+        if(msg.author.id === this.client.user.id) {
             return;
         }
 
