@@ -9,15 +9,12 @@ const command = new SlashCommandBuilder()
 
 class GetQueueCommand extends GuildCommand {
     constructor() {
-        super(command, false, false);
+        super(command, false, true);
     }
 
     async executeGuildCommand(interaction: CommandInteraction, guild: Discord.Guild, member: Discord.GuildMember) {
-        const embed = audio.getGuildAudio(guild).getQueueEmbed();
-
-        await interaction.reply({
-            embeds: [embed]
-        });
+        const embed = await audio.getGuildAudio(guild).getQueueEmbed();
+        await interaction.editReply({ embeds: [embed] });
     }
 }
 

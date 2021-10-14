@@ -81,7 +81,7 @@ class EntrySoundModule extends Module {
 
         if(!guildAudio.isPlaying) {
             try {
-                await guildAudio.queue(guild.me, guildDB.entrysound, false, false);
+                await guildAudio.smartQueue(guildDB.entrysound, guild.me, false);
             } catch(error: any) {
                 log.warn(`Unable to queue bot entry: ${error.message}`);
             }
@@ -99,7 +99,7 @@ class EntrySoundModule extends Module {
         const guildAudio = audio.getGuildAudio(m.guild);
         if(!guildAudio.isPlaying) {
             try {
-                await guildAudio.queue(m, member.entrysound, false, false);
+                await guildAudio.smartQueue(member.entrysound, m, false);
             } catch(error: any) {
                 log.warn(`Unable to queue member entry: ${error.message}`);
             }

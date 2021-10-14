@@ -151,11 +151,11 @@ export class Database {
         return members;
     }
 
-    async addGuildQueueItemToQueueHistory(guild: Discord.Guild, title: string, queuedByUserId: string): Promise<QueueHistory> {
+    async addGuildQueueItemToQueueHistory(guild: Discord.Guild, title: string, queuedBy: Discord.User): Promise<QueueHistory> {
         const dbGuild = await this.getGuild(guild);
 
         const entry = QueueHistory.create();
-        entry.queuedByUserId = queuedByUserId;
+        entry.queuedByUserId = queuedBy.id;
         entry.title = title;
         entry.guild = dbGuild;
         await entry.save();

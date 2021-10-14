@@ -37,19 +37,16 @@ class PlayCommand extends GuildCommand {
         const query = interaction.options.getString('audio', true);
 
         const guildAudio = audio.getGuildAudio(guild);
-        const queuedItem = await guildAudio.queue(member, query, true, true);
+        const queuedItem = await guildAudio.smartQueue(query, member, true);
 
-        if(queuedItem.embed) {
-            const reply = await interaction.editReply({ embeds: [queuedItem.embed] });
+        const embed = await queuedItem.getMessageEmbed();
+        const reply = await interaction.editReply({ embeds: [embed] });
 
-            if(reply instanceof Discord.Message) {
-                queuedItem.setEmbedMessage(reply);
-                await guildAudio.attachSkipReaction(queuedItem);
-            } else {
-                log.warn('Not instance of Discord.Message. Cannot attach skip reaction.');
-            }
+        if(reply instanceof Discord.Message) {
+            queuedItem.setEmbedMessage(reply);
+            await guildAudio.attachSkipReaction(queuedItem);
         } else {
-            await interaction.editReply(`Queued ${queuedItem.title}`);
+            log.warn('Not instance of Discord.Message. Cannot attach skip reaction.');
         }
     }
 }

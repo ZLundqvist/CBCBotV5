@@ -1,9 +1,7 @@
 import { ColorResolvable } from 'discord.js';
 
 export const Colors = {
-    gold: '#FFD700',
-    bet: '#0099FF',
-    white: '#FFFFFF',
-} as {
-    [key: string]: ColorResolvable
+    gold: '#FFD700' as ColorResolvable,
+    bet: '#0099FF' as ColorResolvable,
+    white: '#FFFFFF' as ColorResolvable
 };

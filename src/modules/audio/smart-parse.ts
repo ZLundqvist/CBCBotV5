@@ -1,12 +1,11 @@
 import Discord from 'discord.js';
-import { createReadStream } from 'fs';
 import validator from 'validator';
 import ytSearch from 'youtube-search';
 import ytdl from 'ytdl-core';
-import { LocalAudioProvider, YoutubeAudioProvider } from '../../constants';
 import { BotCore, CommandError } from '../../core';
-import { getSFXEmbed, getYoutubeEmbed } from './embed-generator';
-import { GuildQueueItem } from './guild-queue-item';
+import { GuildQueueItem } from './guild-queue-item/guild-queue-item';
+import { GuildQueueLocalItem } from './guild-queue-item/guild-queue-local-item';
+import { GuildQueueYoutubeItem } from './guild-queue-item/guild-queue-youtube-item';
 
 const SEARCH_OPTIONS: ytSearch.YouTubeSearchOptions = {
     maxResults: 1,
@@ -19,27 +18,11 @@ const SEARCH_OPTIONS: ytSearch.YouTubeSearchOptions = {
  * Supports youtube videos and local sfx's
  * Also generates a MessageEmbed that represents the results
  */
-export async function smartParse(member: Discord.GuildMember, query: string, generateEmbed: boolean, currentQueueSize: number): Promise<GuildQueueItem> {
+export async function smartParse(query: string, member: Discord.GuildMember, currentQueueSize: number): Promise<GuildQueueItem> {
     // If resource matches an sfx
     const sfxPath = BotCore.resources.getSFXPath(query);
     if(sfxPath) {
-        const readableCreator = () => {
-            return createReadStream(sfxPath);
-        };
-
-        const item = new GuildQueueItem(
-            query,
-            member,
-            readableCreator,
-            LocalAudioProvider,
-            currentQueueSize + 1
-        );
-
-        if(generateEmbed) {
-            item.embed = getSFXEmbed(member.guild, item);
-        }
-
-        return item;
+        return new GuildQueueLocalItem(sfxPath, member, currentQueueSize + 1);
     }
 
     // Get link from query
@@ -47,35 +30,7 @@ export async function smartParse(member: Discord.GuildMember, query: string, gen
 
     // If link is a youtube URL
     if(ytdl.validateURL(link)) {
-        let info = await ytdl.getInfo(link);
-
-        const readableCreator = () => {
-            return ytdl.downloadFromInfo(info, { quality: 'highestaudio', filter: 'audioonly', highWaterMark: 1 << 23 /* 8 MB */ });
-        };
-
-        const item = new GuildQueueItem(
-            info.player_response.videoDetails.title,
-            member,
-            readableCreator,
-            YoutubeAudioProvider,
-            currentQueueSize + 1
-        );
-
-        // Extract thumbnail with biggest dimensions
-        const thumbnail = info.player_response.videoDetails.thumbnail.thumbnails.reduce((prev, current) => {
-            return (prev.width > current.width) ? prev : current
-        }).url;
-        const length = parseInt(info.player_response.videoDetails.lengthSeconds, 10)
-
-        item.setLength(length)
-            .setLink(link)
-            .setThumbnail(thumbnail);
-
-        if(generateEmbed) {
-            item.embed = getYoutubeEmbed(member.guild, item);
-        }
-
-        return item;
+        return new GuildQueueYoutubeItem(link, member, currentQueueSize + 1);
     }
 
     throw new CommandError(`Cannot stream: ${query}`);

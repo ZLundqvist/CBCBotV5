@@ -103,7 +103,7 @@ class PostureCheckModule extends Module {
         }
 
         try {
-            await guildAudio.queue(guild.me, 'pc', false, false);
+            await guildAudio.smartQueue('pc', guild.me, false);
         } catch(error: any) {
             log.warn(`Unable to queue PostureCheck: ${error.message}`);
         }

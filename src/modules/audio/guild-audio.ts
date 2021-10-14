@@ -5,30 +5,29 @@ import { EmojiCharacters } from '../../constants';
 import { BotCore, CommandError } from '../../core';
 import getLogger from '../../utils/logger';
 import memberStats from '../member-stats';
-import * as EmbedGenerators from './embed-generator';
 import { GuildQueue } from './guild-queue';
-import { GuildQueueItem } from './guild-queue-item';
+import { GuildQueueItem } from './guild-queue-item/guild-queue-item';
 import { smartParse } from './smart-parse';
 
 const MAX_QUEUE_LENGTH = 50;
 
 export class GuildAudio {
-    private log: Logger;
-    private _guild: Discord.Guild;
-    private _player: AudioPlayer;
-    private _queue: GuildQueue;
+    private readonly log: Logger;
+    private readonly guild: Discord.Guild;
+    private readonly player: AudioPlayer;
+    private readonly queue: GuildQueue;
 
     constructor(guild: Discord.Guild) {
         this.log = getLogger(`guild-audio (${guild.name})`);
-        this._guild = guild;
-        this._queue = new GuildQueue();
-        this._player = createAudioPlayer({
+        this.guild = guild;
+        this.queue = new GuildQueue(guild);
+        this.player = createAudioPlayer({
             behaviors: {
                 noSubscriber: NoSubscriberBehavior.Stop // Stop player when there are no active subscription-listeneres
             }
         });
 
-        this._player.on('stateChange', (oldState, newState) => {
+        this.player.on('stateChange', (oldState, newState) => {
             this.log.trace(`AudioPlayer stateChange: ${oldState.status} -> ${newState.status}`);
 
             if(newState.status === AudioPlayerStatus.Idle) {
@@ -36,23 +35,24 @@ export class GuildAudio {
             }
         });
 
-        this._player.on('error', (e) => {
+        this.player.on('error', (e) => {
             this.log.error('AudioPlayer error:');
             this.log.error(e);
         });
     }
 
-    async queue(member: Discord.GuildMember, query: string, generateEmbed: boolean, track: boolean): Promise<GuildQueueItem> {
-        if(this._queue.size >= MAX_QUEUE_LENGTH)
+    async smartQueue(query: string, queuedBy: Discord.GuildMember, addToHistory: boolean): Promise<GuildQueueItem> {
+        if(this.queue.size >= MAX_QUEUE_LENGTH)
             throw new CommandError(`Queue cannot exceed ${MAX_QUEUE_LENGTH} items`);
 
-        const guildQueueItem = await smartParse(member, query, generateEmbed, this._queue.size);
-        this._queue.add(guildQueueItem);
-        this.log.debug(`Queued: ${guildQueueItem.title}`);
+        const guildQueueItem = await smartParse(query, queuedBy, this.queue.size);
+        const trackInfo = await guildQueueItem.getTrackInfo();
+        this.queue.add(guildQueueItem);
+        this.log.debug(`Queued: ${trackInfo.title}`);
 
-        if(track) {
-            await memberStats.incrementSongsQueued(member);
-            await BotCore.database.addGuildQueueItemToQueueHistory(member.guild, guildQueueItem.title, guildQueueItem.queuedBy.user.id);
+        if(addToHistory) {
+            await memberStats.incrementSongsQueued(queuedBy);
+            await BotCore.database.addGuildQueueItemToQueueHistory(queuedBy.guild, trackInfo.title, trackInfo.queuedBy.user);
         }
 
         if(!this.isPlaying) {
@@ -67,21 +67,18 @@ export class GuildAudio {
      */
     private onPlayingEnd() {
         // Remove first item in queue
-        const item = this._queue.pop();
+        const item = this.queue.pop();
 
         if(item) {
-            if(item.embedMsg) {
-                this.removeSkipReaction(item.embedMsg);
-            }
-
-            this.log.debug(`Finished: ${item?.title} (remaining queue: ${this._queue.size})`);
+            this.removeSkipReactions(item);
+            this.log.debug(`Finished: ${item.id} (remaining queue: ${this.queue.size})`);
         }
 
         this.playNext();
     }
 
     async playNext() {
-        const vc = getVoiceConnection(this._guild.id);
+        const vc = getVoiceConnection(this.guild.id);
         if(!vc) {
             this.log.debug('playNext called without VoiceConnection');
             this.clearQueue();
@@ -97,31 +94,33 @@ export class GuildAudio {
         }
 
 
-        const next = this._queue.peek();
+        const next = this.queue.peek();
         if(next) {
+            const trackInfo = await next.getTrackInfo();
+
             // Get volume 
-            const volume = (await BotCore.database.getGuild(this._guild)).volume;
+            const volume = (await BotCore.database.getGuild(this.guild)).volume;
 
             // Subscribe VC to player
-            vc.subscribe(this._player);
+            vc.subscribe(this.player);
 
             // Create AudioResource
-            const readable = next.createReadable();
-            const { stream, type } = await demuxProbe(readable);
+            const { stream, type } = await demuxProbe(await next.getReadable());
             const resource = createAudioResource(stream, { inputType: type, inlineVolume: true });
 
             // Set Volume
             resource.volume?.setVolume(volume / 100);
 
-            this._player.play(resource);
-            this.log.info(`Playing: ${next.title} (type: ${type})`);
+            this.player.play(resource);
+            this.log.info(`Playing: ${trackInfo.title} (id: ${next.id}, type: ${type})`);
         }
     }
 
-    async removeSkipReaction(embedMsg: Discord.Message) {
-        // Update msg state
-        const updated = await embedMsg.fetch();
-        await updated.reactions.removeAll();
+    async removeSkipReactions(item: GuildQueueItem) {
+        const embedMsg = await item.getEmbedMessage();
+        if(embedMsg) {
+            await embedMsg.reactions.removeAll();
+        }
     }
 
     /**
@@ -129,24 +128,24 @@ export class GuildAudio {
      * @param guild 
      */
     get isPlaying(): boolean {
-        return this._player.state.status !== AudioPlayerStatus.Idle;
+        return this.player.state.status !== AudioPlayerStatus.Idle;
     }
 
     stop() {
         this.clearQueue();
-        this._player.stop();
+        this.player.stop();
         this.log.debug('Stop');
     }
 
     clearQueue() {
-        this._queue.clear();
+        this.queue.clear();
         this.log.debug('Queue cleared');
     }
 
 
     skipById(id: string) {
-        const currentItem = this._queue.peek();
-        const itemToSkip = this._queue.getById(id);
+        const currentItem = this.queue.peek();
+        const itemToSkip = this.queue.getById(id);
 
         if(!currentItem) {
             this.log.debug(`skipById with empty queue: ${id}`);
@@ -161,8 +160,8 @@ export class GuildAudio {
         if(currentItem.id === itemToSkip.id) {
             this.skipCurrent();
         } else {
-            this._queue.removeById(itemToSkip.id);
-            this.log.debug(`Skipped: ${itemToSkip.title}`);
+            this.queue.removeById(itemToSkip.id);
+            this.log.debug(`Skipped: ${itemToSkip.id}`);
         }
     }
 
@@ -170,19 +169,20 @@ export class GuildAudio {
      * Skip current item
      */
     skipCurrent() {
-        const itemToSkip = this._queue.peek();
+        const itemToSkip = this.queue.peek();
 
         if(!itemToSkip) {
             this.log.debug('skipCurrent called with empty queue');
             return;
         }
 
-        this._player.stop();
-        this.log.debug(`Skipped: ${itemToSkip.title}`);
+        this.player.stop();
+        this.log.debug(`Skipped: ${itemToSkip.id}`);
     }
 
     async attachSkipReaction(item: GuildQueueItem) {
-        const msg = await item.fetchEmbedMessage();
+        const trackInfo = await item.getTrackInfo();
+        const msg = await item.getEmbedMessage();
 
         if(!msg) {
             this.log.warn('attachSkipReaction was passed GuildQueueItem without embedMsg');
@@ -191,7 +191,7 @@ export class GuildAudio {
 
         // Filter that only allows the user that queued the item to pass
         const queuedByFilter = (reaction: Discord.MessageReaction, user: Discord.User) => {
-            if(user.id !== item.queuedBy.user.id) return false;
+            if(user.id !== trackInfo.queuedBy.user.id) return false;
             if(reaction.emoji.name !== EmojiCharacters.reject) return false;
 
             return true;
@@ -199,7 +199,7 @@ export class GuildAudio {
 
         const onCollected = () => {
             this.skipById(item.id);
-            this.removeSkipReaction(msg);
+            this.removeSkipReactions(item);
         };
 
         msg.createReactionCollector({
@@ -210,21 +210,21 @@ export class GuildAudio {
         await msg.react(EmojiCharacters.reject);
     }
 
-    getQueueEmbed() {
-        return EmbedGenerators.getQueueEmbed(this._guild, this._queue.getQueue());
+    async getQueueEmbed(): Promise<Discord.MessageEmbed> {
+        return await this.queue.getMessageEmbed();
     }
 
     getCurrentAudioResource(): AudioResource | undefined {
-        return this._player.state.status === AudioPlayerStatus.Idle ? undefined : this._player.state.resource;
+        return this.player.state.status === AudioPlayerStatus.Idle ? undefined : this.player.state.resource;
     }
 
     async getVolume(): Promise<number> {
-        const guild = await BotCore.database.getGuild(this._guild);
+        const guild = await BotCore.database.getGuild(this.guild);
         return guild.volume;
     }
 
     async setVolume(v: number) {
-        const guild = await BotCore.database.getGuild(this._guild);
+        const guild = await BotCore.database.getGuild(this.guild);
         guild.volume = v;
         await guild.save();
 
