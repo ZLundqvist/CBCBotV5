@@ -5,11 +5,13 @@ RUN apt-get install -y --no-install-recommends apt-utils
 RUN apt-get install -y --no-install-recommends build-essential libtool autoconf python3 git
 
 WORKDIR /usr/app
+ENV JOBS=MAX
 
 COPY tsconfig.json tsconfig.json
 COPY package.json package.json
+COPY package-lock.json package-lock.json
 
-RUN npm install
+RUN JOBS=MAX npm ci
 
 COPY src src
 RUN npm run build
