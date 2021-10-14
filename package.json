@@ -35,7 +35,7 @@
     "ffmpeg-static": "^4.4.0",
     "log4js": "^6.3.0",
     "moment": "^2.29.1",
-    "nanoid": "^3.1.28",
+    "nanoid": "^3.1.30",
     "reflect-metadata": "^0.1.13",
     "snoowrap": "^1.23.0",
     "sodium": "^3.0.2",
