@@ -19,7 +19,7 @@
   },
   "homepage": "https://github.com/ZLundqvist/CBCBotV5#readme",
   "devDependencies": {
-    "@types/node": "^16.10.5",
+    "@types/node": "^16.11.3",
     "@types/request": "^2.48.7",
     "@types/validator": "^13.6.3",
     "ts-node-dev": "^1.1.8",
