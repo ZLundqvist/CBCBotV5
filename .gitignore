@@ -4,6 +4,7 @@ deploy_key
 resources/custom_sfx/
 *.tar
 config.json
+.vscode
 
 # Logs
 logs
