@@ -23,20 +23,8 @@ export abstract class BaseCommand {
         return this.data.name;
     }
 
-    toJSON() {
-        return this.data.toJSON();
-    }
-
-    toApplicationCommandData(): Discord.ApplicationCommandData {
-        const json = this.data.toJSON();
-
-        return {
-            name: json.name,
-            description: json.description,
-            defaultPermission: json.default_permission,
-            type: 'CHAT_INPUT',
-            options: json.options as any
-        };
+    toApplicationCommandData(): Discord.ApplicationCommandDataResolvable {
+        return this.data.toJSON() as Discord.ApplicationCommandDataResolvable;
     }
 
     async onInteraction(interaction: Discord.CommandInteraction) {
