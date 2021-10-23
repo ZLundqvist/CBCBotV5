@@ -1,10 +1,12 @@
 import Discord from 'discord.js';
+import scdl from 'soundcloud-downloader';
 import validator from 'validator';
 import ytSearch from 'youtube-search';
 import ytdl from 'ytdl-core';
 import { BotCore, CommandError } from '../../core';
 import { GuildQueueItem } from './guild-queue-item/guild-queue-item';
 import { GuildQueueLocalItem } from './guild-queue-item/guild-queue-local-item';
+import { GuildQueueSoundCloudItem } from './guild-queue-item/guild-queue-soundcloud-item';
 import { GuildQueueYoutubeItem } from './guild-queue-item/guild-queue-youtube-item';
 
 const SEARCH_OPTIONS: ytSearch.YouTubeSearchOptions = {
@@ -31,6 +33,10 @@ export async function smartParse(query: string, member: Discord.GuildMember, cur
     // If link is a youtube URL
     if(ytdl.validateURL(link)) {
         return new GuildQueueYoutubeItem(link, member, currentQueueSize + 1);
+    }
+
+    if(scdl.isValidUrl(link)) {
+        return new GuildQueueSoundCloudItem(link, member, currentQueueSize + 1);
     }
 
     throw new CommandError(`Cannot stream: ${query}`);
