@@ -24,7 +24,7 @@ export async function smartParse(query: string, member: Discord.GuildMember, cur
     // If resource matches an sfx
     const sfx = BotCore.resources.getSFX(query);
     if(sfx) {
-        return new GuildQueueLocalItem(sfx.path, member, currentQueueSize + 1);
+        return new GuildQueueLocalItem(sfx, member, currentQueueSize + 1);
     }
 
     // Get link from query

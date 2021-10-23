@@ -1,28 +1,29 @@
 import Discord from 'discord.js';
 import { createReadStream } from 'fs';
-import path from 'path';
 import { Readable } from 'stream';
 import { LocalAudioProvider } from '../../../constants';
+import { SFXResource } from '../../../core/resource-handler';
 import { GuildQueueItem, TrackInfo } from './guild-queue-item';
 
 
 export class GuildQueueLocalItem extends GuildQueueItem {
-    private path: string;
+    private resource: SFXResource;
 
-    constructor(path: string, queuedBy: Discord.GuildMember, initialQueuePosition: number) {
+    constructor(resource: SFXResource, queuedBy: Discord.GuildMember, initialQueuePosition: number) {
         super(LocalAudioProvider, queuedBy, initialQueuePosition);
-        this.path = path;
+        this.resource = resource;
     }
 
     async getTrackInfo(): Promise<TrackInfo> {
         return {
-            title: path.basename(this.path),
+            title: this.resource.name,
             queuedBy: this.queuedBy,
+            length: this.resource.metadata?.length,
             initialQueuePosition: this.initialQueuePosition
         };
     }
 
     async getReadable(): Promise<Readable> {
-        return createReadStream(this.path);
+        return createReadStream(this.resource.path);
     }
 }

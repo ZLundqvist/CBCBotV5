@@ -107,7 +107,7 @@ export class ResourceHandler {
             });
     }
 
-    private getSFXMetadata(sfx: LocalResource): SFXMetadata | undefined {
+    private getSFXMetadata(sfx: SFXResource): SFXMetadata | undefined {
         const cached = this.sfxMetadataCache.get(sfx.name);
         if(cached) {
             return cached;
@@ -115,7 +115,6 @@ export class ResourceHandler {
 
         const metadata = getMP3Metadata(sfx);
         if(metadata) {
-            console.log(sfx.base, metadata);
             this.sfxMetadataCache.set(sfx.name, metadata);
             return metadata;
         }
