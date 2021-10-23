@@ -1,8 +1,6 @@
 # Application specific
-/database/
-deploy_key
-resources/custom_sfx/
-*.tar
+database
+resources/custom_sfx
 config.json
 .vscode
 
