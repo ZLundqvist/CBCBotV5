@@ -1,10 +1,12 @@
+import Discord from 'discord.js';
 import fs from 'fs';
 import path from 'path';
+import { getMP3Metadata } from '../utils/file';
 import getLogger from '../utils/logger';
 
 const log = getLogger('resource-handler');
 
-type Resource = {
+export interface LocalResource {
     /**
      * Filename of resource, excluding extension
      */
@@ -21,7 +23,17 @@ type Resource = {
     path: string;
 };
 
-type SFXResource = 'hiagain' | 'pc' | string;
+export interface SFXResource extends LocalResource {
+    metadata?: SFXMetadata;
+};
+
+export type SFXMetadata = {
+    /**
+     * Length in number of seconds
+     */
+    length: number;
+};
+
 type ImageResource = 'soundcloud-logo' | 'yt-logo';
 
 export class ResourceHandler {
@@ -29,6 +41,7 @@ export class ResourceHandler {
     private readonly customSFXDir: string;
     private readonly sfxDir: string;
     private readonly imageDir: string;
+    private readonly sfxMetadataCache: Discord.Collection<string, SFXMetadata>;
 
     /**
      * @param rootDir Relative path to root directory of resource
@@ -38,6 +51,7 @@ export class ResourceHandler {
         this.customSFXDir = path.join(this.rootDir, 'custom_sfx');
         this.sfxDir = path.join(this.rootDir, 'sfx');
         this.imageDir = path.join(this.rootDir, 'img');
+        this.sfxMetadataCache = new Discord.Collection();
     }
 
     setup() {
@@ -58,7 +72,7 @@ export class ResourceHandler {
      * Throws if image cannot be found
      * @returns 
      */
-    getImage(name: ImageResource): Resource {
+    getImage(name: ImageResource): LocalResource {
         const images = this.getFilesInDir(this.imageDir);
         const image = images.find(img => img.name === name);
 
@@ -72,7 +86,7 @@ export class ResourceHandler {
      * Returns resource of SFX with given name
      * @returns 
      */
-    getSFX(name: SFXResource): Resource | undefined {
+    getSFX(name: string): SFXResource | undefined {
         return this.getSFXs().find(img => img.name === name);
     }
 
@@ -80,14 +94,34 @@ export class ResourceHandler {
      * Returns a sorted list of SFX resources
      * @returns 
      */
-    getSFXs(): Resource[] {
+    getSFXs(): SFXResource[] {
         const sfxs = this.getFilesInDir(this.sfxDir).concat(this.getFilesInDir(this.customSFXDir));
-        return sfxs.sort((a, b) => {
-            return a.base.localeCompare(b.name);
-        });
+        return sfxs
+            .map(sfx => {
+                return {
+                    ...sfx,
+                    metadata: this.getSFXMetadata(sfx)
+                }
+            }).sort((a, b) => {
+                return a.base.localeCompare(b.name);
+            });
     }
 
-    private getFilesInDir(dirPath: string): Resource[] {
+    private getSFXMetadata(sfx: LocalResource): SFXMetadata | undefined {
+        const cached = this.sfxMetadataCache.get(sfx.name);
+        if(cached) {
+            return cached;
+        }
+
+        const metadata = getMP3Metadata(sfx);
+        if(metadata) {
+            console.log(sfx.base, metadata);
+            this.sfxMetadataCache.set(sfx.name, metadata);
+            return metadata;
+        }
+    }
+
+    private getFilesInDir(dirPath: string): LocalResource[] {
         const files = fs.readdirSync(dirPath);
 
         return files.map(file => {

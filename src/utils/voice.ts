@@ -2,7 +2,7 @@ import * as DiscordVoice from '@discordjs/voice';
 import Discord from 'discord.js';
 import getLogger from './logger';
 
-const log = getLogger('voice');
+const log = getLogger('util/voice');
 
 export type VoiceStateUpdateTypes = 'connect' | 'disconnect' | 'transfer' | 'stateChange';
 

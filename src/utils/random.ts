@@ -1,4 +1,3 @@
-
 export function roll(min: number, max: number) {
     if(isNaN(min)) {
         throw new Error('min is not a number');
