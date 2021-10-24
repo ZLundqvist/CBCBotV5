@@ -6,7 +6,7 @@ import { GuildQueueItem, TrackInfo } from './guild-queue-item';
 
 
 export class GuildQueueYoutubeItem extends GuildQueueItem {
-    private ytdlInfo?: ytdl.videoInfo;
+    private videoInfo?: ytdl.videoInfo;
     private link: string;
 
     constructor(link: string, queuedBy: Discord.GuildMember, initialQueuePosition: number) {
@@ -15,19 +15,19 @@ export class GuildQueueYoutubeItem extends GuildQueueItem {
     }
 
     async getTrackInfo(): Promise<TrackInfo> {
-        if(!this.ytdlInfo) {
-            this.ytdlInfo = await ytdl.getInfo(this.link);
+        if(!this.videoInfo) {
+            this.videoInfo = await ytdl.getInfo(this.link);
         }
 
         // Extract thumbnail with biggest dimensions
-        const thumbnail = this.ytdlInfo.player_response.videoDetails.thumbnail.thumbnails.reduce((prev, current) => {
+        const thumbnail = this.videoInfo.player_response.videoDetails.thumbnail.thumbnails.reduce((prev, current) => {
             return (prev.width > current.width) ? prev : current
         }).url;
 
-        const length = parseInt(this.ytdlInfo.player_response.videoDetails.lengthSeconds, 10);
+        const length = parseInt(this.videoInfo.player_response.videoDetails.lengthSeconds, 10);
 
         return {
-            title: this.ytdlInfo.player_response.videoDetails.title,
+            title: this.videoInfo.player_response.videoDetails.title,
             queuedBy: this.queuedBy,
             initialQueuePosition: this.initialQueuePosition,
             length: length,
@@ -37,10 +37,10 @@ export class GuildQueueYoutubeItem extends GuildQueueItem {
     }
 
     async getReadable(): Promise<Readable> {
-        if(!this.ytdlInfo) {
-            this.ytdlInfo = await ytdl.getInfo(this.link);
+        if(!this.videoInfo) {
+            this.videoInfo = await ytdl.getInfo(this.link);
         }
 
-        return ytdl.downloadFromInfo(this.ytdlInfo, { quality: 'highestaudio', filter: 'audioonly', highWaterMark: 1 << 23 /* 8 MB */ });
+        return ytdl.downloadFromInfo(this.videoInfo, { quality: 'highestaudio', filter: 'audioonly', highWaterMark: 1 << 23 /* 8 MB */ });
     }
 }

@@ -1,9 +1,9 @@
 import Discord from 'discord.js';
-import scdl from 'soundcloud-downloader';
 import validator from 'validator';
 import ytSearch from 'youtube-search';
 import ytdl from 'ytdl-core';
 import { BotCore, CommandError } from '../../core';
+import { SoundCloudWrapper } from '../../utils/soundcloud';
 import { GuildQueueItem } from './guild-queue-item/guild-queue-item';
 import { GuildQueueLocalItem } from './guild-queue-item/guild-queue-local-item';
 import { GuildQueueSoundCloudItem } from './guild-queue-item/guild-queue-soundcloud-item';
@@ -35,7 +35,7 @@ export async function smartParse(query: string, member: Discord.GuildMember, cur
         return new GuildQueueYoutubeItem(link, member, currentQueueSize + 1);
     }
 
-    if(scdl.isValidUrl(link)) {
+    if(SoundCloudWrapper.validateURL(link)) {
         return new GuildQueueSoundCloudItem(link, member, currentQueueSize + 1);
     }
 

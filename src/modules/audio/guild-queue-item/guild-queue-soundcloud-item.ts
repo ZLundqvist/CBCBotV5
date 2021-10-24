@@ -1,14 +1,12 @@
 import Discord from 'discord.js';
-import scdl from 'soundcloud-downloader';
-import { TrackInfo as SoundCloudTrackInfo } from 'soundcloud-downloader/src/info';
+import SoundCloud from 'soundcloud-scraper';
 import { Readable } from 'stream';
 import { SoundcloudAudioProvider } from '../../../constants';
+import { SoundCloudWrapper } from '../../../utils/soundcloud';
 import { GuildQueueItem, TrackInfo } from './guild-queue-item';
 
-scdl.setClientID('6gsNBd4mJwXr0LxTBh8VKBOrViK6Aj56');
-
 export class GuildQueueSoundCloudItem extends GuildQueueItem {
-    private scdlInfo?: SoundCloudTrackInfo;
+    private songInfo?: SoundCloud.Song;
     private link: string;
 
     constructor(link: string, queuedBy: Discord.GuildMember, initialQueuePosition: number) {
@@ -17,25 +15,25 @@ export class GuildQueueSoundCloudItem extends GuildQueueItem {
     }
 
     async getTrackInfo(): Promise<TrackInfo> {
-        if(!this.scdlInfo) {
-            this.scdlInfo = await scdl.getInfo(this.link);
+        if(!this.songInfo) {
+            this.songInfo = await SoundCloudWrapper.getSongInfo(this.link);
         }
 
         return {
-            title: this.scdlInfo.title || 'NOT_FOUND',
+            title: this.songInfo.title,
             queuedBy: this.queuedBy,
             initialQueuePosition: this.initialQueuePosition,
-            length: this.scdlInfo.duration ? this.scdlInfo.duration / 1000 : undefined,
+            length: this.songInfo.duration / 1000,
             link: this.link,
-            thumbnail: this.scdlInfo.artwork_url
+            thumbnail: this.songInfo.thumbnail
         };
     }
 
     async getReadable(): Promise<Readable> {
-        if(!this.scdlInfo) {
-            this.scdlInfo = await scdl.getInfo(this.link);
+        if(!this.songInfo) {
+            this.songInfo = await SoundCloudWrapper.getSongInfo(this.link);
         }
 
-        return await scdl.download(this.link);
+        return await SoundCloudWrapper.getReadable(this.songInfo);
     }
 }
