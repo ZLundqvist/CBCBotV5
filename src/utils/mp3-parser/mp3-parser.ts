@@ -1,6 +1,6 @@
-import assert from 'assert';
 import fs from 'fs';
-import { LocalResource, SFXMetadata } from '../../core/resource-handler';
+import { LocalResource } from '../../core/resource-handler';
+import { MP3Metadata } from '../audio';
 import { MP3Bytes } from './mp3-bytes';
 import { MP3FrameHeader, ParsedFrameHeader } from './mp3-frame-header';
 
@@ -11,8 +11,10 @@ export class MP3Parser {
         this.buffer = fs.readFileSync(sfx.path);
     }
 
-    getMetadata(): SFXMetadata | undefined {
-        this.ensureID3();
+    getMetadata(): MP3Metadata | undefined {
+        if(!this.isID3()) {
+            return;
+        }
 
         const firstFrame = this.findAndParseFirstFrame();
 
@@ -32,9 +34,9 @@ export class MP3Parser {
         return Math.ceil((byteCount * 8) / (bitrate * 1000));
     }
 
-    private ensureID3() {
+    private isID3(): boolean {
         const magic = this.readBytes(0, 3);
-        assert(magic.asAscii === 'ID3');
+        return magic.asAscii === 'ID3';
     }
 
     private findAndParseFirstFrame(): ParsedFrameHeader | undefined {

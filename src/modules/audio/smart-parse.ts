@@ -1,19 +1,11 @@
 import Discord from 'discord.js';
 import validator from 'validator';
-import ytSearch from 'youtube-search';
-import ytdl from 'ytdl-core';
 import { BotCore, CommandError } from '../../core';
-import { SoundCloudWrapper } from '../../utils/soundcloud';
+import { Soundcloud, Youtube } from '../../utils/audio';
 import { GuildQueueItem } from './guild-queue-item/guild-queue-item';
 import { GuildQueueLocalItem } from './guild-queue-item/guild-queue-local-item';
 import { GuildQueueSoundCloudItem } from './guild-queue-item/guild-queue-soundcloud-item';
 import { GuildQueueYoutubeItem } from './guild-queue-item/guild-queue-youtube-item';
-
-const SEARCH_OPTIONS: ytSearch.YouTubeSearchOptions = {
-    maxResults: 1,
-    type: 'video',
-    key: BotCore.config.getConfigValue('youtube-api-key')
-};
 
 /**
  * Converts an audio resource to a GuildQueueItem
@@ -28,15 +20,15 @@ export async function smartParse(query: string, member: Discord.GuildMember, cur
     }
 
     // Get link from query
-    const link = await parseQuery(query);
+    const url = await parseQuery(query);
 
     // If link is a youtube URL
-    if(ytdl.validateURL(link)) {
-        return new GuildQueueYoutubeItem(link, member, currentQueueSize + 1);
+    if(Youtube.validateURL(url)) {
+        return new GuildQueueYoutubeItem(url, member, currentQueueSize + 1);
     }
 
-    if(SoundCloudWrapper.validateURL(link)) {
-        return new GuildQueueSoundCloudItem(link, member, currentQueueSize + 1);
+    if(Soundcloud.validateURL(url)) {
+        return new GuildQueueSoundCloudItem(url, member, currentQueueSize + 1);
     }
 
     throw new CommandError(`Cannot stream: ${query}`);
@@ -48,25 +40,17 @@ export async function smartParse(query: string, member: Discord.GuildMember, cur
  * @param query 
  * @returns 
  */
-async function parseQuery(query: string) {
+async function parseQuery(query: string): Promise<string> {
     if(validator.isURL(query)) {
         return query;
     }
 
     // Resource is not an URL, query youtube
-    let result = await youtubeSearch(query);
+    const result = await Youtube.search(query);
 
     if(!result) {
         throw new CommandError(`Nothing found on Youtube for: ${query}`);
     }
 
-    return result.link;
-}
-
-async function youtubeSearch(query: string): Promise<ytSearch.YouTubeSearchResults | undefined> {
-    const results = await ytSearch(query, SEARCH_OPTIONS);
-
-    if(results.results.length) {
-        return results.results[0];
-    }
+    return result;
 }

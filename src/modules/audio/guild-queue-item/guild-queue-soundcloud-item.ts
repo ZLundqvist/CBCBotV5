@@ -2,11 +2,11 @@ import Discord from 'discord.js';
 import SoundCloud from 'soundcloud-scraper';
 import { Readable } from 'stream';
 import { SoundcloudAudioProvider } from '../../../constants';
-import { SoundCloudWrapper } from '../../../utils/soundcloud';
+import { Soundcloud } from '../../../utils/audio';
 import { GuildQueueItem, TrackInfo } from './guild-queue-item';
 
 export class GuildQueueSoundCloudItem extends GuildQueueItem {
-    private songInfo?: SoundCloud.Song;
+    private info?: SoundCloud.Song;
     private link: string;
 
     constructor(link: string, queuedBy: Discord.GuildMember, initialQueuePosition: number) {
@@ -15,25 +15,25 @@ export class GuildQueueSoundCloudItem extends GuildQueueItem {
     }
 
     async getTrackInfo(): Promise<TrackInfo> {
-        if(!this.songInfo) {
-            this.songInfo = await SoundCloudWrapper.getSongInfo(this.link);
+        if(!this.info) {
+            this.info = await Soundcloud.getSongInfo(this.link);
         }
 
         return {
-            title: this.songInfo.title,
+            title: this.info.title,
             queuedBy: this.queuedBy,
             initialQueuePosition: this.initialQueuePosition,
-            length: this.songInfo.duration / 1000,
+            length: this.info.duration / 1000,
             link: this.link,
-            thumbnail: this.songInfo.thumbnail
+            thumbnail: this.info.thumbnail
         };
     }
 
     async getReadable(): Promise<Readable> {
-        if(!this.songInfo) {
-            this.songInfo = await SoundCloudWrapper.getSongInfo(this.link);
+        if(!this.info) {
+            this.info = await Soundcloud.getSongInfo(this.link);
         }
 
-        return await SoundCloudWrapper.getReadable(this.songInfo);
+        return await this.info.downloadProgressive();
     }
 }

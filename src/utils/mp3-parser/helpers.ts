@@ -21,9 +21,9 @@ export function booleansToBitmask(...bits: boolean[]): string {
     let bitmask = '';
     for(const bit of bits) {
         if(bit) {
-            bitmask += 1;
+            bitmask += '1';
         } else {
-            bitmask += 0;
+            bitmask += '0';
         }
     }
     return bitmask;

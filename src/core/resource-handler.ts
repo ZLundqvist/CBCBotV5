@@ -1,7 +1,7 @@
 import Discord from 'discord.js';
 import fs from 'fs';
 import path from 'path';
-import { getMP3Metadata } from '../utils/file';
+import { getMP3Metadata, MP3Metadata } from '../utils/audio';
 import getLogger from '../utils/logger';
 
 const log = getLogger('resource-handler');
@@ -24,14 +24,7 @@ export interface LocalResource {
 };
 
 export interface SFXResource extends LocalResource {
-    metadata?: SFXMetadata;
-};
-
-export type SFXMetadata = {
-    /**
-     * Length in number of seconds
-     */
-    length: number;
+    metadata?: MP3Metadata;
 };
 
 type ImageResource = 'soundcloud-logo' | 'yt-logo';
@@ -41,7 +34,7 @@ export class ResourceHandler {
     private readonly customSFXDir: string;
     private readonly sfxDir: string;
     private readonly imageDir: string;
-    private readonly sfxMetadataCache: Discord.Collection<string, SFXMetadata>;
+    private readonly sfxMetadataCache: Discord.Collection<string, MP3Metadata>;
 
     /**
      * @param rootDir Relative path to root directory of resource
@@ -107,7 +100,7 @@ export class ResourceHandler {
             });
     }
 
-    private getSFXMetadata(sfx: SFXResource): SFXMetadata | undefined {
+    private getSFXMetadata(sfx: SFXResource): MP3Metadata | undefined {
         const cached = this.sfxMetadataCache.get(sfx.name);
         if(cached) {
             return cached;
