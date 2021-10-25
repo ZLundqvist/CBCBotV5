@@ -82,7 +82,7 @@ class AliasCommand extends GuildCommand {
         const aliases = await BotCore.database.getGuildAliases(guild);
 
         if(aliases.length === 0) {
-            throw new CommandError('Add an alias first retard.');
+            throw new CommandError('Add an alias first');
         }
 
         let list: string[] = [];

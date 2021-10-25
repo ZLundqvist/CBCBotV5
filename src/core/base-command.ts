@@ -29,7 +29,7 @@ export abstract class BaseCommand {
 
     async onInteraction(interaction: Discord.CommandInteraction) {
         if(this.ownerOnly && !BotCore.config.isOwner(interaction.user)) {
-            throw new CommandError('You do not have permission to do this, fucking loser');
+            throw new CommandError('You do not have permission to do this, my dude');
         }
 
         if(this.autoDefer) {
