@@ -57,7 +57,7 @@ export class Configuration {
         }
     }
 
-    getConfigValue<K extends keyof ConfigurationParameters>(key: K): string {
+    getValue<K extends keyof ConfigurationParameters>(key: K): string {
         return this.parameters[key];
     }
 
@@ -74,6 +74,6 @@ export class Configuration {
     }
 
     isOwner(user: Discord.User): boolean {
-        return this.getConfigValue('owner-id') === user.id;
+        return this.getValue('owner-id') === user.id;
     }
 }

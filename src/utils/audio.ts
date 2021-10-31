@@ -12,10 +12,10 @@ class SoundcloudWrapper {
     private client?: SoundCloud.Client;
 
     constructor() {
-        this.getClient();
+        this.createClient();
     }
 
-    private async getClient(): Promise<void> {
+    private async createClient(): Promise<void> {
         const apiKey = await SoundCloud.Util.keygen();
         this.client = new SoundCloud.Client(apiKey);
         log.debug(`Fetched SoundCloud API key (${apiKey})`);
@@ -37,7 +37,7 @@ class YoutubeWrapper {
         const search = await ytSearch(query, {
             maxResults: 1,
             type: 'video',
-            key: BotCore.config.getConfigValue('youtube-api-key')
+            key: BotCore.config.getValue('youtube-api-key')
         });
 
         if(search.results.length) {

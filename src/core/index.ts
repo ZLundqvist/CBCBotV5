@@ -56,7 +56,7 @@ class CBCBotCore {
 
         attachCustomEvents(this.client);
 
-        await this.client.login(this.config.getConfigValue('token'));
+        await this.client.login(this.config.getValue('token'));
     }
 
     async gracefulShutdown(): Promise<void> {

@@ -45,7 +45,7 @@ export function formatAscii(bytes: number[]): string {
     return bytes.map(byte => {
         const char = String.fromCharCode(byte);
         if(char.charCodeAt(0) === 0) {
-            return '.'
+            return '.';
         } else {
             return char;
         }

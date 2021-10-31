@@ -24,9 +24,9 @@ class RedditModule extends Module {
         super('Reddit');
         this.reddit = new snoowrap({
             userAgent: 'put your user-agent string here',
-            clientId: BotCore.config.getConfigValue('reddit-client-id'),
-            clientSecret: BotCore.config.getConfigValue('reddit-client-secret'),
-            refreshToken: BotCore.config.getConfigValue('reddit-refresh-token')
+            clientId: BotCore.config.getValue('reddit-client-id'),
+            clientSecret: BotCore.config.getValue('reddit-client-secret'),
+            refreshToken: BotCore.config.getValue('reddit-refresh-token')
         });
         this.defaultMode = RedditPostMode.RISING;
     }
