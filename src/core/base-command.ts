@@ -24,7 +24,7 @@ export abstract class BaseCommand {
     }
 
     toApplicationCommandData(): Discord.ApplicationCommandDataResolvable {
-        return this.data.toJSON() as Discord.ApplicationCommandDataResolvable;
+        return this.data.toJSON();
     }
 
     async onInteraction(interaction: Discord.CommandInteraction) {
