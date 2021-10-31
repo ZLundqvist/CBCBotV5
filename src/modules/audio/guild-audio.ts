@@ -36,7 +36,6 @@ export class GuildAudio {
         });
 
         this.player.on('error', (e) => {
-            this.log.error('AudioPlayer error:');
             this.log.error(e);
         });
     }
