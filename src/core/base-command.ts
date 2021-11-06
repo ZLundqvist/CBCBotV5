@@ -1,4 +1,3 @@
-import { SlashCommandBuilder } from '@discordjs/builders';
 import Discord from 'discord.js';
 import { BotCore } from '../core';
 import { CommandError } from './custom-errors';
@@ -18,6 +17,11 @@ export abstract class BaseCommand {
         return this.commandData.name;
     }
 
+    /**
+     * Entrypoint for commands once its CommandInteraction has been received
+     * Handles permissions and setup of reply
+     * @param interaction 
+     */
     async onInteraction(interaction: Discord.CommandInteraction) {
         if(this.ownerOnly && !BotCore.config.isOwner(interaction.user)) {
             throw new CommandError('You do not have permission to do this, my dude');
@@ -30,5 +34,9 @@ export abstract class BaseCommand {
         await this.execute(interaction);
     }
 
-    abstract execute(interaction: Discord.CommandInteraction): Promise<void>;
+    /**
+     * Executes after onInteraction
+     * @param interaction 
+     */
+    protected abstract execute(interaction: Discord.CommandInteraction): Promise<void>;
 }
