@@ -16,7 +16,6 @@ class MemberStatsModule extends Module {
 
     async getMemberStatsEmbed(m: Discord.GuildMember): Promise<Discord.MessageEmbed> {
         const member = await BotCore.database.getMember(m);
-        const fields: Discord.EmbedField[] = [];
         const embed = new Discord.MessageEmbed();
         const avatarURL = m.user.avatarURL();
 
@@ -24,7 +23,8 @@ class MemberStatsModule extends Module {
         if(avatarURL) embed.setThumbnail(avatarURL);
 
         embed.setAuthor(`Stats for ${m.displayName}`);
-        fields.push({
+
+        embed.addFields({
             name: 'Messages sent',
             value: member.messages_sent.toString(),
             inline: true
@@ -35,7 +35,6 @@ class MemberStatsModule extends Module {
         });
         embed.setFooter(`Joined at: ${m.joinedAt?.toLocaleString()}`);
 
-        embed.addFields(fields);
         return embed;
     }
 
