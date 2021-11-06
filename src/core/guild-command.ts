@@ -1,4 +1,3 @@
-import { CommandError } from '../core';
 import Discord, { CommandInteraction } from 'discord.js';
 import { BaseCommand } from './base-command';
 
@@ -8,23 +7,12 @@ export abstract class GuildCommand extends BaseCommand {
     }
 
     async execute(interaction: Discord.CommandInteraction): Promise<void> {
-        if(!interaction.inGuild()) {
-            throw new CommandError('This is a guild-only command');
+        if(!interaction.inCachedGuild()) {
+            throw new Error('Unable to get guild');
         }
 
-        const guild = await interaction.client.guilds.fetch(interaction.guildId);
-
-        if(!guild) {
-            throw new Error('unable to resolve guild');
-        }
-
-        const member = await guild.members.fetch(interaction.user);
-
-        if(!member) {
-            throw new Error('unable to resolve member');
-        }
-
-        await this.executeGuildCommand(interaction, guild, member);
+        const member = await interaction.guild.members.fetch(interaction.user);
+        await this.executeGuildCommand(interaction, interaction.guild, member);
     }
 
     protected abstract executeGuildCommand(interaction: CommandInteraction, guild: Discord.Guild, member: Discord.GuildMember): Promise<void>;
