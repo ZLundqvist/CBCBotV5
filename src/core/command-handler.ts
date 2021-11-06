@@ -58,6 +58,7 @@ export class CommandHandler {
 
         if(!command) {
             log.warn(`Received CommandInteraction without matching command (commandName: ${interaction.commandName})`);
+            await interaction.reply('Command has not been registered. Update list of commands using /commands refresh');
             return;
         }
 
