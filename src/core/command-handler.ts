@@ -34,13 +34,13 @@ export class CommandHandler {
     }
 
     async deployGlobalCommands(): Promise<void> {
-        const commandData = this.getGlobalCommands().map(cmd => cmd.toApplicationCommandData());
+        const commandData = this.getGlobalCommands().map(cmd => cmd.commandData);
         await this.client.application.commands.set(commandData);
         log.info(`Deployed ${commandData.length} application commands`);
     }
 
     async deployGuildCommands(guild: Discord.Guild): Promise<void> {
-        const commandData = this.getGuildCommands().map(cmd => cmd.toApplicationCommandData());
+        const commandData = this.getGuildCommands().map(cmd => cmd.commandData);
         await guild.commands.set(commandData);
         log.info(`Deployed ${commandData.length} commands to guild ${guild.name}`);
     }

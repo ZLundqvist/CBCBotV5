@@ -10,6 +10,7 @@ import { GuildQueueItem } from './guild-queue-item/guild-queue-item';
 import { smartParse } from './smart-parse';
 
 const MAX_QUEUE_LENGTH = 50;
+const VOLUME_FACTOR = 200;
 
 export class GuildAudio {
     private readonly log: Logger;
@@ -108,7 +109,7 @@ export class GuildAudio {
             const resource = createAudioResource(stream, { inputType: type, inlineVolume: true });
 
             // Set Volume
-            resource.volume?.setVolume(volume / 100);
+            resource.volume?.setVolume(volume / VOLUME_FACTOR);
 
             this.player.play(resource);
             this.log.info(`Playing: ${trackInfo.title} (id: ${next.id}, type: ${type})`);
@@ -231,7 +232,7 @@ export class GuildAudio {
         const resource = this.getCurrentAudioResource();
         if(resource) {
             if(resource.volume) {
-                resource.volume.setVolume(v / 100);
+                resource.volume.setVolume(v / VOLUME_FACTOR);
                 this.log.debug(`Volume set: ${v}%`);
             } else {
                 this.log.warn(`setVolume called on resource without`);

@@ -16,12 +16,11 @@ const command = new SlashCommandBuilder()
 
 class PostureCheckCommand extends GuildCommand {
     constructor() {
-        super(command, false, false);
+        super(command.toJSON(), false, false);
     }
 
     async executeGuildCommand(interaction: CommandInteraction, guild: Discord.Guild, member: Discord.GuildMember): Promise<void> {
         const input = interaction.options.getInteger('interval', true);
-
 
         const vc = getVoiceConnection(guild.id);
         if(!vc) {

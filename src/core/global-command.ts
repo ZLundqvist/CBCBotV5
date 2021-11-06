@@ -1,8 +1,8 @@
 import Discord from 'discord.js';
-import { BaseCommand, BaseCommandData } from './base-command';
+import { BaseCommand } from './base-command';
 
 export abstract class GlobalCommand extends BaseCommand {
-    constructor(data: BaseCommandData, ownerOnly: boolean, autoDefer: boolean) {
+    constructor(data: Discord.ApplicationCommandDataResolvable, ownerOnly: boolean, autoDefer: boolean) {
         super(data, ownerOnly, autoDefer);
     }
 

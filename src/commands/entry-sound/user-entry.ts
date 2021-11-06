@@ -17,7 +17,7 @@ const command = new SlashCommandBuilder()
 
 class UserEntrySoundCommand extends GuildCommand {
     constructor() {
-        super(command, false, false);
+        super(command.toJSON(), false, false);
     }
 
     async executeGuildCommand(interaction: CommandInteraction, guild: Discord.Guild, member: Discord.GuildMember): Promise<void> {

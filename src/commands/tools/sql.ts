@@ -15,7 +15,7 @@ const command = new SlashCommandBuilder()
 
 class SQLCommand extends GlobalCommand {
     constructor() {
-        super(command, true, false);
+        super(command.toJSON(), true, false);
     }
 
     async executeGlobalCommand(interaction: CommandInteraction) {

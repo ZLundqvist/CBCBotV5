@@ -8,7 +8,7 @@ const command = new SlashCommandBuilder()
 
 class GetInvinteLinkCommand extends GlobalCommand {
     constructor() {
-        super(command, false, false);
+        super(command.toJSON(), false, false);
     }
 
     async executeGlobalCommand(interaction: CommandInteraction) {

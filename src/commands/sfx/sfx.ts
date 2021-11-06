@@ -13,7 +13,7 @@ const command = new SlashCommandBuilder()
 
 class SFXCommand extends GlobalCommand {
     constructor() {
-        super(command, false, false);
+        super(command.toJSON(), false, false);
     }
 
     async executeGlobalCommand(interaction: CommandInteraction): Promise<void> {

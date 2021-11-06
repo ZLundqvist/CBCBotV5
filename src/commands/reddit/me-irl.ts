@@ -9,7 +9,7 @@ const command = new SlashCommandBuilder()
 
 class MeIRLCommand extends GlobalCommand {
     constructor() {
-        super(command, false, true);
+        super(command.toJSON(), false, true);
     }
 
     async executeGlobalCommand(interaction: CommandInteraction) {

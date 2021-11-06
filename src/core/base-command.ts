@@ -3,28 +3,19 @@ import Discord from 'discord.js';
 import { BotCore } from '../core';
 import { CommandError } from './custom-errors';
 
-export type BaseCommandData = {
-    name: string;
-    toJSON: () => ReturnType<SlashCommandBuilder['toJSON']>
-};
-
 export abstract class BaseCommand {
-    readonly data: BaseCommandData;
+    readonly commandData: Discord.ApplicationCommandDataResolvable;
     readonly ownerOnly: boolean;
     readonly autoDefer: boolean;
 
-    constructor(data: BaseCommandData, ownerOnly: boolean, autoDefer: boolean) {
-        this.data = data;
+    constructor(commandData: Discord.ApplicationCommandDataResolvable, ownerOnly: boolean, autoDefer: boolean) {
+        this.commandData = commandData;
         this.ownerOnly = ownerOnly;
         this.autoDefer = autoDefer;
     }
 
     get name(): string {
-        return this.data.name;
-    }
-
-    toApplicationCommandData(): Discord.ApplicationCommandDataResolvable {
-        return this.data.toJSON();
+        return this.commandData.name;
     }
 
     async onInteraction(interaction: Discord.CommandInteraction) {

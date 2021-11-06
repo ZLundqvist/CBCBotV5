@@ -16,7 +16,7 @@ const command = new SlashCommandBuilder()
 
 class FysikenCommand extends GlobalCommand {
     constructor() {
-        super(command, false, false);
+        super(command.toJSON(), false, false);
     }
 
     async executeGlobalCommand(interaction: CommandInteraction) {

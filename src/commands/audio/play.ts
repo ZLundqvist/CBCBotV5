@@ -21,7 +21,7 @@ const command = new SlashCommandBuilder()
 
 class PlayCommand extends GuildCommand {
     constructor() {
-        super(command, false, true);
+        super(command.toJSON(), false, true);
     }
 
     async executeGuildCommand(interaction: CommandInteraction, guild: Discord.Guild, member: Discord.GuildMember): Promise<void> {
