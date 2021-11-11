@@ -92,7 +92,7 @@ class EntrySoundModule extends Module {
         let member = await BotCore.database.getMember(m);
 
         if(!member.entrysound) {
-            log.debug(`No entrysound set: ${member.id}`);
+            log.debug(`No entrysound set: ${m.displayName}`);
             return;
         }
 
