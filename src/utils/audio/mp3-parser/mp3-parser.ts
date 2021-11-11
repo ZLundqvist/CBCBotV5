@@ -1,14 +1,14 @@
 import fs from 'fs';
-import { LocalResource } from '../../core/resource-handler';
-import { MP3Metadata } from '../audio';
+import { LocalResource } from '../../../core/resource-handler';
+import { MP3Metadata } from '../../audio';
 import { MP3Bytes } from './mp3-bytes';
 import { MP3FrameHeader, ParsedFrameHeader } from './mp3-frame-header';
 
 export class MP3Parser {
     private buffer: Buffer;
 
-    constructor(sfx: LocalResource) {
-        this.buffer = fs.readFileSync(sfx.path);
+    constructor(path: string) {
+        this.buffer = fs.readFileSync(path);
     }
 
     getMetadata(): MP3Metadata | undefined {

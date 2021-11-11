@@ -2,7 +2,7 @@ import Discord from 'discord.js';
 import { Colors } from '../../constants';
 import { resolveEmojiString } from '../../utils/emoji';
 import { secondsToMS } from '../../utils/time';
-import { GuildQueueItem } from './guild-queue-item/guild-queue-item';
+import { GuildQueueItem, TrackInfo } from './guild-queue-item/guild-queue-item';
 
 const QUEUE_EMBED_ITEMS_LIMIT = 10;
 
@@ -68,28 +68,19 @@ export class GuildQueue {
     }
 
     async getMessageEmbed(): Promise<Discord.MessageEmbed> {
-        const items = await Promise.all(this.queue.map(async (item) => {
-            const trackInfo = await item.getTrackInfo();
-
-            return {
-                provider: item.provider,
-                ...trackInfo
-            };
-        }));
-
         const fields: Discord.EmbedField[] = [];
         const embed = new Discord.MessageEmbed();
 
-        const totalQueueTime = items.reduce((acc, cur) => acc += cur.length ? cur.length : 0, 0);
+        const totalQueueTime = this.queue.reduce((acc, cur) => acc += cur.trackInfo.length ? cur.trackInfo.length : 0, 0);
 
-        items.slice(0, QUEUE_EMBED_ITEMS_LIMIT).forEach((item, index) => {
+        this.queue.slice(0, QUEUE_EMBED_ITEMS_LIMIT).forEach((item, index) => {
             const emoji = resolveEmojiString(item.provider.emoji, this.guild);
             let upperField = `#${index + 1}`;
             if(index === 0) {
                 upperField = 'Current';
-                let lowerField = `${emoji} ${item.title} `;
-                lowerField += item.length ? `[${secondsToMS(item.length)}] ` : '';
-                lowerField += `(${item.queuedBy.displayName})`;
+                let lowerField = `${emoji} ${item.trackInfo.title} `;
+                lowerField += item.trackInfo.length ? `[${secondsToMS(item.trackInfo.length)}] ` : '';
+                lowerField += `(${item.trackInfo.queuedBy.displayName})`;
 
                 fields.push({
                     name: upperField,
@@ -97,9 +88,9 @@ export class GuildQueue {
                     inline: false
                 });
             } else {
-                let lowerField = `${emoji} ${item.title} `;
-                lowerField += item.length ? `[${secondsToMS(item.length)}] ` : '';
-                lowerField += `(${item.queuedBy.displayName})`;
+                let lowerField = `${emoji} ${item.trackInfo.title} `;
+                lowerField += item.trackInfo.length ? `[${secondsToMS(item.trackInfo.length)}] ` : '';
+                lowerField += `(${item.trackInfo.queuedBy.displayName})`;
 
                 fields.push({
                     name: upperField,
@@ -109,10 +100,10 @@ export class GuildQueue {
             }
         });
 
-        if(items.length > QUEUE_EMBED_ITEMS_LIMIT) {
+        if(this.queue.length > QUEUE_EMBED_ITEMS_LIMIT) {
             fields.push({
-                name: `${items.length - QUEUE_EMBED_ITEMS_LIMIT} additional items`,
-                value: `${items.length} items in queue total`,
+                name: `${this.size - QUEUE_EMBED_ITEMS_LIMIT} additional items`,
+                value: `${this.size} items in queue total`,
                 inline: false
             });
         }

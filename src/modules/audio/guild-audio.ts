@@ -46,7 +46,7 @@ export class GuildAudio {
             throw new CommandError(`Queue cannot exceed ${MAX_QUEUE_LENGTH} items`);
 
         const guildQueueItem = await smartParse(query, queuedBy, this.queue.size);
-        const trackInfo = await guildQueueItem.getTrackInfo();
+        const trackInfo = guildQueueItem.trackInfo;
         this.queue.add(guildQueueItem);
         this.log.debug(`Queued: ${trackInfo.title}`);
 
@@ -96,8 +96,6 @@ export class GuildAudio {
 
         const next = this.queue.peek();
         if(next) {
-            const trackInfo = await next.getTrackInfo();
-
             // Get volume 
             const volume = (await BotCore.database.getGuild(this.guild)).volume;
 
@@ -105,14 +103,13 @@ export class GuildAudio {
             vc.subscribe(this.player);
 
             // Create AudioResource
-            const { stream, type } = await demuxProbe(await next.getReadable());
-            const resource = createAudioResource(stream, { inputType: type, inlineVolume: true });
+            const resource = await next.getAudioResource();
 
             // Set Volume
             resource.volume?.setVolume(volume / VOLUME_FACTOR);
 
             this.player.play(resource);
-            this.log.info(`Playing: ${trackInfo.title} (id: ${next.id}, type: ${type})`);
+            this.log.info(`Playing: ${next.trackInfo.title} (id: ${next.id})`);
         }
     }
 
@@ -181,7 +178,6 @@ export class GuildAudio {
     }
 
     async attachSkipReaction(item: GuildQueueItem) {
-        const trackInfo = await item.getTrackInfo();
         const msg = await item.getEmbedMessage();
 
         if(!msg) {
@@ -191,7 +187,7 @@ export class GuildAudio {
 
         // Filter that only allows the user that queued the item to pass
         const queuedByFilter = (reaction: Discord.MessageReaction, user: Discord.User) => {
-            if(user.id !== trackInfo.queuedBy.user.id) return false;
+            if(user.id !== item.trackInfo.queuedBy.user.id) return false;
             if(reaction.emoji.name !== EmojiCharacters.reject) return false;
 
             return true;

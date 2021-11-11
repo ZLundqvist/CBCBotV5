@@ -1,3 +1,4 @@
+import { AudioResource, createAudioResource, demuxProbe } from '@discordjs/voice';
 import Discord, { MessageEmbed } from 'discord.js';
 import { nanoid } from 'nanoid';
 import { Readable } from 'stream';
@@ -19,22 +20,33 @@ export type TrackInfo = {
 
 export abstract class GuildQueueItem {
     public readonly id: string;
-    public readonly provider: AudioProvider;
-
-    protected readonly queuedBy: Discord.GuildMember;
-    protected readonly initialQueuePosition: number;
 
     private embedMessage?: Discord.Message;
+    private audioResource?: AudioResource<TrackInfo>;
 
-    constructor(provider: AudioProvider, queuedBy: Discord.GuildMember, initialQueuePosition: number) {
+    constructor(readonly provider: AudioProvider, private readonly stream: Readable, readonly trackInfo: TrackInfo) {
         this.id = nanoid();
-        this.provider = provider;
-        this.queuedBy = queuedBy;
-        this.initialQueuePosition = initialQueuePosition;
     }
 
-    abstract getTrackInfo(): Promise<TrackInfo>;
-    abstract getReadable(): Promise<Readable>;
+    async getAudioResource(): Promise<AudioResource<TrackInfo>> {
+        const probe = await demuxProbe(this.stream);
+        this.audioResource = createAudioResource(probe.stream, { inputType: probe.type, inlineVolume: true, metadata: this.trackInfo });
+        return this.audioResource;
+    }
+
+    /**
+     * @returns Whether this resource has started playing.
+     */
+    hasStarted(): boolean {
+        return !!(this.audioResource && this.audioResource.started);
+    }
+
+    /**
+     * @returns How long this resource has been playing for, in milliseconds
+     */
+    getPlaybackDuration(): number | undefined {
+        return this.audioResource?.playbackDuration;
+    }
 
     setEmbedMessage(embedMessage: Discord.Message): void {
         if(this.embedMessage) {
@@ -50,28 +62,26 @@ export abstract class GuildQueueItem {
     }
 
     async getMessageEmbed(): Promise<MessageEmbed> {
-        const info = await this.getTrackInfo();
-
-        const emoji = resolveEmojiString(this.provider.emoji, this.queuedBy.guild);
+        const emoji = resolveEmojiString(this.provider.emoji, this.trackInfo.queuedBy.guild);
 
         const embed = new Discord.MessageEmbed()
             .setColor(this.provider.color);
 
-        if(info.link) {
-            embed.setAuthor(info.title, undefined, info.link);
-            embed.setTitle(`${emoji} ${info.link}`);
+        if(this.trackInfo.link) {
+            embed.setAuthor(this.trackInfo.title, undefined, this.trackInfo.link);
+            embed.setTitle(`${emoji} ${this.trackInfo.link}`);
         } else {
-            embed.setTitle(`${emoji} ${info.title}`);
+            embed.setTitle(`${emoji} ${this.trackInfo.title}`);
         }
-        if(info.thumbnail) embed.setThumbnail(info.thumbnail);
-        if(info.link) embed.setURL(info.link);
+        if(this.trackInfo.thumbnail) embed.setThumbnail(this.trackInfo.thumbnail);
+        if(this.trackInfo.link) embed.setURL(this.trackInfo.link);
 
-        if(info.length) {
-            embed.addField('Length', secondsToMS(info.length), true);
+        if(this.trackInfo.length) {
+            embed.addField('Length', secondsToMS(this.trackInfo.length), true);
         }
 
-        if(this.initialQueuePosition >= 1) {
-            embed.addField('Position', `#${this.initialQueuePosition}`, true);
+        if(this.trackInfo.initialQueuePosition >= 1) {
+            embed.addField('Position', `#${this.trackInfo.initialQueuePosition}`, true);
         }
 
         embed.setFooter(`Skip using the ${EmojiCharacters.reject} reaction`);

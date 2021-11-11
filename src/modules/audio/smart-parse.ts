@@ -1,7 +1,7 @@
 import Discord from 'discord.js';
 import validator from 'validator';
 import { BotCore, CommandError } from '../../core';
-import { Soundcloud, Youtube } from '../../utils/audio';
+import { SoundcloudAPI, YoutubeAPI } from '../../utils/audio';
 import { GuildQueueItem } from './guild-queue-item/guild-queue-item';
 import { GuildQueueLocalItem } from './guild-queue-item/guild-queue-local-item';
 import { GuildQueueSoundCloudItem } from './guild-queue-item/guild-queue-soundcloud-item';
@@ -16,19 +16,19 @@ export async function smartParse(query: string, member: Discord.GuildMember, cur
     // If resource matches an sfx
     const sfx = BotCore.resources.getSFX(query);
     if(sfx) {
-        return new GuildQueueLocalItem(sfx, member, currentQueueSize + 1);
+        return GuildQueueLocalItem.create(sfx, member, currentQueueSize)
     }
 
     // Get link from query
     const url = await parseQuery(query);
 
     // If link is a youtube URL
-    if(Youtube.validateURL(url)) {
-        return new GuildQueueYoutubeItem(url, member, currentQueueSize + 1);
+    if(YoutubeAPI.validateURL(url)) {
+        return GuildQueueYoutubeItem.create(url, member, currentQueueSize);
     }
 
-    if(Soundcloud.validateURL(url)) {
-        return new GuildQueueSoundCloudItem(url, member, currentQueueSize + 1);
+    if(SoundcloudAPI.validateURL(url)) {
+        return GuildQueueSoundCloudItem.create(url, member, currentQueueSize);
     }
 
     throw new CommandError(`Cannot stream: ${query}`);
@@ -46,7 +46,7 @@ async function parseQuery(query: string): Promise<string> {
     }
 
     // Resource is not an URL, query youtube
-    const result = await Youtube.search(query);
+    const result = await YoutubeAPI.search(query);
 
     if(!result) {
         throw new CommandError(`Nothing found on Youtube for: ${query}`);
