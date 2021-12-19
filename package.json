@@ -23,10 +23,10 @@
     "@types/request": "^2.48.7",
     "@types/validator": "^13.7.0",
     "ts-node-dev": "^1.1.8",
-    "typescript": "^4.5.2"
+    "typescript": "^4.5.4"
   },
   "dependencies": {
-    "@discordjs/builders": "^0.8.2",
+    "@discordjs/builders": "^0.9.0",
     "@discordjs/opus": "^0.7.0",
     "@discordjs/voice": "^0.7.5",
     "axios": "^0.24.0",
@@ -46,7 +46,7 @@
     "utf-8-validate": "^5.0.7",
     "validator": "^13.7.0",
     "youtube-search": "^1.1.6",
-    "ytdl-core": "^4.9.1",
+    "ytdl-core": "^4.9.2",
     "zlib-sync": "^0.1.7"
   }
 }
