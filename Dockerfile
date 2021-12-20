@@ -5,6 +5,8 @@ WORKDIR /usr/app
 ENV JOBS=MAX
 
 COPY tsconfig.json package.json package-lock.json ./
+COPY resources/img/ ./resources/img/
+COPY resources/sfx/ ./resources/sfx/
 
 RUN npm ci
 
