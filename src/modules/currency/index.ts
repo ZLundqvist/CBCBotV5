@@ -82,7 +82,7 @@ class CurrencyModule extends Module {
                 const guildSettings = await BotCore.database.getGuild(guild);
 
                 const voiceChannels = Array.from(guild.channels.cache.values())
-                    .filter((channel): channel is Discord.BaseGuildVoiceChannel => channel.isVoice()) // Only take VoiceChannel
+                    .filter((channel): channel is Discord.VoiceChannel => channel.isVoice() && channel.type === 'GUILD_VOICE') // Only take VoiceChannel
                     .filter(vc => vc.guild.afkChannelId !== vc.id);  // Remove AFK channels
 
 
