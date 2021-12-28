@@ -7,7 +7,7 @@ const command = new SlashCommandBuilder()
     .setName('comedyheaven')
     .setDescription('rolfmao');
 
-class ComedyHeavenCommand extends GlobalCommand {
+export default class ComedyHeavenCommand extends GlobalCommand {
     constructor() {
         super(command.toJSON(), false, true);
     }
@@ -21,5 +21,3 @@ class ComedyHeavenCommand extends GlobalCommand {
         });
     }
 }
-
-export default new ComedyHeavenCommand();

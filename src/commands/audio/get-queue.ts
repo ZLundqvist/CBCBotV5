@@ -7,7 +7,7 @@ const command = new SlashCommandBuilder()
     .setName('queue')
     .setDescription('Get current queue');
 
-class GetQueueCommand extends GuildCommand {
+export default class GetQueueCommand extends GuildCommand {
     constructor() {
         super(command.toJSON(), false, true);
     }
@@ -17,5 +17,3 @@ class GetQueueCommand extends GuildCommand {
         await interaction.editReply({ embeds: [embed] });
     }
 }
-
-export default new GetQueueCommand();

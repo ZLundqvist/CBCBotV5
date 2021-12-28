@@ -6,7 +6,7 @@ const command = new SlashCommandBuilder()
     .setName('restart')
     .setDescription('[ADMIN] Restart the bot');
 
-class RestartCommand extends GlobalCommand {
+export default class RestartCommand extends GlobalCommand {
     constructor() {
         super(command.toJSON(), true, false);
     }
@@ -17,4 +17,3 @@ class RestartCommand extends GlobalCommand {
     }
 }
 
-export default new RestartCommand();

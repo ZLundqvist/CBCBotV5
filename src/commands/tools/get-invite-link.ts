@@ -6,7 +6,7 @@ const command = new SlashCommandBuilder()
     .setName('invite')
     .setDescription('Get a link to invite this bot to other servers');
 
-class GetInvinteLinkCommand extends GlobalCommand {
+export default class GetInvinteLinkCommand extends GlobalCommand {
     constructor() {
         super(command.toJSON(), false, false);
     }
@@ -27,4 +27,3 @@ class GetInvinteLinkCommand extends GlobalCommand {
     }
 }
 
-export default new GetInvinteLinkCommand();

@@ -7,7 +7,7 @@ const command = new SlashCommandBuilder()
     .setName('okbuddyretard')
     .setDescription('rolfmao');
 
-class OkBuddyRetardCommand extends GlobalCommand {
+export default class OkBuddyRetardCommand extends GlobalCommand {
     constructor() {
         super(command.toJSON(), false, true);
     }
@@ -21,5 +21,3 @@ class OkBuddyRetardCommand extends GlobalCommand {
         });
     }
 }
-
-export default new OkBuddyRetardCommand();

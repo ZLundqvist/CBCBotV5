@@ -19,7 +19,7 @@ const command = new SlashCommandBuilder()
     });
 
 
-class PlayCommand extends GuildCommand {
+export default class PlayCommand extends GuildCommand {
     constructor() {
         super(command.toJSON(), false, true);
     }
@@ -50,5 +50,3 @@ class PlayCommand extends GuildCommand {
         }
     }
 }
-
-export default new PlayCommand();

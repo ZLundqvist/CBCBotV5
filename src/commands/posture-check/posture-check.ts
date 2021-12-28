@@ -14,7 +14,7 @@ const command = new SlashCommandBuilder()
             .setRequired(true);
     });
 
-class PostureCheckCommand extends GuildCommand {
+export default class PostureCheckCommand extends GuildCommand {
     constructor() {
         super(command.toJSON(), false, false);
     }
@@ -40,5 +40,3 @@ class PostureCheckCommand extends GuildCommand {
         }
     }
 }
-
-export default new PostureCheckCommand();

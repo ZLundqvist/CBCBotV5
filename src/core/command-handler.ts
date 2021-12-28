@@ -1,4 +1,4 @@
-import Discord, { Collection } from 'discord.js';
+import Discord, { Collection, Constructable } from 'discord.js';
 import fs from 'fs';
 import path from 'path';
 import { EmojiCharacters } from '../constants';
@@ -7,6 +7,7 @@ import getLogger from '../utils/logger';
 import { timeMeasurement } from '../utils/time';
 import { BaseCommand } from './base-command';
 import { ImportError } from './custom-errors';
+import { getFilesRecursive } from '../utils/file';
 
 const log = getLogger('core');
 const COMMANDS_PATH = path.join(__dirname, '../commands/');
@@ -85,23 +86,16 @@ export class CommandHandler {
     private async importCommands(): Promise<void> {
         timeMeasurement.start('Command import');
 
-        const commandFolders = fs.readdirSync(COMMANDS_PATH).filter(file => {
-            const name = path.join(COMMANDS_PATH, file);
-            return fs.lstatSync(name).isDirectory()
-        });
+        const filePaths = getFilesRecursive(COMMANDS_PATH);
 
-        for(const commandFolder of commandFolders) {
-            const commandFiles = fs.readdirSync(path.join(COMMANDS_PATH, commandFolder));
-
-            for(const commandFile of commandFiles) {
-                try {
-                    await this.importCommand(path.join(COMMANDS_PATH, commandFolder, commandFile));
-                } catch(error) {
-                    if(error instanceof ImportError) {
-                        log.error(`Error importing command from file '${commandFile}' (${error.message})`);
-                    } else {
-                        throw error;
-                    }
+        for(const filePath of filePaths) {
+            try {
+                await this.importCommand(filePath);
+            } catch(error) {
+                if(error instanceof ImportError) {
+                    log.error(`Error importing command from file '${filePath}' (${error.message})`);
+                } else {
+                    throw error;
                 }
             }
         }
@@ -110,26 +104,33 @@ export class CommandHandler {
         log.info(`Imported ${this.commands.size} commands`);
     }
 
+    private isBaseCommand(object: any): object is new() => BaseCommand {
+        return typeof object === 'function' && object.prototype instanceof BaseCommand;
+    }
+
     private async importCommand(path: string): Promise<void> {
-        const command = (await import(path)).default;
+        const defaultExport = (await import(path)).default;
 
-        if(!(command instanceof BaseCommand)) {
-            throw new ImportError('Not instance of BaseCommand');
+        // Check that the import is a BaseCommand
+        if(!this.isBaseCommand(defaultExport)) {
+            throw new ImportError('Default export is not a BaseCommand');
         }
 
-        if(this.commands.has(command.name)) {
-            throw new ImportError(`Duplicate command name: ${command.name}`);
+        const instance = new defaultExport();
+
+        if(this.commands.has(instance.name)) {
+            throw new ImportError(`Duplicate command name: ${instance.name}`);
         }
 
-        if(command instanceof GuildCommand) {
-            log.info(`Importing GuildCommand: ${command.name}`);
-        } else if(command instanceof GlobalCommand) {
-            log.info(`Importing GlobalCommand: ${command.name}`);
+        this.commands.set(instance.name, instance);
+
+        if(instance instanceof GuildCommand) {
+            log.info(`Importing GuildCommand: ${instance.name}`);
+        } else if(instance instanceof GlobalCommand) {
+            log.info(`Importing GlobalCommand: ${instance.name}`);
         } else {
             throw new ImportError('Encountered unknown instance');
         }
-
-        this.commands.set(command.name, command);
     }
 
     /**

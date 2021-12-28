@@ -15,7 +15,7 @@ const command = new SlashCommandBuilder()
     });
 
 
-class UserEntrySoundCommand extends GuildCommand {
+export default class UserEntrySoundCommand extends GuildCommand {
     constructor() {
         super(command.toJSON(), false, false);
     }
@@ -36,5 +36,3 @@ class UserEntrySoundCommand extends GuildCommand {
         }
     }
 }
-
-export default new UserEntrySoundCommand();

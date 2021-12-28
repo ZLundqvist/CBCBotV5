@@ -8,7 +8,7 @@ const command = new SlashCommandBuilder()
     .setName('skip')
     .setDescription('Skip current song');
 
-class SkipCommand extends GuildCommand {
+export default class SkipCommand extends GuildCommand {
     constructor() {
         super(command.toJSON(), false, true);
     }
@@ -24,4 +24,3 @@ class SkipCommand extends GuildCommand {
     }
 }
 
-export default new SkipCommand();

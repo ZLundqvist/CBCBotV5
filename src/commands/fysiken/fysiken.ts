@@ -14,7 +14,7 @@ const command = new SlashCommandBuilder()
     });
 
 
-class FysikenCommand extends GlobalCommand {
+export default class FysikenCommand extends GlobalCommand {
     constructor() {
         super(command.toJSON(), false, false);
     }
@@ -32,4 +32,3 @@ class FysikenCommand extends GlobalCommand {
     }
 }
 
-export default new FysikenCommand();

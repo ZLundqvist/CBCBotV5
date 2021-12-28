@@ -12,7 +12,7 @@ const command = new SlashCommandBuilder()
     .addSubcommand(refreshCommand);
 
 
-class CommandsCommand extends GlobalCommand {
+export default class CommandsCommand extends GlobalCommand {
     constructor() {
         super(command.toJSON(), true, false);
     }
@@ -43,5 +43,3 @@ class CommandsCommand extends GlobalCommand {
         }
     }
 }
-
-export default new CommandsCommand();

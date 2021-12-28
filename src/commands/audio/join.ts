@@ -8,7 +8,7 @@ const command = new SlashCommandBuilder()
     .setName('join')
     .setDescription('Move bot to your channel');
 
-class JoinCommand extends GuildCommand {
+export default class JoinCommand extends GuildCommand {
     constructor() {
         super(command.toJSON(), false, true);
     }
@@ -31,5 +31,3 @@ class JoinCommand extends GuildCommand {
         await interaction.deleteReply();
     }
 }
-
-export default new JoinCommand();

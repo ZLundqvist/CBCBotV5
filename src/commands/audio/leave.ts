@@ -7,7 +7,7 @@ const command = new SlashCommandBuilder()
     .setName('leave')
     .setDescription('Disconnect bot from channel');
 
-class LeaveCommand extends GuildCommand {
+export default class LeaveCommand extends GuildCommand {
     constructor() {
         super(command.toJSON(), false, true);
     }
@@ -21,5 +21,3 @@ class LeaveCommand extends GuildCommand {
         }
     }
 }
-
-export default new LeaveCommand();

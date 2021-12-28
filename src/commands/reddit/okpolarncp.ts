@@ -7,7 +7,7 @@ const command = new SlashCommandBuilder()
     .setName('okpolarncp')
     .setDescription('rolfmao');
 
-class OpPolarnCPCommand extends GlobalCommand {
+export default class OpPolarnCPCommand extends GlobalCommand {
     constructor() {
         super(command.toJSON(), false, true);
     }
@@ -22,4 +22,3 @@ class OpPolarnCPCommand extends GlobalCommand {
     }
 }
 
-export default new OpPolarnCPCommand();

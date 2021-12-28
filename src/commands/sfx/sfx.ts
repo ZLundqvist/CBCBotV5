@@ -11,7 +11,7 @@ const command = new SlashCommandBuilder()
     .setDescription('SFX related commands')
     .addSubcommand(listCommand);
 
-class SFXCommand extends GlobalCommand {
+export default class SFXCommand extends GlobalCommand {
     constructor() {
         super(command.toJSON(), false, false);
     }
@@ -21,5 +21,3 @@ class SFXCommand extends GlobalCommand {
         await interaction.reply(codeBlock(sfxs.join(', ')));
     }
 }
-
-export default new SFXCommand();

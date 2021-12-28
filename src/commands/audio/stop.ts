@@ -8,7 +8,7 @@ const command = new SlashCommandBuilder()
     .setName('stop')
     .setDescription('Stop playing audio');
 
-class StopCommand extends GuildCommand {
+export default class StopCommand extends GuildCommand {
     constructor() {
         super(command.toJSON(), false, true);
     }
@@ -24,4 +24,3 @@ class StopCommand extends GuildCommand {
     }
 }
 
-export default new StopCommand();

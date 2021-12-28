@@ -13,7 +13,7 @@ const command = new SlashCommandBuilder()
             .setRequired(true);
     });
 
-class SQLCommand extends GlobalCommand {
+export default class SQLCommand extends GlobalCommand {
     constructor() {
         super(command.toJSON(), true, false);
     }
@@ -37,5 +37,3 @@ class SQLCommand extends GlobalCommand {
         }
     }
 }
-
-export default new SQLCommand();

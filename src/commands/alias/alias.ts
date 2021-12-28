@@ -43,7 +43,7 @@ const command = new SlashCommandBuilder()
     .addSubcommand(addCommand)
     .addSubcommand(listCommand);
 
-class AliasCommand extends GuildCommand {
+export default class AliasCommand extends GuildCommand {
     constructor() {
         super(command.toJSON(), false, false);
     }
@@ -93,5 +93,3 @@ class AliasCommand extends GuildCommand {
         await interaction.reply(`Aliases in guild ${interaction.guild?.name}${codeBlock(list.join('\n'))}`);
     }
 }
-
-export default new AliasCommand();

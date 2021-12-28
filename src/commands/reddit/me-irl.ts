@@ -7,7 +7,7 @@ const command = new SlashCommandBuilder()
     .setName('me_irl')
     .setDescription('rolfmao');
 
-class MeIRLCommand extends GlobalCommand {
+export default class MeIRLCommand extends GlobalCommand {
     constructor() {
         super(command.toJSON(), false, true);
     }
@@ -21,5 +21,3 @@ class MeIRLCommand extends GlobalCommand {
         });
     }
 }
-
-export default new MeIRLCommand();

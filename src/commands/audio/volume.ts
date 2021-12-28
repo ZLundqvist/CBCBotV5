@@ -13,7 +13,7 @@ const command = new SlashCommandBuilder()
             .setRequired(false);
     });
 
-class VolumeCommand extends GuildCommand {
+export default class VolumeCommand extends GuildCommand {
     constructor() {
         super(command.toJSON(), false, false);
     }
@@ -40,5 +40,3 @@ class VolumeCommand extends GuildCommand {
         }
     }
 }
-
-export default new VolumeCommand();

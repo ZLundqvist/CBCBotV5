@@ -15,7 +15,7 @@ const command = new SlashCommandBuilder()
     });
 
 
-class BotEntrySoundCommand extends GuildCommand {
+export default class BotEntrySoundCommand extends GuildCommand {
     constructor() {
         super(command.toJSON(), false, false);
     }
@@ -35,5 +35,3 @@ class BotEntrySoundCommand extends GuildCommand {
         }
     }
 }
-
-export default new BotEntrySoundCommand();
