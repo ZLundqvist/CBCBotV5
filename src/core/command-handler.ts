@@ -1,29 +1,27 @@
-import Discord, { Collection, Constructable } from 'discord.js';
-import fs from 'fs';
+import Discord, { Collection } from 'discord.js';
 import path from 'path';
-import { EmojiCharacters } from '../constants';
 import { CommandError, GlobalCommand, GuildCommand } from '.';
+import { EmojiCharacters } from '../constants';
+import { getFilesRecursive } from '../utils/file';
 import getLogger from '../utils/logger';
 import { timeMeasurement } from '../utils/time';
 import { BaseCommand } from './base-command';
 import { ImportError } from './custom-errors';
-import { getFilesRecursive } from '../utils/file';
 
 const log = getLogger('core');
 const COMMANDS_PATH = path.join(__dirname, '../commands/');
 
 export class CommandHandler {
     private commands: Collection<string, BaseCommand>;
-    private client!: Discord.Client<true>;
+    private readonly client: Discord.Client<true>;
 
-    constructor() {
+    constructor(client: Discord.Client<true>) {
         this.commands = new Collection();
+        this.client = client;
     }
 
-    async init(client: Discord.Client<true>): Promise<void> {
-        this.client = client;
-
-        await this.importCommands();
+    async init(): Promise<void> {
+        await this.registerCommands();
 
         this.client.on('interactionCreate', (interaction) => {
             if(interaction.isCommand()) {
@@ -83,14 +81,14 @@ export class CommandHandler {
         }
     }
 
-    private async importCommands(): Promise<void> {
+    private async registerCommands(): Promise<void> {
         timeMeasurement.start('Command import');
 
         const filePaths = getFilesRecursive(COMMANDS_PATH);
 
         for(const filePath of filePaths) {
             try {
-                await this.importCommand(filePath);
+                await this.registerCommand(filePath);
             } catch(error) {
                 if(error instanceof ImportError) {
                     log.error(`Error importing command from file '${filePath}' (${error.message})`);
@@ -104,11 +102,7 @@ export class CommandHandler {
         log.info(`Imported ${this.commands.size} commands`);
     }
 
-    private isBaseCommand(object: any): object is new() => BaseCommand {
-        return typeof object === 'function' && object.prototype instanceof BaseCommand;
-    }
-
-    private async importCommand(path: string): Promise<void> {
+    private async registerCommand(path: string): Promise<void> {
         const defaultExport = (await import(path)).default;
 
         // Check that the import is a BaseCommand
@@ -122,15 +116,19 @@ export class CommandHandler {
             throw new ImportError(`Duplicate command name: ${instance.name}`);
         }
 
-        this.commands.set(instance.name, instance);
-
         if(instance instanceof GuildCommand) {
-            log.info(`Importing GuildCommand: ${instance.name}`);
+            log.debug(`Importing GuildCommand: ${instance.name}`);
         } else if(instance instanceof GlobalCommand) {
-            log.info(`Importing GlobalCommand: ${instance.name}`);
+            log.debug(`Importing GlobalCommand: ${instance.name}`);
         } else {
             throw new ImportError('Encountered unknown instance');
         }
+
+        this.commands.set(instance.name, instance);
+    }
+
+    private isBaseCommand(object: any): object is new () => BaseCommand {
+        return typeof object === 'function' && object.prototype instanceof BaseCommand;
     }
 
     /**

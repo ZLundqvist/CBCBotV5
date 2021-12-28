@@ -1,3 +1,4 @@
+import assert from 'assert';
 import Discord from 'discord.js';
 import { ClientIntents } from '../constants';
 import { Database } from '../database/database';
@@ -11,17 +12,36 @@ import { ResourceHandler } from './resource-handler';
 const log = getLogger('core');
 
 class CBCBotCore {
-    private readonly client: Discord.Client<true> = new Discord.Client({ intents: ClientIntents });
+    private readonly client: Discord.Client = new Discord.Client({ intents: ClientIntents });
     readonly database: Database = new Database('cbcbotv5');
     readonly config: Configuration = new Configuration('config.json');
     readonly resources: ResourceHandler = new ResourceHandler('resources');
-    readonly modules: ModuleHandler = new ModuleHandler();
-    readonly commands: CommandHandler = new CommandHandler();
+
+    private _moduleHandler?: ModuleHandler;
+    private _commandHandler?: CommandHandler;
 
     constructor() {
         log.info('Starting CBCBotV5');
         log.info(`Version: ${this.config.getVersion()}`);
         log.info(`Running in ${this.config.getNodeEnv()} mode`);
+    }
+
+    get modules(): ModuleHandler {
+        if(this._moduleHandler) {
+            return this._moduleHandler;
+        }
+        assert(this.client.isReady(), 'Cannot access ModuleHandler before client is ready.');
+        this._moduleHandler = new ModuleHandler(this.client);
+        return this._moduleHandler;
+    }
+
+    get commands(): CommandHandler {
+        if(this._commandHandler) {
+            return this._commandHandler;
+        }
+        assert(this.client.isReady(), 'Cannot access CommandHandler before client is ready.');
+        this._commandHandler = new CommandHandler(this.client);
+        return this._commandHandler;
     }
 
     async start() {
@@ -32,18 +52,14 @@ class CBCBotCore {
         // Attach various listeners
         this.client.on('ready', async (client) => {
             log.info(`Connected to Discord and logged in as ${client.user?.tag}`);
-            await this.modules.init(client);
-            await this.commands.init(client);
+            await this.modules.init();
+            await this.commands.init();
             await this.database.addMissingGuilds(Array.from(client.guilds.cache.values()));
         });
 
         this.client.on('guildCreate', async (guild) => {
             await this.database.addMissingGuilds([guild]);
             await this.commands.deployGuildCommands(guild);
-        });
-
-        process.once('SIGUSR2', async () => {
-            await this.gracefulShutdown();
         });
 
         process.once('SIGINT', async () => {
