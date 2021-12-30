@@ -1,6 +1,7 @@
 import { SlashCommandBuilder } from '@discordjs/builders';
-import { CommandInteraction, Permissions } from 'discord.js';
+import { Permissions } from 'discord.js';
 import { GlobalCommand } from "../../core";
+import { RunCommandContext } from '../../core/command';
 
 const command = new SlashCommandBuilder()
     .setName('invite')
@@ -14,8 +15,8 @@ export default class GetInvinteLinkCommand extends GlobalCommand {
         });
     }
 
-    async executeGlobalCommand(interaction: CommandInteraction) {
-        const inviteUrl = interaction.client.generateInvite({
+    async runGlobalCommand(context: RunCommandContext) {
+        const inviteUrl = context.interaction.client.generateInvite({
             scopes: [
                 'bot',
                 'applications.commands'
@@ -23,7 +24,7 @@ export default class GetInvinteLinkCommand extends GlobalCommand {
             permissions: Permissions.ALL
         });
 
-        await interaction.reply({
+        await context.interaction.reply({
             content: inviteUrl,
             ephemeral: true
         });

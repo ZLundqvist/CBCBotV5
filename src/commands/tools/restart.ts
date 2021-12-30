@@ -1,6 +1,6 @@
 import { SlashCommandBuilder } from '@discordjs/builders';
-import { CommandInteraction } from 'discord.js';
 import { BotCore, GlobalCommand } from "../../core";
+import { RunCommandContext } from '../../core/command';
 
 const command = new SlashCommandBuilder()
     .setName('restart')
@@ -14,8 +14,8 @@ export default class RestartCommand extends GlobalCommand {
         });
     }
 
-    async executeGlobalCommand(interaction: CommandInteraction) {
-        await interaction.reply('Restart coming up');
+    async runGlobalCommand(context: RunCommandContext) {
+        await context.interaction.reply('Restart coming up');
         BotCore.gracefulShutdown();
     }
 }

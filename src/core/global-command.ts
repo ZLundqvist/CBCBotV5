@@ -1,11 +1,10 @@
-import Discord from 'discord.js';
-import { BaseCommand } from './base-command';
+import { Command, RunCommandContext } from './command';
 
-export abstract class GlobalCommand extends BaseCommand {
-    async execute(interaction: Discord.CommandInteraction): Promise<void> {
+export abstract class GlobalCommand extends Command {
+    async run(context: RunCommandContext): Promise<void> {
         // No pre-processing needs to be done here (yet)
-        await this.executeGlobalCommand(interaction);
+        await this.runGlobalCommand(context);
     }
 
-    protected abstract executeGlobalCommand(interaction: Discord.CommandInteraction): Promise<void>;
+    protected abstract runGlobalCommand(context: RunCommandContext): Promise<void>;
 }

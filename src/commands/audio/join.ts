@@ -1,6 +1,5 @@
 import { SlashCommandBuilder } from '@discordjs/builders';
-import Discord, { CommandInteraction } from 'discord.js';
-import { CommandError, GuildCommand } from "../../core";
+import { CommandError, GuildCommand, RunGuildCommandContext } from "../../core";
 import audio from '../../modules/audio';
 import { connect, inSameChannelAs } from "../../utils/voice";
 
@@ -16,7 +15,7 @@ export default class JoinCommand extends GuildCommand {
         });
     }
 
-    async executeGuildCommand(interaction: CommandInteraction, guild: Discord.Guild, member: Discord.GuildMember) {
+    async runGuildCommand({ interaction, guild, member }: RunGuildCommandContext) {
         if(inSameChannelAs(member)) {
             throw new CommandError('Already in your channel');
         }

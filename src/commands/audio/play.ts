@@ -1,6 +1,6 @@
 import { SlashCommandBuilder } from '@discordjs/builders';
-import Discord, { CommandInteraction } from 'discord.js';
-import { GuildCommand } from "../../core";
+import Discord from 'discord.js';
+import { GuildCommand, RunGuildCommandContext } from "../../core";
 import audio from '../../modules/audio';
 import { connectIfAloneOrDisconnected, inSameChannelAs } from "../../utils/voice";
 
@@ -23,7 +23,7 @@ export default class PlayCommand extends GuildCommand {
         });
     }
 
-    async executeGuildCommand(interaction: CommandInteraction, guild: Discord.Guild, member: Discord.GuildMember): Promise<void> {
+    async runGuildCommand({ interaction, guild, member }: RunGuildCommandContext): Promise<void> {
         if(member.voice.channel) {
             await connectIfAloneOrDisconnected(member.voice.channel);
         }

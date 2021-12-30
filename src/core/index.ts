@@ -81,4 +81,4 @@ export * from './custom-events';
 export * from './global-command';
 export * from './guild-command';
 export * from './module';
-
+export * from './precondition';

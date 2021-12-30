@@ -1,6 +1,6 @@
 import { codeBlock, SlashCommandBuilder, SlashCommandSubcommandBuilder } from '@discordjs/builders';
 import Discord, { CommandInteraction } from 'discord.js';
-import { BotCore, CommandError, GuildCommand } from "../../core";
+import { BotCore, CommandError, GuildCommand, RunGuildCommandContext } from "../../core";
 import alias from "../../modules/alias";
 
 const listCommand = new SlashCommandSubcommandBuilder()
@@ -51,7 +51,7 @@ export default class AliasCommand extends GuildCommand {
         });
     }
 
-    async executeGuildCommand(interaction: CommandInteraction, guild: Discord.Guild, member: Discord.GuildMember) {
+    async runGuildCommand({ interaction, guild, member }: RunGuildCommandContext) {
         const subcommand = interaction.options.getSubcommand();
 
         switch(subcommand) {

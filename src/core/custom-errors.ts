@@ -9,3 +9,9 @@ export class ImportError extends Error {
         super(msg);
     }
 }
+
+export class PreconditionError extends Error {
+    constructor(msg: string) {
+        super(msg);
+    }
+}

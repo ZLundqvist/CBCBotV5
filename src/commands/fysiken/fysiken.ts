@@ -1,7 +1,7 @@
 
 import { SlashCommandBuilder } from '@discordjs/builders';
-import { CommandInteraction } from 'discord.js';
 import { GlobalCommand } from '../../core';
+import { RunCommandContext } from '../../core/command';
 import Fysiken from '../../modules/fysiken';
 
 const command = new SlashCommandBuilder()
@@ -22,15 +22,15 @@ export default class FysikenCommand extends GlobalCommand {
         });
     }
 
-    async executeGlobalCommand(interaction: CommandInteraction) {
-        const threshold = interaction.options.getInteger('threshold', false);
+    async runGlobalCommand(context: RunCommandContext) {
+        const threshold = context.interaction.options.getInteger('threshold', false);
 
         if(threshold) {
-            Fysiken.setThresholdForUser(interaction.user, threshold);
-            await interaction.reply('noted');
+            Fysiken.setThresholdForUser(context.interaction.user, threshold);
+            await context.interaction.reply('noted');
         } else {
             const current = await Fysiken.getCurrentValue();
-            await interaction.reply(`${current} peeps @ Fysiken`);
+            await context.interaction.reply(`${current} peeps @ Fysiken`);
         }
     }
 }

@@ -1,15 +1,24 @@
-import Discord, { CommandInteraction } from 'discord.js';
-import { BaseCommand } from './base-command';
+import Discord from 'discord.js';
+import { Command, RunCommandContext } from './command';
 
-export abstract class GuildCommand extends BaseCommand {
-    async execute(interaction: Discord.CommandInteraction): Promise<void> {
-        if(!interaction.inCachedGuild()) {
+export interface RunGuildCommandContext extends RunCommandContext {
+    guild: Discord.Guild;
+    member: Discord.GuildMember;
+};
+
+export abstract class GuildCommand extends Command {
+    async run(context: RunCommandContext): Promise<void> {
+        if(!context.interaction.inCachedGuild()) {
             throw new Error('Unable to get guild');
         }
 
-        const member = await interaction.guild.members.fetch(interaction.user);
-        await this.executeGuildCommand(interaction, interaction.guild, member);
+        const member = await context.interaction.guild.members.fetch(context.interaction.user);
+        await this.runGuildCommand({
+            ...context,
+            guild: context.interaction.guild,
+            member: member
+        });
     }
 
-    protected abstract executeGuildCommand(interaction: CommandInteraction, guild: Discord.Guild, member: Discord.GuildMember): Promise<void>;
+    protected abstract runGuildCommand(context: RunGuildCommandContext): Promise<void>;
 }

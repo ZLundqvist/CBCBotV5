@@ -1,6 +1,7 @@
 import { SlashCommandBuilder, SlashCommandSubcommandBuilder } from '@discordjs/builders';
 import { CommandInteraction } from 'discord.js';
 import { BotCore, GlobalCommand } from "../../core";
+import { RunCommandContext } from '../../core/command';
 
 const refreshCommand = new SlashCommandSubcommandBuilder()
     .setName('refresh')
@@ -20,12 +21,12 @@ export default class CommandsCommand extends GlobalCommand {
         });
     }
 
-    async executeGlobalCommand(interaction: CommandInteraction) {
-        const subcommand = interaction.options.getSubcommand();
+    async runGlobalCommand(context: RunCommandContext) {
+        const subcommand = context.interaction.options.getSubcommand();
 
         switch(subcommand) {
             case 'refresh':
-                await this.refresh(interaction);
+                await this.refresh(context.interaction);
                 break;
         }
     }

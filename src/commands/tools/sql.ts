@@ -2,6 +2,7 @@ import { SlashCommandBuilder } from '@discordjs/builders';
 import Discord, { CommandInteraction } from 'discord.js';
 import { getConnection } from 'typeorm';
 import { CommandError, GlobalCommand } from "../../core";
+import { RunCommandContext } from '../../core/command';
 
 const command = new SlashCommandBuilder()
     .setName('sql')
@@ -21,8 +22,8 @@ export default class SQLCommand extends GlobalCommand {
         });
     }
 
-    async executeGlobalCommand(interaction: CommandInteraction) {
-        const query = interaction.options.getString('query', true);
+    async runGlobalCommand(context: RunCommandContext) {
+        const query = context.interaction.options.getString('query', true);
 
         try {
             const queryResults = await getConnection().query(query);
@@ -30,7 +31,7 @@ export default class SQLCommand extends GlobalCommand {
             const buffer = Buffer.from(resultsString);
             const attachment = new Discord.MessageAttachment(buffer, 'results.txt');
 
-            await interaction.reply({
+            await context.interaction.reply({
                 files: [
                     attachment
                 ]

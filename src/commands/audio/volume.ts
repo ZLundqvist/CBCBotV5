@@ -1,6 +1,5 @@
 import { SlashCommandBuilder } from '@discordjs/builders';
-import Discord, { CommandInteraction } from 'discord.js';
-import { GuildCommand } from "../../core";
+import { GuildCommand, RunGuildCommandContext } from "../../core";
 import audio from '../../modules/audio';
 
 const command = new SlashCommandBuilder()
@@ -21,7 +20,7 @@ export default class VolumeCommand extends GuildCommand {
         });
     }
 
-    async executeGuildCommand(interaction: CommandInteraction, guild: Discord.Guild, member: Discord.GuildMember) {
+    async runGuildCommand({ interaction, guild, member }: RunGuildCommandContext) {
         const newVolume = interaction.options.getInteger('v', false);
         const guildAudio = audio.getGuildAudio(guild);
 

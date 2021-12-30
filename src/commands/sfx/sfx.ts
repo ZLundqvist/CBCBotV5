@@ -1,6 +1,6 @@
 import { codeBlock, SlashCommandBuilder, SlashCommandSubcommandBuilder } from '@discordjs/builders';
-import { CommandInteraction } from 'discord.js';
 import { BotCore, GlobalCommand } from "../../core";
+import { RunCommandContext } from '../../core/command';
 
 const listCommand = new SlashCommandSubcommandBuilder()
     .setName('list')
@@ -19,8 +19,8 @@ export default class SFXCommand extends GlobalCommand {
         });
     }
 
-    async executeGlobalCommand(interaction: CommandInteraction): Promise<void> {
+    async runGlobalCommand(context: RunCommandContext): Promise<void> {
         const sfxs = BotCore.resources.getSFXs().map(sfx => sfx.name);
-        await interaction.reply(codeBlock(sfxs.join(', ')));
+        await context.interaction.reply(codeBlock(sfxs.join(', ')));
     }
 }

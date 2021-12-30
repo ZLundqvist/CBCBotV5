@@ -1,6 +1,7 @@
 import { SlashCommandBuilder } from '@discordjs/builders';
-import Discord, { CommandInteraction } from 'discord.js';
+import Discord from 'discord.js';
 import { GlobalCommand } from "../../core";
+import { RunCommandContext } from '../../core/command';
 import reddit from '../../modules/reddit';
 
 const command = new SlashCommandBuilder()
@@ -15,10 +16,10 @@ export default class ComedyHeavenCommand extends GlobalCommand {
         });
     }
 
-    async executeGlobalCommand(interaction: CommandInteraction) {
+    async runGlobalCommand(context: RunCommandContext) {
         const post = await reddit.getRandom('comedyheaven');
         const attachment = new Discord.MessageAttachment(post.buffer);
-        await interaction.editReply({
+        await context.interaction.editReply({
             content: post.title,
             files: [attachment]
         });

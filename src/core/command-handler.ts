@@ -5,14 +5,14 @@ import { CommandError, GlobalCommand, GuildCommand } from '.';
 import { EmojiCharacters } from '../constants';
 import { getFilesRecursive } from '../utils/file';
 import { getLoggerWrapper } from '../utils/logger';
-import { BaseCommand } from './base-command';
+import { Command } from './command';
 import { ImportError } from './custom-errors';
 
 const COMMANDS_PATH = path.join(__dirname, '../commands/');
 
 export class CommandHandler {
     private readonly log = getLoggerWrapper('core');
-    private readonly commands: Collection<string, BaseCommand>;
+    private readonly commands: Collection<string, Command>;
     private readonly client: Discord.Client;
 
     constructor(client: Discord.Client) {
@@ -65,7 +65,9 @@ export class CommandHandler {
         }
 
         try {
-            await command.onInteraction(interaction);
+            await command.onInteraction({
+                interaction: interaction
+            });
         } catch(error) {
             const replyFn = async (msg: string) => {
                 if(interaction.replied || interaction.deferred) {
@@ -130,8 +132,8 @@ export class CommandHandler {
         this.commands.set(instance.name, instance);
     }
 
-    private isBaseCommand(object: any): object is new () => BaseCommand {
-        return typeof object === 'function' && object.prototype instanceof BaseCommand;
+    private isBaseCommand(object: any): object is new () => Command {
+        return typeof object === 'function' && object.prototype instanceof Command;
     }
 
     /**

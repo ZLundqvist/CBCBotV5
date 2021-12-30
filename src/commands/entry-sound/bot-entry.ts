@@ -1,6 +1,5 @@
 import { SlashCommandBuilder } from '@discordjs/builders';
-import Discord, { CommandInteraction } from 'discord.js';
-import { CommandError, GuildCommand } from "../../core";
+import { CommandError, GuildCommand, RunGuildCommandContext } from "../../core";
 import entrySound from '../../modules/entry-sound';
 
 const command = new SlashCommandBuilder()
@@ -23,7 +22,7 @@ export default class BotEntrySoundCommand extends GuildCommand {
         });
     }
 
-    async executeGuildCommand(interaction: CommandInteraction, guild: Discord.Guild, member: Discord.GuildMember): Promise<void> {
+    async runGuildCommand({ interaction, guild, member }: RunGuildCommandContext): Promise<void> {
         const newSFX = interaction.options.getString('sfx', false);
 
         if(newSFX) {
