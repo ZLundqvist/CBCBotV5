@@ -1,12 +1,12 @@
 import Discord from 'discord.js';
+import { Configuration } from '../configuration';
 import { ClientIntents } from '../constants';
 import { Database } from '../database/database';
+import { Resources } from '../resources';
 import { getLoggerWrapper } from '../utils/logger';
 import { CommandHandler } from './command-handler';
-import { Configuration } from '../configuration';
 import { attachCustomEvents } from './custom-events';
 import { ModuleHandler } from './module-handler';
-import { Resources } from '../resources';
 
 class CBCBotCore {
     private readonly log = getLoggerWrapper('core');

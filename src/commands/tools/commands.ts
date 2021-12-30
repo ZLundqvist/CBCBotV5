@@ -14,7 +14,10 @@ const command = new SlashCommandBuilder()
 
 export default class CommandsCommand extends GlobalCommand {
     constructor() {
-        super(command.toJSON(), true, false);
+        super(command.toJSON(), {
+            ownerOnly: true,
+            autoDefer: false
+        });
     }
 
     async executeGlobalCommand(interaction: CommandInteraction) {

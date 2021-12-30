@@ -17,7 +17,10 @@ const command = new SlashCommandBuilder()
 
 export default class BotEntrySoundCommand extends GuildCommand {
     constructor() {
-        super(command.toJSON(), false, false);
+        super(command.toJSON(), {
+            ownerOnly: false,
+            autoDefer: false
+        });
     }
 
     async executeGuildCommand(interaction: CommandInteraction, guild: Discord.Guild, member: Discord.GuildMember): Promise<void> {

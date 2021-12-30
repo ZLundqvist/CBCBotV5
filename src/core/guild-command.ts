@@ -2,10 +2,6 @@ import Discord, { CommandInteraction } from 'discord.js';
 import { BaseCommand } from './base-command';
 
 export abstract class GuildCommand extends BaseCommand {
-    constructor(data: Discord.ApplicationCommandDataResolvable, ownerOnly: boolean, autoDefer: boolean) {
-        super(data, ownerOnly, autoDefer);
-    }
-
     async execute(interaction: Discord.CommandInteraction): Promise<void> {
         if(!interaction.inCachedGuild()) {
             throw new Error('Unable to get guild');

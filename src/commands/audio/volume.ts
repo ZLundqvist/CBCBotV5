@@ -15,7 +15,10 @@ const command = new SlashCommandBuilder()
 
 export default class VolumeCommand extends GuildCommand {
     constructor() {
-        super(command.toJSON(), false, false);
+        super(command.toJSON(), {
+            ownerOnly: false,
+            autoDefer: true
+        });
     }
 
     async executeGuildCommand(interaction: CommandInteraction, guild: Discord.Guild, member: Discord.GuildMember) {

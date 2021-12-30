@@ -3,16 +3,20 @@ import { BotCore } from '../core';
 import { getLoggerWrapper, LoggerWrapper } from '../utils/logger';
 import { CommandError } from './custom-errors';
 
+export type BaseCommandParams = {
+    ownerOnly: boolean;
+    autoDefer: boolean;
+    preconditions?: string[];
+};
+
 export abstract class BaseCommand {
     readonly commandData: Discord.ApplicationCommandDataResolvable;
-    protected readonly ownerOnly: boolean;
-    protected readonly autoDefer: boolean;
+    protected readonly params: BaseCommandParams;
     protected readonly log: LoggerWrapper;
 
-    constructor(commandData: Discord.ApplicationCommandDataResolvable, ownerOnly: boolean, autoDefer: boolean) {
+    constructor(commandData: Discord.ApplicationCommandDataResolvable, params: BaseCommandParams) {
         this.commandData = commandData;
-        this.ownerOnly = ownerOnly;
-        this.autoDefer = autoDefer;
+        this.params = params;
 
         this.log = getLoggerWrapper(this.name);
     }
@@ -27,11 +31,11 @@ export abstract class BaseCommand {
      * @param interaction 
      */
     async onInteraction(interaction: Discord.CommandInteraction) {
-        if(this.ownerOnly && !BotCore.config.isOwner(interaction.user)) {
+        if(this.params.ownerOnly && !BotCore.config.isOwner(interaction.user)) {
             throw new CommandError('You do not have permission to do this, my dude');
         }
 
-        if(this.autoDefer) {
+        if(this.params.autoDefer) {
             await interaction.deferReply();
         }
 

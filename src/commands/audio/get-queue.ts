@@ -9,7 +9,10 @@ const command = new SlashCommandBuilder()
 
 export default class GetQueueCommand extends GuildCommand {
     constructor() {
-        super(command.toJSON(), false, true);
+        super(command.toJSON(), {
+            ownerOnly: false,
+            autoDefer: true
+        });
     }
 
     async executeGuildCommand(interaction: CommandInteraction, guild: Discord.Guild, member: Discord.GuildMember) {
