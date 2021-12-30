@@ -1,24 +1,25 @@
+import assert from 'assert';
 import Discord from 'discord.js';
 import path from 'path';
 import { ImportError } from '.';
 import { getDirectories } from '../utils/file';
-import getLogger from '../utils/logger';
-import { timeMeasurement } from '../utils/time';
+import { getLoggerWrapper } from '../utils/logger';
 import { Module } from './module';
 
-const log = getLogger('core');
+const log = getLoggerWrapper('core');
 const MODULES_PATH = path.join(__dirname, '../modules/');
 
 export class ModuleHandler {
     private readonly modules: Discord.Collection<string, Module>;
-    private readonly client: Discord.Client<true>;
+    private readonly client: Discord.Client;
 
-    constructor(client: Discord.Client<true>) {
+    constructor(client: Discord.Client) {
         this.modules = new Discord.Collection();
         this.client = client;
     }
 
     async init(): Promise<void> {
+        assert(this.client.isReady());
         await this.registerModules();
     }
 
@@ -30,7 +31,7 @@ export class ModuleHandler {
     }
 
     private async registerModules(): Promise<void> {
-        timeMeasurement.start('Module import');
+        log.time('Module import');
 
         const modulePaths = getDirectories(MODULES_PATH);
 
@@ -50,7 +51,7 @@ export class ModuleHandler {
             await module.init(this.client);
         }
 
-        timeMeasurement.end('Module import', log);
+        log.timeEnd('Module import');
         log.info(`Imported ${this.modules.size} modules`);
     }
 

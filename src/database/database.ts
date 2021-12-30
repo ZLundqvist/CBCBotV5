@@ -2,13 +2,13 @@ import Discord from 'discord.js';
 import fs from 'fs';
 import path from 'path';
 import * as typeorm from 'typeorm';
-import getLogger from '../utils/logger';
+import { getLoggerWrapper } from '../utils/logger';
 import { Alias } from './entity/alias';
 import { Guild } from './entity/guild';
 import { Member } from './entity/member';
 import { QueueHistory } from './entity/queue-history';
 
-const log = getLogger(__dirname);
+const log = getLoggerWrapper(__dirname);
 
 export class Database {
     private readonly fileName: string;

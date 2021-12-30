@@ -1,11 +1,11 @@
 import Discord from 'discord.js';
 import { clearInterval } from 'timers';
 import { Module } from '../../core';
-import getLogger from '../../utils/logger';
+import { getLoggerWrapper } from '../../utils/logger';
 import { inVoiceChannel } from '../../utils/voice';
 import audio from '../audio';
 
-const log = getLogger(__dirname);
+const log = getLoggerWrapper(__dirname);
 
 type PostureCheckInterval = {
     id: NodeJS.Timeout; // intervalId

@@ -1,8 +1,8 @@
 import Discord from 'discord.js';
 import { BotCore, CommandError, Module } from '../../core';
-import getLogger from '../../utils/logger';
+import { getLoggerWrapper } from '../../utils/logger';
 
-const log = getLogger(__dirname);
+const log = getLoggerWrapper(__dirname);
 
 class AliasModule extends Module {
     private client!: Discord.Client<true>;

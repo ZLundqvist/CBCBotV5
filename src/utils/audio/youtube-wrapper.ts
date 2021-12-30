@@ -2,9 +2,9 @@ import { Readable } from 'stream';
 import ytSearch from 'youtube-search';
 import ytdl from 'ytdl-core';
 import { BotCore } from '../../core';
-import getLogger from '../logger';
+import { getLoggerWrapper } from '../logger';
 
-const log = getLogger('util/audio');
+const log = getLoggerWrapper('util/audio');
 
 class YoutubeWrapper {
     async search(query: string): Promise<string | undefined> {

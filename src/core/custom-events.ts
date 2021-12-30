@@ -1,8 +1,8 @@
 import Discord from 'discord.js';
-import getLogger from '../utils/logger';
+import { getLoggerWrapper } from '../utils/logger';
 import { getVoiceStateUpdateType, VoiceStateUpdateTypes } from '../utils/voice';
 
-const log = getLogger('voice');
+const log = getLoggerWrapper('voice');
 
 export interface VoiceStateUpdateCustom {
     oldState: Discord.VoiceState;

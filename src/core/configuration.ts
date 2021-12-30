@@ -1,9 +1,9 @@
 import Discord from 'discord.js';
 import fs from 'fs';
 import path from 'path';
-import getLogger from '../utils/logger';
+import { getLoggerWrapper } from '../utils/logger';
 
-const log = getLogger('config');
+const log = getLoggerWrapper('config');
 
 class ConfigurationParameters {
     'token': string = '';

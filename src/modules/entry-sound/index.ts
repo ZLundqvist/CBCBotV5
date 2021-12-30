@@ -1,9 +1,9 @@
 import Discord from 'discord.js';
 import { BotCore, CommandError, Module, VoiceStateUpdateCustom } from "../../core";
-import getLogger from '../../utils/logger';
+import { getLoggerWrapper } from '../../utils/logger';
 import audio from '../audio';
 
-const log = getLogger(__dirname);
+const log = getLoggerWrapper(__dirname);
 
 class EntrySoundModule extends Module {
     private client!: Discord.Client<true>;

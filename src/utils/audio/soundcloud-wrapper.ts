@@ -1,7 +1,7 @@
 import SoundCloud from 'soundcloud-scraper';
-import getLogger from '../logger';
+import { getLoggerWrapper } from '../logger';
 
-const log = getLogger('util/audio');
+const log = getLoggerWrapper('util/audio');
 
 class SoundcloudWrapper {
     private client?: SoundCloud.Client;

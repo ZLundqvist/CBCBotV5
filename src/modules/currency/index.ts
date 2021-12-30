@@ -2,9 +2,9 @@ import Discord, { EmbedField } from 'discord.js';
 import moment from 'moment';
 import { Colors, Images } from '../../constants';
 import { BotCore, Module } from "../../core";
-import getLogger from '../../utils/logger';
+import { getLoggerWrapper } from '../../utils/logger';
 
-const log = getLogger(__dirname);
+const log = getLoggerWrapper(__dirname);
 
 class CurrencyModule extends Module {
     distributer?: NodeJS.Timeout;

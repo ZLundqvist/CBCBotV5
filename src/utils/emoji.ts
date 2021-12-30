@@ -1,7 +1,7 @@
 import Discord from 'discord.js';
-import getLogger from './logger';
+import { getLoggerWrapper } from './logger';
 
-const log = getLogger('util/emoji');
+const log = getLoggerWrapper('util/emoji');
 
 export function resolveEmojiString(name: string, guild: Discord.Guild): string {
 	const emoji = guild.emojis.cache.find((e) => e.name === name);

@@ -2,46 +2,34 @@ import assert from 'assert';
 import Discord from 'discord.js';
 import { ClientIntents } from '../constants';
 import { Database } from '../database/database';
-import getLogger from '../utils/logger';
+import { getLoggerWrapper } from '../utils/logger';
 import { CommandHandler } from './command-handler';
 import { Configuration } from './configuration';
 import { attachCustomEvents } from './custom-events';
 import { ModuleHandler } from './module-handler';
 import { ResourceHandler } from './resource-handler';
 
-const log = getLogger('core');
+const log = getLoggerWrapper('core');
 
 class CBCBotCore {
-    private readonly client: Discord.Client = new Discord.Client({ intents: ClientIntents });
-    readonly database: Database = new Database('cbcbotv5');
-    readonly config: Configuration = new Configuration('config.json');
-    readonly resources: ResourceHandler = new ResourceHandler('resources');
-
-    private _moduleHandler?: ModuleHandler;
-    private _commandHandler?: CommandHandler;
+    readonly client: Discord.Client;
+    readonly database: Database;
+    readonly config: Configuration;
+    readonly resources: ResourceHandler;
+    readonly modules: ModuleHandler;
+    readonly commands: CommandHandler;
 
     constructor() {
+        this.client = new Discord.Client({ intents: ClientIntents });
+        this.database = new Database('cbcbotv5');
+        this.config = new Configuration('config.json');
+        this.resources = new ResourceHandler('resources');
+        this.modules = new ModuleHandler(this.client);
+        this.commands = new CommandHandler(this.client);
+
         log.info('Starting CBCBotV5');
         log.info(`Version: ${this.config.getVersion()}`);
         log.info(`Running in ${this.config.getNodeEnv()} mode`);
-    }
-
-    get modules(): ModuleHandler {
-        if(this._moduleHandler) {
-            return this._moduleHandler;
-        }
-        assert(this.client.isReady(), 'Cannot access ModuleHandler before client is ready.');
-        this._moduleHandler = new ModuleHandler(this.client);
-        return this._moduleHandler;
-    }
-
-    get commands(): CommandHandler {
-        if(this._commandHandler) {
-            return this._commandHandler;
-        }
-        assert(this.client.isReady(), 'Cannot access CommandHandler before client is ready.');
-        this._commandHandler = new CommandHandler(this.client);
-        return this._commandHandler;
     }
 
     async start() {

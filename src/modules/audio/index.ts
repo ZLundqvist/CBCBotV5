@@ -1,9 +1,9 @@
 import Discord from 'discord.js';
 import { Module } from "../../core";
-import getLogger from '../../utils/logger';
+import { getLoggerWrapper } from '../../utils/logger';
 import { GuildAudio } from "./guild-audio";
 
-const log = getLogger(__dirname);
+const log = getLoggerWrapper(__dirname);
 
 class AudioModule extends Module {
     private guildAudio: Discord.Collection<string, GuildAudio>;

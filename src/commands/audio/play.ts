@@ -2,10 +2,10 @@ import { SlashCommandBuilder } from '@discordjs/builders';
 import Discord, { CommandInteraction } from 'discord.js';
 import { GuildCommand } from "../../core";
 import audio from '../../modules/audio';
-import getLogger from '../../utils/logger';
+import { getLoggerWrapper } from '../../utils/logger';
 import { connectIfAloneOrDisconnected, inSameChannelAs } from "../../utils/voice";
 
-const log = getLogger(__dirname);
+const log = getLoggerWrapper(__dirname);
 
 const command = new SlashCommandBuilder()
     .setName('play')

@@ -1,9 +1,9 @@
 import axios from 'axios';
 import Discord from 'discord.js';
 import { Module } from "../../core";
-import getLogger from '../../utils/logger';
+import { getLoggerWrapper } from '../../utils/logger';
 
-const log = getLogger(__dirname);
+const log = getLoggerWrapper(__dirname);
 
 const CHECK_INTERVAL_MINUTES = 2;
 const URL = 'http://api.rscount.se/rs/count/000B91906EDA';

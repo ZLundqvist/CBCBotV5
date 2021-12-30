@@ -1,26 +1,28 @@
+import assert from 'assert';
 import Discord, { Collection } from 'discord.js';
 import path from 'path';
 import { CommandError, GlobalCommand, GuildCommand } from '.';
 import { EmojiCharacters } from '../constants';
 import { getFilesRecursive } from '../utils/file';
-import getLogger from '../utils/logger';
-import { timeMeasurement } from '../utils/time';
+import { getLoggerWrapper } from '../utils/logger';
 import { BaseCommand } from './base-command';
 import { ImportError } from './custom-errors';
 
-const log = getLogger('core');
+const log = getLoggerWrapper('core');
 const COMMANDS_PATH = path.join(__dirname, '../commands/');
 
 export class CommandHandler {
     private commands: Collection<string, BaseCommand>;
-    private readonly client: Discord.Client<true>;
+    private readonly client: Discord.Client;
 
-    constructor(client: Discord.Client<true>) {
+    constructor(client: Discord.Client) {
         this.commands = new Collection();
         this.client = client;
     }
 
     async init(): Promise<void> {
+        assert(this.client.isReady());
+
         await this.registerCommands();
 
         this.client.on('interactionCreate', (interaction) => {
@@ -33,6 +35,7 @@ export class CommandHandler {
     }
 
     async deployGlobalCommands(): Promise<void> {
+        assert(this.client.isReady());
         const commandData = this.getGlobalCommands().map(cmd => cmd.commandData);
         await this.client.application.commands.set(commandData);
         log.info(`Deployed ${commandData.length} application commands`);
@@ -82,7 +85,7 @@ export class CommandHandler {
     }
 
     private async registerCommands(): Promise<void> {
-        timeMeasurement.start('Command import');
+        log.time('Command import');
 
         const filePaths = getFilesRecursive(COMMANDS_PATH);
 
@@ -98,7 +101,7 @@ export class CommandHandler {
             }
         }
 
-        timeMeasurement.end('Command import', log);
+        log.timeEnd('Command import');
         log.info(`Imported ${this.commands.size} commands`);
     }
 
@@ -156,6 +159,7 @@ export class CommandHandler {
     }
 
     private async globalCommandsDiffer(): Promise<boolean> {
+        assert(this.client.isReady());
         const localCommandNames = this.getGlobalCommands().map(cmd => cmd.name);
         const deployedCommands = await this.client.application.commands.fetch();
         const deployedCommandNames = Array.from(deployedCommands.mapValues(cmd => cmd.name).values());

@@ -1,9 +1,8 @@
-import { AudioPlayer, AudioPlayerStatus, AudioResource, createAudioPlayer, createAudioResource, demuxProbe, entersState, getVoiceConnection, NoSubscriberBehavior, VoiceConnectionStatus } from '@discordjs/voice';
+import { AudioPlayer, AudioPlayerStatus, AudioResource, createAudioPlayer, entersState, getVoiceConnection, NoSubscriberBehavior, VoiceConnectionStatus } from '@discordjs/voice';
 import Discord from 'discord.js';
-import { Logger } from 'log4js';
 import { EmojiCharacters } from '../../constants';
 import { BotCore, CommandError } from '../../core';
-import getLogger from '../../utils/logger';
+import { getLoggerWrapper, LoggerWrapper } from '../../utils/logger';
 import memberStats from '../member-stats';
 import { GuildQueue } from './guild-queue';
 import { GuildQueueItem } from './guild-queue-item/guild-queue-item';
@@ -13,13 +12,13 @@ const MAX_QUEUE_LENGTH = 50;
 const VOLUME_FACTOR = 200;
 
 export class GuildAudio {
-    private readonly log: Logger;
+    private readonly log: LoggerWrapper;
     private readonly guild: Discord.Guild;
     private readonly player: AudioPlayer;
     private readonly queue: GuildQueue;
 
     constructor(guild: Discord.Guild) {
-        this.log = getLogger(`guild-audio (${guild.name})`);
+        this.log = getLoggerWrapper(`guild-audio (${guild.name})`);
         this.guild = guild;
         this.queue = new GuildQueue(guild);
         this.player = createAudioPlayer({

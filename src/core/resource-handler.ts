@@ -2,9 +2,9 @@ import Discord from 'discord.js';
 import fs from 'fs';
 import path from 'path';
 import { getMP3Metadata, MP3Metadata } from '../utils/audio';
-import getLogger from '../utils/logger';
+import { getLoggerWrapper } from '../utils/logger';
 
-const log = getLogger('resource-handler');
+const log = getLoggerWrapper('resource-handler');
 
 export interface LocalResource {
     /**

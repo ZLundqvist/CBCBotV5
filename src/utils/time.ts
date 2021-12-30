@@ -1,8 +1,3 @@
-import log4js from 'log4js';
-import getLogger from './logger';
-
-const log = getLogger('util/time');
-
 /**
  * Converts seconds to mm:ss
  * @param s 
@@ -20,29 +15,3 @@ export function secondsToMS(s: number): string {
     }
     return `${minutes}:${seconds}`;
 }
-
-export const timeMeasurement = {
-    _cache: {} as { [key: string]: number },
-    start: function (key: string) {
-        if(!this._cache[key]) {
-            this._cache[key] = performance.now();
-        } else {
-            log.warn(`Time is already being measured for key: ${key}`);
-        }
-    },
-    end: function (key: string, customLog?: log4js.Logger) {
-        if(this._cache[key]) {
-            const diff = Math.ceil(performance.now() - this._cache[key]);
-
-            if(customLog) {
-                customLog.info(`${key}: ${diff}ms`);
-            } else {
-                log.info(`${key}: ${diff}ms`);
-            }
-            
-            delete this._cache[key];
-        } else {
-            log.warn(`Time is not being measured for key: ${key}`);
-        }
-    }
-};
