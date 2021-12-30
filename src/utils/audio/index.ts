@@ -1,4 +1,4 @@
-import { LocalResource } from '../../core/resource-handler';
+import { LocalResource } from '../../resources';
 import { MP3Parser } from './mp3-parser/mp3-parser';
 
 export type MP3Metadata = {

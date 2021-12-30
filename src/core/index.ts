@@ -3,10 +3,10 @@ import { ClientIntents } from '../constants';
 import { Database } from '../database/database';
 import { getLoggerWrapper } from '../utils/logger';
 import { CommandHandler } from './command-handler';
-import { Configuration } from './configuration';
+import { Configuration } from '../configuration';
 import { attachCustomEvents } from './custom-events';
 import { ModuleHandler } from './module-handler';
-import { ResourceHandler } from './resource-handler';
+import { Resources } from '../resources';
 
 class CBCBotCore {
     private readonly log = getLoggerWrapper('core');
@@ -14,7 +14,7 @@ class CBCBotCore {
     readonly client: Discord.Client;
     readonly database: Database;
     readonly config: Configuration;
-    readonly resources: ResourceHandler;
+    readonly resources: Resources;
     readonly modules: ModuleHandler;
     readonly commands: CommandHandler;
 
@@ -22,7 +22,7 @@ class CBCBotCore {
         this.client = new Discord.Client({ intents: ClientIntents });
         this.database = new Database('cbcbotv5');
         this.config = new Configuration('config.json');
-        this.resources = new ResourceHandler('resources');
+        this.resources = new Resources('resources');
         this.modules = new ModuleHandler(this.client);
         this.commands = new CommandHandler(this.client);
 

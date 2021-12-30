@@ -2,7 +2,7 @@ import Discord from 'discord.js';
 import { createReadStream } from 'fs';
 import { Readable } from 'stream';
 import { LocalAudioProvider } from '../../../constants';
-import { SFXResource } from '../../../core/resource-handler';
+import { SFXResource } from '../../../resources';
 import { GuildQueueItem, TrackInfo } from './guild-queue-item';
 
 export class GuildQueueLocalItem extends GuildQueueItem {

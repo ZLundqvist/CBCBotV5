@@ -2,6 +2,7 @@ import Discord from 'discord.js';
 import fs from 'fs';
 import path from 'path';
 import { getLoggerWrapper } from '../utils/logger';
+
 class ConfigurationParameters {
     'token': string = '';
     'owner-id': string = '';

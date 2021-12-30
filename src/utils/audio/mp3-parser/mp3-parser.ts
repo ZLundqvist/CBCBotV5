@@ -1,5 +1,5 @@
 import fs from 'fs';
-import { LocalResource } from '../../../core/resource-handler';
+import { LocalResource } from '../../../resources';
 import { MP3Metadata } from '../../audio';
 import { MP3Bytes } from './mp3-bytes';
 import { MP3FrameHeader, ParsedFrameHeader } from './mp3-frame-header';

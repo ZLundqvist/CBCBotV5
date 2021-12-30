@@ -26,8 +26,8 @@ export interface SFXResource extends LocalResource {
 
 type ImageResource = 'soundcloud-logo' | 'yt-logo';
 
-export class ResourceHandler {
-    private readonly log = getLoggerWrapper('resource-handler');
+export class Resources {
+    private readonly log = getLoggerWrapper('resources');
     private readonly rootDir: string;
     private readonly customSFXDir: string;
     private readonly sfxDir: string;
