@@ -1,10 +1,10 @@
-import Discord from 'discord.js';
-import { Precondition } from '../core';
+import { BotCore, Precondition, PreconditionError } from '../core';
+import { RunCommandContext } from '../core/command';
 
-
-export class OwnerOnlyPrecondition extends Precondition {
-
-    run(interaction: Discord.CommandInteraction): void {
-        throw new Error('Method not implemented.');
+export default class OwnerOnlyPrecondition extends Precondition {
+    async run(context: RunCommandContext): Promise<void> {
+        if(!BotCore.config.isOwner(context.interaction.user)) {
+            throw new PreconditionError('You do not have permission to do this, my dude');
+        }
     }
 }

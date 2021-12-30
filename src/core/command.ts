@@ -2,7 +2,6 @@ import Discord from 'discord.js';
 import { getLoggerWrapper, LoggerWrapper } from '../utils/logger';
 
 export interface CommandOptions {
-    ownerOnly: boolean;
     autoDefer: boolean;
     preconditions?: string[];
 };
@@ -25,6 +24,10 @@ export abstract class Command {
 
     get name(): string {
         return this.commandData.name;
+    }
+
+    get preconditions(): string[] {
+        return this.options.preconditions || [];
     }
 
     /**

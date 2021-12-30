@@ -10,7 +10,6 @@ const command = new SlashCommandBuilder()
 export default class SkipCommand extends GuildCommand {
     constructor() {
         super(command.toJSON(), {
-            ownerOnly: false,
             autoDefer: true
         });
     }

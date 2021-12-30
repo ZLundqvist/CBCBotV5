@@ -10,7 +10,6 @@ const command = new SlashCommandBuilder()
 export default class GetInvinteLinkCommand extends GlobalCommand {
     constructor() {
         super(command.toJSON(), {
-            ownerOnly: false,
             autoDefer: false
         });
     }

@@ -67,7 +67,7 @@ export class ModuleHandler {
             throw new ImportError(`Duplicate module name: ${defaultExport.name}`);
         }
 
-        this.log.debug(`Importing module: ${defaultExport.name}`);
+        this.log.debug(`Importing Module: ${defaultExport.name}`);
         this.modules.set(defaultExport.name, defaultExport);
     }
 }

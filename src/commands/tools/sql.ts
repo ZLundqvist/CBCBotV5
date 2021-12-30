@@ -17,8 +17,8 @@ const command = new SlashCommandBuilder()
 export default class SQLCommand extends GlobalCommand {
     constructor() {
         super(command.toJSON(), {
-            ownerOnly: true,
-            autoDefer: false
+            autoDefer: false,
+            preconditions: ['OwnerOnly']
         });
     }
 

@@ -14,7 +14,6 @@ const command = new SlashCommandBuilder()
 export default class SFXCommand extends GlobalCommand {
     constructor() {
         super(command.toJSON(), {
-            ownerOnly: false,
             autoDefer: false
         });
     }

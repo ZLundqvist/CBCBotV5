@@ -9,7 +9,6 @@ const command = new SlashCommandBuilder()
 export default class LeaveCommand extends GuildCommand {
     constructor() {
         super(command.toJSON(), {
-            ownerOnly: false,
             autoDefer: true
         });
     }

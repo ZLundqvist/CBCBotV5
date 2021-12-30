@@ -12,3 +12,6 @@ export function formatLoggerName(name: string): string {
     return formattedName;
 }
 
+export function formatPreconditionName(className: string): string {
+    return className.replace('Precondition', '');
+}

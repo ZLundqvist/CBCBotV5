@@ -10,7 +10,6 @@ const command = new SlashCommandBuilder()
 export default class StopCommand extends GuildCommand {
     constructor() {
         super(command.toJSON(), {
-            ownerOnly: false,
             autoDefer: true
         });
     }

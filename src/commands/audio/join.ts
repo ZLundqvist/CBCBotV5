@@ -10,7 +10,6 @@ const command = new SlashCommandBuilder()
 export default class JoinCommand extends GuildCommand {
     constructor() {
         super(command.toJSON(), {
-            ownerOnly: false,
             autoDefer: true
         });
     }

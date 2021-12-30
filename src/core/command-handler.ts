@@ -1,12 +1,13 @@
 import assert from 'assert';
 import Discord, { Collection } from 'discord.js';
 import path from 'path';
-import { CommandError, GlobalCommand, GuildCommand } from '.';
+import { CommandError, GlobalCommand, GuildCommand, PreconditionError } from '.';
 import { EmojiCharacters } from '../constants';
 import { getFilesRecursive } from '../utils/file';
 import { getLoggerWrapper } from '../utils/logger';
-import { Command } from './command';
+import { Command, RunCommandContext } from './command';
 import { ImportError } from './custom-errors';
+import { PreconditionHandler } from './precondition-handler';
 
 const COMMANDS_PATH = path.join(__dirname, '../commands/');
 
@@ -14,15 +15,18 @@ export class CommandHandler {
     private readonly log = getLoggerWrapper('core');
     private readonly commands: Collection<string, Command>;
     private readonly client: Discord.Client;
+    readonly preconditions: PreconditionHandler;
 
     constructor(client: Discord.Client) {
         this.commands = new Collection();
         this.client = client;
+        this.preconditions = new PreconditionHandler();
     }
 
     async init(): Promise<void> {
         assert(this.client.isReady());
 
+        await this.preconditions.init();
         await this.registerCommands();
 
         this.client.on('interactionCreate', (interaction) => {
@@ -64,10 +68,13 @@ export class CommandHandler {
             return;
         }
 
+        const context: RunCommandContext = {
+            interaction
+        };
+
         try {
-            await command.onInteraction({
-                interaction: interaction
-            });
+            await this.preconditions.runPreconditions(command, context);
+            await command.onInteraction(context);
         } catch(error) {
             const replyFn = async (msg: string) => {
                 if(interaction.replied || interaction.deferred) {
@@ -78,6 +85,8 @@ export class CommandHandler {
             };
 
             if(error instanceof CommandError) {
+                await replyFn(`${EmojiCharacters.deny} **${error.message}**`);
+            } else if(error instanceof PreconditionError) {
                 await replyFn(`${EmojiCharacters.deny} **${error.message}**`);
             } else {
                 this.log.error(error);

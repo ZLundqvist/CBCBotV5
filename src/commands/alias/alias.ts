@@ -46,7 +46,6 @@ const command = new SlashCommandBuilder()
 export default class AliasCommand extends GuildCommand {
     constructor() {
         super(command.toJSON(), {
-            ownerOnly: false,
             autoDefer: false
         });
     }

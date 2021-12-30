@@ -17,7 +17,6 @@ const command = new SlashCommandBuilder()
 export default class BotEntrySoundCommand extends GuildCommand {
     constructor() {
         super(command.toJSON(), {
-            ownerOnly: false,
             autoDefer: false
         });
     }

@@ -1,9 +1,6 @@
-import Discord from 'discord.js';
+import { RunCommandContext } from './command';
 
 export abstract class Precondition {
-
-    constructor() {}
-
-    abstract run(interaction: Discord.CommandInteraction): void;
+    abstract run(context: RunCommandContext): Promise<void>;
 }
 

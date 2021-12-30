@@ -11,7 +11,6 @@ const command = new SlashCommandBuilder()
 export default class MeIRLCommand extends GlobalCommand {
     constructor() {
         super(command.toJSON(), {
-            ownerOnly: false,
             autoDefer: true
         });
     }

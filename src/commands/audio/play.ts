@@ -18,7 +18,6 @@ const command = new SlashCommandBuilder()
 export default class PlayCommand extends GuildCommand {
     constructor() {
         super(command.toJSON(), {
-            ownerOnly: false,
             autoDefer: true
         });
     }
