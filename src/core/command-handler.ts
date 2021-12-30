@@ -8,11 +8,11 @@ import { getLoggerWrapper } from '../utils/logger';
 import { BaseCommand } from './base-command';
 import { ImportError } from './custom-errors';
 
-const log = getLoggerWrapper('core');
 const COMMANDS_PATH = path.join(__dirname, '../commands/');
 
 export class CommandHandler {
-    private commands: Collection<string, BaseCommand>;
+    private readonly log = getLoggerWrapper('core');
+    private readonly commands: Collection<string, BaseCommand>;
     private readonly client: Discord.Client;
 
     constructor(client: Discord.Client) {
@@ -38,13 +38,13 @@ export class CommandHandler {
         assert(this.client.isReady());
         const commandData = this.getGlobalCommands().map(cmd => cmd.commandData);
         await this.client.application.commands.set(commandData);
-        log.info(`Deployed ${commandData.length} application commands`);
+        this.log.info(`Deployed ${commandData.length} application commands`);
     }
 
     async deployGuildCommands(guild: Discord.Guild): Promise<void> {
         const commandData = this.getGuildCommands().map(cmd => cmd.commandData);
         await guild.commands.set(commandData);
-        log.info(`Deployed ${commandData.length} commands to guild ${guild.name}`);
+        this.log.info(`Deployed ${commandData.length} commands to guild ${guild.name}`);
     }
 
     getGuildCommands(): GuildCommand[] {
@@ -59,7 +59,7 @@ export class CommandHandler {
         const command = this.commands.get(interaction.commandName);
 
         if(!command) {
-            log.warn(`Received CommandInteraction without matching command (commandName: ${interaction.commandName})`);
+            this.log.warn(`Received CommandInteraction without matching command (commandName: ${interaction.commandName})`);
             await interaction.reply('Command has not been registered. Update list of commands using /commands refresh');
             return;
         }
@@ -78,14 +78,14 @@ export class CommandHandler {
             if(error instanceof CommandError) {
                 await replyFn(`${EmojiCharacters.deny} **${error.message}**`);
             } else {
-                log.error(error);
+                this.log.error(error);
                 await replyFn(`${EmojiCharacters.deny} Something went wrong`);
             }
         }
     }
 
     private async registerCommands(): Promise<void> {
-        log.time('Command import');
+        this.log.time('Command import');
 
         const filePaths = getFilesRecursive(COMMANDS_PATH);
 
@@ -94,15 +94,15 @@ export class CommandHandler {
                 await this.registerCommand(filePath);
             } catch(error) {
                 if(error instanceof ImportError) {
-                    log.error(`Error importing command from file '${filePath}' (${error.message})`);
+                    this.log.error(`Error importing command from file '${filePath}' (${error.message})`);
                 } else {
                     throw error;
                 }
             }
         }
 
-        log.timeEnd('Command import');
-        log.info(`Imported ${this.commands.size} commands`);
+        this.log.timeEnd('Command import');
+        this.log.info(`Imported ${this.commands.size} commands`);
     }
 
     private async registerCommand(path: string): Promise<void> {
@@ -120,9 +120,9 @@ export class CommandHandler {
         }
 
         if(instance instanceof GuildCommand) {
-            log.debug(`Importing GuildCommand: ${instance.name}`);
+            this.log.debug(`Importing GuildCommand: ${instance.name}`);
         } else if(instance instanceof GlobalCommand) {
-            log.debug(`Importing GlobalCommand: ${instance.name}`);
+            this.log.debug(`Importing GlobalCommand: ${instance.name}`);
         } else {
             throw new ImportError('Encountered unknown instance');
         }
@@ -142,19 +142,19 @@ export class CommandHandler {
         const guilds = this.client.guilds.cache.values();
         for(const guild of guilds) {
             if(await this.guildCommandsDiffer(guild)) {
-                log.debug(`GuildCommand re-deploy needed in guild ${guild.name}`);
+                this.log.debug(`GuildCommand re-deploy needed in guild ${guild.name}`);
                 await this.deployGuildCommands(guild);
             } else {
-                log.debug(`GuildCommands are up to date in guild ${guild.name}`);
+                this.log.debug(`GuildCommands are up to date in guild ${guild.name}`);
             }
         }
 
         // Check for application commands
         if(await this.globalCommandsDiffer()) {
-            log.debug('GlobalCommand re-deploy needed');
+            this.log.debug('GlobalCommand re-deploy needed');
             await this.deployGlobalCommands();
         } else {
-            log.debug('GlobalCommands are up to date');
+            this.log.debug('GlobalCommands are up to date');
         }
     }
 

@@ -2,22 +2,19 @@ import Discord, { EmbedField } from 'discord.js';
 import moment from 'moment';
 import { Colors, Images } from '../../constants';
 import { BotCore, Module } from "../../core";
-import { getLoggerWrapper } from '../../utils/logger';
-
-const log = getLoggerWrapper(__dirname);
 
 class CurrencyModule extends Module {
     distributer?: NodeJS.Timeout;
 
     constructor() {
-        super('Currency');
+        super('currency');
     }
 
     async init(client: Discord.Client<true>): Promise<void> {
         this.distributer = setInterval(() => {
             this.distributeGold(client);
         }, 60 * 1000);
-        log.debug('Distributer enabled.');
+        this.log.debug('Distributer enabled.');
     }
 
     async destroy(): Promise<void> {
@@ -94,14 +91,14 @@ class CurrencyModule extends Module {
                 }
             } catch(error) {
                 if(error instanceof Error) {
-                    log.error(`Unable to distribute in guild ${guild.name}: ` + error.message);
+                    this.log.error(`Unable to distribute in guild ${guild.name}: ` + error.message);
                 } else {
-                    log.error(error);
+                    this.log.error(error);
                 }
 
             }
         }
-        log.trace('Currency distributed');
+        this.log.trace('Currency distributed');
     }
 }
 

@@ -3,7 +3,7 @@ import { BotCore, Module } from '../../core';
 
 class MemberStatsModule extends Module {
     constructor() {
-        super('MemberStats');
+        super('member-stats');
     }
 
     async init(client: Discord.Client<true>): Promise<void> {

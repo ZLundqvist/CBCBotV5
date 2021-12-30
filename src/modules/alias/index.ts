@@ -1,14 +1,11 @@
 import Discord from 'discord.js';
 import { BotCore, CommandError, Module } from '../../core';
-import { getLoggerWrapper } from '../../utils/logger';
-
-const log = getLoggerWrapper(__dirname);
 
 class AliasModule extends Module {
     private client!: Discord.Client<true>;
 
     constructor() {
-        super('Alias');
+        super('alias');
     }
 
     async init(client: Discord.Client<true>): Promise<void> {
@@ -27,10 +24,10 @@ class AliasModule extends Module {
         if(alias) {
             const oldValue = alias.value;
             alias.value = value;
-            log.info(`Alias value updated: ${oldValue} -> ${alias.value}`);
+            this.log.info(`Alias value updated: ${oldValue} -> ${alias.value}`);
         } else {
             alias = await BotCore.database.buildAlias(guild, key, value);
-            log.info(`Alias added: ${alias.key} -> ${alias.value}`);
+            this.log.info(`Alias added: ${alias.key} -> ${alias.value}`);
         }
 
         await alias.save();
@@ -44,10 +41,10 @@ class AliasModule extends Module {
             throw new CommandError(`Alias does not exist: ${key}`);
 
         await alias.remove();
-        log.info(`Alias removed: ${alias.key}`);
+        this.log.info(`Alias removed: ${alias.key}`);
     }
 
-    private async onMessageCreate(msg: Discord.Message) {        
+    private async onMessageCreate(msg: Discord.Message) {
         if(!msg.guild) {
             return;
         }

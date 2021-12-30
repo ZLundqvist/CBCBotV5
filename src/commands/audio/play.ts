@@ -2,10 +2,7 @@ import { SlashCommandBuilder } from '@discordjs/builders';
 import Discord, { CommandInteraction } from 'discord.js';
 import { GuildCommand } from "../../core";
 import audio from '../../modules/audio';
-import { getLoggerWrapper } from '../../utils/logger';
 import { connectIfAloneOrDisconnected, inSameChannelAs } from "../../utils/voice";
-
-const log = getLoggerWrapper(__dirname);
 
 const command = new SlashCommandBuilder()
     .setName('play')
@@ -17,7 +14,6 @@ const command = new SlashCommandBuilder()
             .setRequired(true);
         return option;
     });
-
 
 export default class PlayCommand extends GuildCommand {
     constructor() {
@@ -46,7 +42,7 @@ export default class PlayCommand extends GuildCommand {
             queuedItem.setEmbedMessage(reply);
             await guildAudio.attachSkipReaction(queuedItem);
         } else {
-            log.warn('Not instance of Discord.Message. Cannot attach skip reaction.');
+            this.log.warn('Not instance of Discord.Message. Cannot attach skip reaction.');
         }
     }
 }

@@ -1,9 +1,6 @@
 import axios from 'axios';
 import Discord from 'discord.js';
 import { Module } from "../../core";
-import { getLoggerWrapper } from '../../utils/logger';
-
-const log = getLoggerWrapper(__dirname);
 
 const CHECK_INTERVAL_MINUTES = 2;
 const URL = 'http://api.rscount.se/rs/count/000B91906EDA';
@@ -15,7 +12,7 @@ class FysikenModule extends Module {
     thresholds: Discord.Collection<string, number>;
 
     constructor() {
-        super('Fysiken');
+        super('fysiken');
         this.thresholds = new Discord.Collection();
     }
 
@@ -32,7 +29,7 @@ class FysikenModule extends Module {
 
     setThresholdForUser(user: Discord.User, threshold: number) {
         this.thresholds.set(user.id, threshold);
-        log.debug(`setThresholdForUser (id=${user.id}, threshold=${threshold})`);
+        this.log.debug(`setThresholdForUser (id=${user.id}, threshold=${threshold})`);
     }
 
     async getCurrentValue(): Promise<number> {
@@ -62,12 +59,12 @@ class FysikenModule extends Module {
                 this.thresholds.delete(user.userId);
             }
         } catch(error) {
-            log.error(error);
+            this.log.error(error);
         }
     }
 
     async notifyUser(userId: string, threshold: number, currentVal: number) {
-        log.debug(`notifyUser (id=${userId}, current=${currentVal}, threshold=${threshold})`);
+        this.log.debug(`notifyUser (id=${userId}, current=${currentVal}, threshold=${threshold})`);
         const discordUser = await this.client.users.fetch(userId);
         await discordUser.send(`WORKOUT TIME SOYBOY! Only ${currentVal} sweaty nerds @ Fysiken`);
     }

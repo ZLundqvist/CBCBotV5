@@ -21,7 +21,7 @@ class RedditModule extends Module {
     private defaultMode: RedditPostMode;
 
     constructor() {
-        super('Reddit');
+        super('reddit');
         this.reddit = new snoowrap({
             userAgent: 'put your user-agent string here',
             clientId: BotCore.config.getValue('reddit-client-id'),

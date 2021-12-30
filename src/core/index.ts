@@ -1,4 +1,3 @@
-import assert from 'assert';
 import Discord from 'discord.js';
 import { ClientIntents } from '../constants';
 import { Database } from '../database/database';
@@ -9,9 +8,9 @@ import { attachCustomEvents } from './custom-events';
 import { ModuleHandler } from './module-handler';
 import { ResourceHandler } from './resource-handler';
 
-const log = getLoggerWrapper('core');
-
 class CBCBotCore {
+    private readonly log = getLoggerWrapper('core');
+
     readonly client: Discord.Client;
     readonly database: Database;
     readonly config: Configuration;
@@ -27,9 +26,9 @@ class CBCBotCore {
         this.modules = new ModuleHandler(this.client);
         this.commands = new CommandHandler(this.client);
 
-        log.info('Starting CBCBotV5');
-        log.info(`Version: ${this.config.getVersion()}`);
-        log.info(`Running in ${this.config.getNodeEnv()} mode`);
+        this.log.info('Starting CBCBotV5');
+        this.log.info(`Version: ${this.config.getVersion()}`);
+        this.log.info(`Running in ${this.config.getNodeEnv()} mode`);
     }
 
     async start() {
@@ -39,7 +38,7 @@ class CBCBotCore {
 
         // Attach various listeners
         this.client.on('ready', async (client) => {
-            log.info(`Connected to Discord and logged in as ${client.user?.tag}`);
+            this.log.info(`Connected to Discord and logged in as ${client.user?.tag}`);
             await this.modules.init();
             await this.commands.init();
             await this.database.addMissingGuilds(Array.from(client.guilds.cache.values()));
@@ -64,13 +63,13 @@ class CBCBotCore {
     }
 
     async gracefulShutdown(): Promise<void> {
-        log.info('Performing graceful shutdown');
+        this.log.info('Performing graceful shutdown');
 
         await this.modules.destroy();
         await this.database.closeConnection();
 
         this.client.destroy();
-        log.info('Client destroyed');
+        this.log.info('Client destroyed');
 
         process.exit(0);
     }
@@ -82,3 +81,4 @@ export * from './custom-events';
 export * from './global-command';
 export * from './guild-command';
 export * from './module';
+

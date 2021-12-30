@@ -7,7 +7,7 @@ class AutoJoinModule extends Module {
     private client!: Discord.Client<true>;
 
     constructor() {
-        super('AutoJoin');
+        super('auto-join');
     }
 
     async init(client: Discord.Client<true>): Promise<void> {

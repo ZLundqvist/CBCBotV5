@@ -1,11 +1,9 @@
 import Discord from 'discord.js';
 import { clearInterval } from 'timers';
 import { Module } from '../../core';
-import { getLoggerWrapper } from '../../utils/logger';
 import { inVoiceChannel } from '../../utils/voice';
 import audio from '../audio';
 
-const log = getLoggerWrapper(__dirname);
 
 type PostureCheckInterval = {
     id: NodeJS.Timeout; // intervalId
@@ -16,7 +14,7 @@ class PostureCheckModule extends Module {
     private guildIntervals: Discord.Collection<string, PostureCheckInterval>;
 
     constructor() {
-        super('PostureCheck');
+        super('posture-check');
         this.guildIntervals = new Discord.Collection();
     }
 
@@ -52,7 +50,7 @@ class PostureCheckModule extends Module {
             period: period
         })
 
-        log.debug(`Enabled (guild: ${guild.name}, interval: ${period} minutes)`);
+        this.log.debug(`Enabled (guild: ${guild.name}, interval: ${period} minutes)`);
 
         this.doPostureCheck(guild);
     }
@@ -63,18 +61,18 @@ class PostureCheckModule extends Module {
         if(interval) {
             clearInterval(interval.id);
             this.guildIntervals.delete(guild.id);
-            log.debug(`Disabled (guild: ${guild.name})`);
+            this.log.debug(`Disabled (guild: ${guild.name})`);
         }
     }
 
     private async doPostureCheck(guild: Discord.Guild): Promise<void> {
         if(!guild.me) {
-            log.warn('guild.me is null, cannot play PC');
+            this.log.warn('guild.me is null, cannot play PC');
             return;
         }
 
         if(!inVoiceChannel(guild)) {
-            log.debug(`Tried to perform PC without VoiceConnection, disabling (guild: ${guild.name})`);
+            this.log.debug(`Tried to perform PC without VoiceConnection, disabling (guild: ${guild.name})`);
             this.disable(guild);
             return;
         }
@@ -82,15 +80,15 @@ class PostureCheckModule extends Module {
         const guildAudio = audio.getGuildAudio(guild);
 
         if(guildAudio.isPlaying) {
-            log.debug(`Audio playing in guild, skipping (guild: ${guild.name})`);
+            this.log.debug(`Audio playing in guild, skipping (guild: ${guild.name})`);
             return;
         }
 
         try {
-            log.debug(`Performing PostureCheck (guild: ${guild.name})`);
+            this.log.debug(`Performing PostureCheck (guild: ${guild.name})`);
             await guildAudio.smartQueue('pc', guild.me, false);
         } catch(error: any) {
-            log.warn(`Unable to queue PostureCheck: ${error.message}`);
+            this.log.warn(`Unable to queue PostureCheck: ${error.message}`);
         }
     }
 }

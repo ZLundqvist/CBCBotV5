@@ -6,10 +6,11 @@ import { getDirectories } from '../utils/file';
 import { getLoggerWrapper } from '../utils/logger';
 import { Module } from './module';
 
-const log = getLoggerWrapper('core');
 const MODULES_PATH = path.join(__dirname, '../modules/');
 
 export class ModuleHandler {
+    private readonly log = getLoggerWrapper('core');
+
     private readonly modules: Discord.Collection<string, Module>;
     private readonly client: Discord.Client;
 
@@ -24,14 +25,14 @@ export class ModuleHandler {
     }
 
     async destroy() {
-        log.info('Destroying modules');
+        this.log.info('Destroying modules');
         for(const module of this.modules.values()) {
             await module.destroy();
         }
     }
 
     private async registerModules(): Promise<void> {
-        log.time('Module import');
+        this.log.time('Module import');
 
         const modulePaths = getDirectories(MODULES_PATH);
 
@@ -40,7 +41,7 @@ export class ModuleHandler {
                 await this.registerModule(modulePath);
             } catch(error) {
                 if(error instanceof ImportError) {
-                    log.error(`Error importing module from file '${modulePath}' (${error.message})`);
+                    this.log.error(`Error importing module from file '${modulePath}' (${error.message})`);
                 } else {
                     throw error;
                 }
@@ -51,8 +52,8 @@ export class ModuleHandler {
             await module.init(this.client);
         }
 
-        log.timeEnd('Module import');
-        log.info(`Imported ${this.modules.size} modules`);
+        this.log.timeEnd('Module import');
+        this.log.info(`Imported ${this.modules.size} modules`);
     }
 
     private async registerModule(path: string): Promise<void> {
@@ -66,7 +67,7 @@ export class ModuleHandler {
             throw new ImportError(`Duplicate module name: ${defaultExport.name}`);
         }
 
-        log.debug(`Importing module: ${defaultExport.name}`);
+        this.log.debug(`Importing module: ${defaultExport.name}`);
         this.modules.set(defaultExport.name, defaultExport);
     }
 }

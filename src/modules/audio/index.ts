@@ -1,15 +1,12 @@
 import Discord from 'discord.js';
 import { Module } from "../../core";
-import { getLoggerWrapper } from '../../utils/logger';
 import { GuildAudio } from "./guild-audio";
-
-const log = getLoggerWrapper(__dirname);
 
 class AudioModule extends Module {
     private guildAudio: Discord.Collection<string, GuildAudio>;
 
     constructor() {
-        super('Audio');
+        super('audio');
         this.guildAudio = new Discord.Collection();
     }
 
@@ -22,7 +19,7 @@ class AudioModule extends Module {
         if(!guildAudio) {
             guildAudio = new GuildAudio(guild);
             this.guildAudio.set(guild.id, guildAudio);
-            log.debug(`Created GuildAudio: ${guild.name}`);
+            this.log.debug(`Created GuildAudio: ${guild.name}`);
         }
 
         return guildAudio;

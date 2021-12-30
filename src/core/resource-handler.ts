@@ -3,9 +3,6 @@ import fs from 'fs';
 import path from 'path';
 import { getMP3Metadata, MP3Metadata } from '../utils/audio';
 import { getLoggerWrapper } from '../utils/logger';
-
-const log = getLoggerWrapper('resource-handler');
-
 export interface LocalResource {
     /**
      * Filename of resource, excluding extension
@@ -30,6 +27,7 @@ export interface SFXResource extends LocalResource {
 type ImageResource = 'soundcloud-logo' | 'yt-logo';
 
 export class ResourceHandler {
+    private readonly log = getLoggerWrapper('resource-handler');
     private readonly rootDir: string;
     private readonly customSFXDir: string;
     private readonly sfxDir: string;
@@ -37,7 +35,7 @@ export class ResourceHandler {
     private readonly sfxMetadataCache: Discord.Collection<string, MP3Metadata>;
 
     /**
-     * @param rootDir Relative path to root directory of resource
+     * @param rootDir Path to root directory of resource
      */
     constructor(rootDir: string) {
         this.rootDir = path.resolve(rootDir);
@@ -48,16 +46,16 @@ export class ResourceHandler {
     }
 
     setup() {
-        log.debug(`Using root directory: ${this.rootDir}`);
+        this.log.debug(`Using root directory: ${this.rootDir}`);
 
         if(!fs.existsSync(this.customSFXDir)) {
             fs.mkdirSync(this.customSFXDir);
-            log.debug(`Created custom SFX directory: ${this.customSFXDir}`);
+            this.log.debug(`Created custom SFX directory: ${this.customSFXDir}`);
         }
 
-        log.debug(`Custom SFX count: ${fs.readdirSync(this.customSFXDir).length}`);
-        log.debug(`SFX count: ${fs.readdirSync(this.sfxDir).length}`);
-        log.debug(`Image count: ${fs.readdirSync(this.imageDir).length}`);
+        this.log.debug(`Custom SFX count: ${fs.readdirSync(this.customSFXDir).length}`);
+        this.log.debug(`SFX count: ${fs.readdirSync(this.sfxDir).length}`);
+        this.log.debug(`Image count: ${fs.readdirSync(this.imageDir).length}`);
     }
 
     /**

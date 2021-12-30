@@ -2,9 +2,6 @@ import Discord from 'discord.js';
 import fs from 'fs';
 import path from 'path';
 import { getLoggerWrapper } from '../utils/logger';
-
-const log = getLoggerWrapper('config');
-
 class ConfigurationParameters {
     'token': string = '';
     'owner-id': string = '';
@@ -15,6 +12,8 @@ class ConfigurationParameters {
 }
 
 export class Configuration {
+    private readonly log = getLoggerWrapper('config');
+
     private configPath: string;
     private parameters: ConfigurationParameters;
 
@@ -27,12 +26,12 @@ export class Configuration {
      * Loads and validates the config file
      */
     loadAndValidate() {
-        log.debug(`Using config: ${this.configPath}`);
+        this.log.debug(`Using config: ${this.configPath}`);
 
         if(!fs.existsSync(this.configPath)) {
-            log.fatal('No config file was found, creating one...');
+            this.log.fatal('No config file was found, creating one...');
             fs.writeFileSync(this.configPath, JSON.stringify(this.parameters, null, 2));
-            log.fatal('Empty config file was created. Populate it and start the bot again.');
+            this.log.fatal('Empty config file was created. Populate it and start the bot again.');
             process.exit(1);
         }
 

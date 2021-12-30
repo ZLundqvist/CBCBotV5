@@ -1,15 +1,12 @@
 import Discord from 'discord.js';
 import { BotCore, CommandError, Module, VoiceStateUpdateCustom } from "../../core";
-import { getLoggerWrapper } from '../../utils/logger';
 import audio from '../audio';
-
-const log = getLoggerWrapper(__dirname);
 
 class EntrySoundModule extends Module {
     private client!: Discord.Client<true>;
 
     constructor() {
-        super('EntrySound');
+        super('entry-sound');
     }
 
     async init(client: Discord.Client<true>): Promise<void> {
@@ -69,7 +66,7 @@ class EntrySoundModule extends Module {
         const guildDB = await BotCore.database.getGuild(guild);
 
         if(!guildDB.entrysound) {
-            log.debug(`No entrysound set: ${guild.name}`);
+            this.log.debug(`No entrysound set: ${guild.name}`);
             return;
         }
 
@@ -83,7 +80,7 @@ class EntrySoundModule extends Module {
             try {
                 await guildAudio.smartQueue(guildDB.entrysound, guild.me, false);
             } catch(error: any) {
-                log.warn(`Unable to queue bot entry: ${error.message}`);
+                this.log.warn(`Unable to queue bot entry: ${error.message}`);
             }
         }
     }
@@ -92,7 +89,7 @@ class EntrySoundModule extends Module {
         let member = await BotCore.database.getMember(m);
 
         if(!member.entrysound) {
-            log.debug(`No entrysound set: ${m.displayName}`);
+            this.log.debug(`No entrysound set: ${m.displayName}`);
             return;
         }
 
@@ -101,7 +98,7 @@ class EntrySoundModule extends Module {
             try {
                 await guildAudio.smartQueue(member.entrysound, m, false);
             } catch(error: any) {
-                log.warn(`Unable to queue member entry: ${error.message}`);
+                this.log.warn(`Unable to queue member entry: ${error.message}`);
             }
         }
     }

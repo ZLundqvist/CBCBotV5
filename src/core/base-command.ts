@@ -1,16 +1,20 @@
 import Discord from 'discord.js';
 import { BotCore } from '../core';
+import { getLoggerWrapper, LoggerWrapper } from '../utils/logger';
 import { CommandError } from './custom-errors';
 
 export abstract class BaseCommand {
     readonly commandData: Discord.ApplicationCommandDataResolvable;
-    readonly ownerOnly: boolean;
-    readonly autoDefer: boolean;
+    protected readonly ownerOnly: boolean;
+    protected readonly autoDefer: boolean;
+    protected readonly log: LoggerWrapper;
 
     constructor(commandData: Discord.ApplicationCommandDataResolvable, ownerOnly: boolean, autoDefer: boolean) {
         this.commandData = commandData;
         this.ownerOnly = ownerOnly;
         this.autoDefer = autoDefer;
+
+        this.log = getLoggerWrapper(this.name);
     }
 
     get name(): string {
