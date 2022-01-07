@@ -8,6 +8,7 @@ export interface CommandOptions {
 };
 
 export interface RunCommandContext {
+    client: Discord.Client<true>;
     interaction: Discord.CommandInteraction;
 };
 
@@ -36,6 +37,7 @@ export abstract class Command {
      */
     async run(interaction: Discord.CommandInteraction): Promise<void> {
         const context: RunCommandContext = {
+            client: interaction.client,
             interaction: interaction
         };
 
