@@ -1,5 +1,6 @@
 import Discord from 'discord.js';
-import { BotCore, CommandError, Module, VoiceStateUpdateCustom } from "../../core";
+import { BotCore, CommandError, Module } from "../../core";
+import * as VoiceUtil from '../../utils/voice';
 import audio from '../audio';
 
 class EntrySoundModule extends Module {
@@ -11,8 +12,8 @@ class EntrySoundModule extends Module {
 
     async init(client: Discord.Client<true>): Promise<void> {
         this.client = client;
-        client.on('voiceStateUpdateCustom' as any, (event: VoiceStateUpdateCustom) => {
-            this.onVoiceStateUpdate(event);
+        client.on('voiceStateUpdate', (oldState, newState) => {
+            this.onVoiceStateUpdate(oldState, newState);
         });
     }
 
@@ -48,7 +49,9 @@ class EntrySoundModule extends Module {
         return member.entrysound;
     }
 
-    private async onVoiceStateUpdate({ oldState, newState, type }: VoiceStateUpdateCustom) {
+    private async onVoiceStateUpdate(oldState: Discord.VoiceState, newState: Discord.VoiceState) {
+        const type = VoiceUtil.getVoiceStateUpdateType(oldState, newState);
+
         if(type === 'transfer' || type === 'connect') {
             if(newState.member?.user.id === this.client.user.id) {
                 // If event was caused by bot itself

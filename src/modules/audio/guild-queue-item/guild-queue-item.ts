@@ -1,5 +1,5 @@
 import { AudioResource, createAudioResource, demuxProbe } from '@discordjs/voice';
-import Discord, { MessageEmbed } from 'discord.js';
+import Discord from 'discord.js';
 import { nanoid } from 'nanoid';
 import { Readable } from 'stream';
 import { AudioProvider, EmojiCharacters } from '../../../constants';
@@ -61,7 +61,7 @@ export abstract class GuildQueueItem {
         }
     }
 
-    getMessageEmbed(): MessageEmbed {
+    getMessageEmbed(): Discord.MessageEmbed {
         const emoji = resolveEmojiString(this.provider.emoji, this.trackInfo.queuedBy.guild);
 
         const embed = new Discord.MessageEmbed()

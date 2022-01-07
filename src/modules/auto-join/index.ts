@@ -1,5 +1,5 @@
 import Discord from 'discord.js';
-import { Module, VoiceStateUpdateCustom } from '../../core';
+import { Module } from '../../core';
 import * as VoiceUtil from "../../utils/voice";
 import PostureCheck from '../posture-check';
 
@@ -12,8 +12,8 @@ class AutoJoinModule extends Module {
 
     async init(client: Discord.Client<true>): Promise<void> {
         this.client = client;
-        client.on('voiceStateUpdateCustom' as any, (event: VoiceStateUpdateCustom) => {
-            this.onVoiceStateUpdate(event);
+        client.on('voiceStateUpdate', (oldState, newState) => {
+            this.onVoiceStateUpdate(oldState, newState);
         });
     }
 
@@ -23,10 +23,12 @@ class AutoJoinModule extends Module {
      * Function that handles logic that should run when a VoiceState change occurs
      * Does not run when the VoiceState belongs to me
      */
-    private onVoiceStateUpdate({ oldState, newState, type }: VoiceStateUpdateCustom) {
+    private onVoiceStateUpdate(oldState: Discord.VoiceState, newState: Discord.VoiceState) {
         // If state belongs to me
         if(this.client.user.id === newState.member?.user.id)
             return;
+
+        const type = VoiceUtil.getVoiceStateUpdateType(oldState, newState);
 
         switch(type) {
             case 'connect':
