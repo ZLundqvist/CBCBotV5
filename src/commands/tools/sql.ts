@@ -1,8 +1,9 @@
 import { SlashCommandBuilder } from '@discordjs/builders';
-import Discord, { CommandInteraction } from 'discord.js';
+import Discord from 'discord.js';
 import { getConnection } from 'typeorm';
 import { CommandError, GlobalCommand } from "../../core";
 import { RunCommandContext } from '../../core/command';
+import { OwnerOnlyPrecondition } from '../../preconditions';
 
 const command = new SlashCommandBuilder()
     .setName('sql')
@@ -18,7 +19,9 @@ export default class SQLCommand extends GlobalCommand {
     constructor() {
         super(command.toJSON(), {
             autoDefer: false,
-            preconditions: ['OwnerOnly']
+            preconditions: [
+                new OwnerOnlyPrecondition()
+            ]
         });
     }
 

@@ -7,7 +7,7 @@ export interface RunGuildCommandContext extends RunCommandContext {
 };
 
 export abstract class GuildCommand extends Command {
-    async run(context: RunCommandContext): Promise<void> {
+    async runCommand(context: RunCommandContext): Promise<void> {
         if(!context.interaction.inCachedGuild()) {
             throw new Error('Unable to get guild');
         }

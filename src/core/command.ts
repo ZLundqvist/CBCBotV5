@@ -1,9 +1,10 @@
 import Discord from 'discord.js';
+import { Precondition } from '.';
 import { getLoggerWrapper, LoggerWrapper } from '../utils/logger';
 
 export interface CommandOptions {
     autoDefer: boolean;
-    preconditions?: string[];
+    preconditions?: Precondition[];
 };
 
 export interface RunCommandContext {
@@ -12,13 +13,15 @@ export interface RunCommandContext {
 
 export abstract class Command {
     readonly commandData: Discord.ApplicationCommandDataResolvable;
-    protected readonly options: CommandOptions;
+    protected readonly options: Required<CommandOptions>;
     protected readonly log: LoggerWrapper;
 
     constructor(commandData: Discord.ApplicationCommandDataResolvable, options: CommandOptions) {
         this.commandData = commandData;
-        this.options = options;
-
+        // Assign default values to optional properties
+        this.options = Object.assign({
+            preconditions: []
+        }, options);
         this.log = getLoggerWrapper(this.name);
     }
 
@@ -26,30 +29,34 @@ export abstract class Command {
         return this.commandData.name;
     }
 
-    get preconditions(): string[] {
-        return this.options.preconditions || [];
-    }
-
     /**
      * Entrypoint for commands once its CommandInteraction has been received
      * Handles permissions and setup of reply
      * @param interaction 
      */
-    async onInteraction(context: RunCommandContext) {
-        // if(this.options.ownerOnly && !BotCore.config.isOwner(interaction.user)) {
-        //     throw new CommandError('You do not have permission to do this, my dude');
-        // }
+    async run(interaction: Discord.CommandInteraction): Promise<void> {
+        const context: RunCommandContext = {
+            interaction: interaction
+        };
+
+        await this.runPreconditions(context);
 
         if(this.options.autoDefer) {
             await context.interaction.deferReply();
         }
 
-        await this.run(context);
+        await this.runCommand(context);
+    }
+
+    private async runPreconditions(context: RunCommandContext): Promise<void> {
+        for (const precondition of this.options.preconditions) {
+            await precondition.run(context);
+        }
     }
 
     /**
-     * Executes after onInteraction
+     * Executes after run
      * @param interaction 
      */
-    protected abstract run(context: RunCommandContext): Promise<void>;
+    protected abstract runCommand(context: RunCommandContext): Promise<void>;
 }

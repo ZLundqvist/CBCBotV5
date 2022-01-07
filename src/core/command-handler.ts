@@ -5,16 +5,14 @@ import { BotCore, CommandError, GlobalCommand, GuildCommand, PreconditionError }
 import { EmojiCharacters } from '../constants';
 import { getFilesRecursive } from '../utils/file';
 import { getLoggerWrapper } from '../utils/logger';
-import { Command, RunCommandContext } from './command';
+import { Command } from './command';
 import { ImportError } from './custom-errors';
-import { PreconditionHandler } from './precondition-handler';
 
 const COMMANDS_PATH = path.join(__dirname, '../commands/');
 
 export class CommandHandler {
     private readonly log = getLoggerWrapper('core');
     private readonly commands: Discord.Collection<string, Command> = new Discord.Collection();
-    private readonly preconditions: PreconditionHandler = new PreconditionHandler();
     private readonly client: Discord.Client;
 
     constructor(client: Discord.Client) {
@@ -24,13 +22,12 @@ export class CommandHandler {
     async init(): Promise<void> {
         assert(this.client.isReady());
 
-        await this.preconditions.init();
         await this.registerCommands();
 
         if(BotCore.config.getNodeEnv() === 'production') {
             await this.deployCommands();
         }
-        
+
         this.client.on('interactionCreate', this.onInteractionCreate.bind(this));
     }
 
@@ -76,15 +73,10 @@ export class CommandHandler {
             return;
         }
 
-        const context: RunCommandContext = {
-            interaction
-        };
-
         try {
-            await this.preconditions.runPreconditions(command, context);
-            await command.onInteraction(context);
+            await command.run(interaction);
         } catch(error) {
-            const replyFn = async (msg: string) => {
+            const smartReplyFn = async (msg: string) => {
                 if(interaction.replied || interaction.deferred) {
                     await interaction.editReply(msg);
                 } else {
@@ -93,12 +85,12 @@ export class CommandHandler {
             };
 
             if(error instanceof CommandError) {
-                await replyFn(`${EmojiCharacters.deny} **${error.message}**`);
+                await smartReplyFn(`${EmojiCharacters.deny} **${error.message}**`);
             } else if(error instanceof PreconditionError) {
-                await replyFn(`${EmojiCharacters.deny} **${error.message}**`);
+                await smartReplyFn(`${EmojiCharacters.deny} **${error.message}**`);
             } else {
                 this.log.error(error);
-                await replyFn(`${EmojiCharacters.deny} Something went wrong`);
+                await smartReplyFn(`${EmojiCharacters.deny} Something went wrong`);
             }
         }
     }

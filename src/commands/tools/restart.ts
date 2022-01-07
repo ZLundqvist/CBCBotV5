@@ -1,6 +1,7 @@
 import { SlashCommandBuilder } from '@discordjs/builders';
 import { BotCore, GlobalCommand } from "../../core";
 import { RunCommandContext } from '../../core/command';
+import { OwnerOnlyPrecondition } from '../../preconditions';
 
 const command = new SlashCommandBuilder()
     .setName('restart')
@@ -10,7 +11,9 @@ export default class RestartCommand extends GlobalCommand {
     constructor() {
         super(command.toJSON(), {
             autoDefer: false,
-            preconditions: ['OwnerOnly']
+            preconditions: [
+                new OwnerOnlyPrecondition()
+            ]
         });
     }
 
