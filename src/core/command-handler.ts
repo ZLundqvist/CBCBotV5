@@ -1,7 +1,7 @@
 import assert from 'assert';
-import Discord, { Collection } from 'discord.js';
+import Discord from 'discord.js';
 import path from 'path';
-import { CommandError, GlobalCommand, GuildCommand, PreconditionError } from '.';
+import { BotCore, CommandError, GlobalCommand, GuildCommand, PreconditionError } from '.';
 import { EmojiCharacters } from '../constants';
 import { getFilesRecursive } from '../utils/file';
 import { getLoggerWrapper } from '../utils/logger';
@@ -13,14 +13,12 @@ const COMMANDS_PATH = path.join(__dirname, '../commands/');
 
 export class CommandHandler {
     private readonly log = getLoggerWrapper('core');
-    private readonly commands: Collection<string, Command>;
+    private readonly commands: Discord.Collection<string, Command> = new Discord.Collection();
+    private readonly preconditions: PreconditionHandler = new PreconditionHandler();
     private readonly client: Discord.Client;
-    readonly preconditions: PreconditionHandler;
 
     constructor(client: Discord.Client) {
-        this.commands = new Collection();
         this.client = client;
-        this.preconditions = new PreconditionHandler();
     }
 
     async init(): Promise<void> {
@@ -29,13 +27,19 @@ export class CommandHandler {
         await this.preconditions.init();
         await this.registerCommands();
 
-        this.client.on('interactionCreate', (interaction) => {
-            if(interaction.isCommand()) {
-                this.onCommandInteractionCreate(interaction);
-            }
-        });
+        if(BotCore.config.getNodeEnv() === 'production') {
+            await this.deployCommands();
+        }
+        
+        this.client.on('interactionCreate', this.onInteractionCreate.bind(this));
+    }
 
-        await this.ensureCommandsUpdated();
+    async deployCommands(): Promise<void> {
+        await this.deployGlobalCommands();
+
+        for(const guild of this.client.guilds.cache.values()) {
+            await this.deployGuildCommands(guild);
+        }
     }
 
     async deployGlobalCommands(): Promise<void> {
@@ -59,7 +63,11 @@ export class CommandHandler {
         return Array.from(this.commands.filter((cmd): cmd is GlobalCommand => cmd instanceof GlobalCommand).values());
     }
 
-    private async onCommandInteractionCreate(interaction: Discord.CommandInteraction): Promise<void> {
+    private async onInteractionCreate(interaction: Discord.Interaction): Promise<void> {
+        if(!interaction.isCommand()) {
+            return;
+        }
+
         const command = this.commands.get(interaction.commandName);
 
         if(!command) {
@@ -143,67 +151,5 @@ export class CommandHandler {
 
     private isBaseCommand(object: any): object is new () => Command {
         return typeof object === 'function' && object.prototype instanceof Command;
-    }
-
-    /**
-     * Ensures that the application and all guilds have up-to-date commands
-     */
-    private async ensureCommandsUpdated(): Promise<void> {
-        // Check for all guilds
-        const guilds = this.client.guilds.cache.values();
-        for(const guild of guilds) {
-            if(await this.guildCommandsDiffer(guild)) {
-                this.log.debug(`GuildCommand re-deploy needed in guild ${guild.name}`);
-                await this.deployGuildCommands(guild);
-            } else {
-                this.log.debug(`GuildCommands are up to date in guild ${guild.name}`);
-            }
-        }
-
-        // Check for application commands
-        if(await this.globalCommandsDiffer()) {
-            this.log.debug('GlobalCommand re-deploy needed');
-            await this.deployGlobalCommands();
-        } else {
-            this.log.debug('GlobalCommands are up to date');
-        }
-    }
-
-    private async globalCommandsDiffer(): Promise<boolean> {
-        assert(this.client.isReady());
-        const localCommandNames = this.getGlobalCommands().map(cmd => cmd.name);
-        const deployedCommands = await this.client.application.commands.fetch();
-        const deployedCommandNames = Array.from(deployedCommands.mapValues(cmd => cmd.name).values());
-
-        return this.commandNamesDiffer(localCommandNames, deployedCommandNames);
-    }
-
-    private async guildCommandsDiffer(guild: Discord.Guild): Promise<boolean> {
-        const localCommandNames = this.getGuildCommands().map(cmd => cmd.name);
-        const deployedCommands = await guild.commands.fetch();
-        const deployedCommandNames = Array.from(deployedCommands.mapValues(cmd => cmd.name).values());
-
-        return this.commandNamesDiffer(localCommandNames, deployedCommandNames);
-    }
-
-    /**
-     * Basic comparison of two lists of command names
-     * Just a basic comparison
-     * @param localCommandNames 
-     * @param deployedCommandNames 
-     * @returns True if lists differ, false otherwise
-     */
-    private async commandNamesDiffer(localCommandNames: string[], deployedCommandNames: string[]) {
-        if(localCommandNames.length !== deployedCommandNames.length) {
-            return true;
-        }
-
-        for(const commandName of localCommandNames) {
-            if(!deployedCommandNames.includes(commandName)) {
-                return true;
-            }
-        }
-
-        return false;
     }
 }
