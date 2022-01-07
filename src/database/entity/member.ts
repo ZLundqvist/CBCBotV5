@@ -13,7 +13,7 @@ export class Member extends BaseEntity {
     @Column('text', { nullable: true })
     entrysound!: string | null;
 
-    @Column('int', { default: 1000 })
+    @Column('int', { default: 0 })
     currency!: number;
 
     @Column('int', { default: 0 })
