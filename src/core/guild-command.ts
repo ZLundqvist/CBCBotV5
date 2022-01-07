@@ -13,11 +13,13 @@ export abstract class GuildCommand extends Command {
         }
 
         const member = await context.interaction.guild.members.fetch(context.interaction.user);
-        await this.runGuildCommand({
+
+        const guildContext: RunGuildCommandContext = {
             ...context,
             guild: context.interaction.guild,
             member: member
-        });
+        };
+        await this.runGuildCommand(guildContext);
     }
 
     protected abstract runGuildCommand(context: RunGuildCommandContext): Promise<void>;
