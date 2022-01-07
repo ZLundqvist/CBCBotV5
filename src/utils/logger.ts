@@ -1,6 +1,8 @@
 import log4js from 'log4js';
 import { formatLoggerName } from './formatting';
 
+const DEFAULT_LEVEL: log4js.Level = log4js.levels.DEBUG;
+
 type TimeMeasurement = {
     /**
      * Timestamp of start of time measurement in milliseconds
@@ -97,7 +99,7 @@ export class LoggerWrapper {
     }
 }
 
-export function getLoggerWrapper(name: string, level: log4js.Level = log4js.levels.ALL): LoggerWrapper {
+export function getLoggerWrapper(name: string, level: log4js.Level = DEFAULT_LEVEL): LoggerWrapper {
     const logger = new LoggerWrapper(formatLoggerName(name));
     logger.level = level;
     return logger;
