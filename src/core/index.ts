@@ -7,7 +7,6 @@ import { getLoggerWrapper } from '../utils/logger';
 import { CommandHandler } from './command-handler';
 import { attachCustomEvents } from './custom-events';
 import { ModuleHandler } from './module-handler';
-import { PreconditionHandler } from './precondition-handler';
 
 class CBCBotCore {
     private readonly log = getLoggerWrapper('core');
@@ -83,3 +82,4 @@ export * from './global-command';
 export * from './guild-command';
 export * from './module';
 export * from './precondition';
+
