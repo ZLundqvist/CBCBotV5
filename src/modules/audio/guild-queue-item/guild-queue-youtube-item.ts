@@ -1,12 +1,11 @@
 import Discord from 'discord.js';
-import { Readable } from 'stream';
 import { YoutubeAudioProvider } from '../../../constants';
 import { YoutubeAPI } from '../../../utils/audio';
-import { GuildQueueItem, TrackInfo } from './guild-queue-item';
+import { GuildQueueItem, ReadableCreator, TrackInfo } from './guild-queue-item';
 
 export class GuildQueueYoutubeItem extends GuildQueueItem {
-    private constructor(stream: Readable, trackInfo: TrackInfo) {
-        super(YoutubeAudioProvider, stream, trackInfo);
+    private constructor(trackInfo: TrackInfo, createReadable: ReadableCreator) {
+        super(YoutubeAudioProvider, trackInfo, createReadable);
     }
 
     public static async create(link: string, queuedBy: Discord.GuildMember, currentQueueSize: number): Promise<GuildQueueYoutubeItem> {
@@ -28,7 +27,9 @@ export class GuildQueueYoutubeItem extends GuildQueueItem {
             thumbnail: thumbnail
         };
 
-        const stream = YoutubeAPI.getReadableFromInfo(info);
-        return new GuildQueueYoutubeItem(stream, trackInfo);
+        const createReadable: ReadableCreator = async () => {
+            return YoutubeAPI.getReadableFromInfo(info);
+        };
+        return new GuildQueueYoutubeItem(trackInfo, createReadable);
     }
 }

@@ -1,13 +1,12 @@
 import Discord from 'discord.js';
 import { createReadStream } from 'fs';
-import { Readable } from 'stream';
 import { LocalAudioProvider } from '../../../constants';
 import { SFXResource } from '../../../resources';
-import { GuildQueueItem, TrackInfo } from './guild-queue-item';
+import { GuildQueueItem, ReadableCreator, TrackInfo } from './guild-queue-item';
 
 export class GuildQueueLocalItem extends GuildQueueItem {
-    private constructor(stream: Readable, trackInfo: TrackInfo) {
-        super(LocalAudioProvider, stream, trackInfo);
+    private constructor(trackInfo: TrackInfo, createReadable: ReadableCreator) {
+        super(LocalAudioProvider, trackInfo, createReadable);
     }
 
     public static create(resource: SFXResource, queuedBy: Discord.GuildMember, currentQueueSize: number): GuildQueueLocalItem {
@@ -17,7 +16,11 @@ export class GuildQueueLocalItem extends GuildQueueItem {
             length: resource.metadata?.length,
             initialQueuePosition: currentQueueSize + 1
         };
-        const stream = createReadStream(resource.path);
-        return new GuildQueueLocalItem(stream, trackInfo);
+
+        const createReadable: ReadableCreator = async () => {
+            return createReadStream(resource.path);
+        };
+
+        return new GuildQueueLocalItem(trackInfo, createReadable);
     }
 }

@@ -18,18 +18,28 @@ export type TrackInfo = {
     thumbnail?: string;
 };
 
+export type ReadableCreator = () => Promise<Readable>;
+
 export abstract class GuildQueueItem {
     public readonly id: string;
 
-    private embedMessage?: Discord.Message;
-    private audioResource?: AudioResource<TrackInfo>;
+    readonly provider: AudioProvider;
+    readonly trackInfo: TrackInfo;
 
-    constructor(readonly provider: AudioProvider, private readonly stream: Readable, readonly trackInfo: TrackInfo) {
+    protected embedMessage?: Discord.Message;
+    protected createReadable: ReadableCreator;
+    protected audioResource?: AudioResource<TrackInfo>;
+
+    constructor(provider: AudioProvider, trackInfo: TrackInfo, createReadable: ReadableCreator) {
         this.id = nanoid();
+        this.provider = provider;
+        this.trackInfo = trackInfo;
+        this.createReadable = createReadable;
     }
 
     async getAudioResource(): Promise<AudioResource<TrackInfo>> {
-        const probe = await demuxProbe(this.stream);
+        const stream = await this.createReadable();
+        const probe = await demuxProbe(stream);
         this.audioResource = createAudioResource(probe.stream, { inputType: probe.type, inlineVolume: true, metadata: this.trackInfo });
         return this.audioResource;
     }
@@ -58,6 +68,13 @@ export abstract class GuildQueueItem {
     async getEmbedMessage(): Promise<Discord.Message | undefined> {
         if(this.embedMessage) {
             return await this.embedMessage.fetch();
+        }
+    }
+
+    async removeEmbedReactions(): Promise<void> {
+        const embedMsg = await this.getEmbedMessage();
+        if(embedMsg) {
+            await embedMsg.reactions.removeAll();
         }
     }
 

@@ -1,12 +1,11 @@
 import Discord from 'discord.js';
-import { Readable } from 'stream';
 import { SoundcloudAudioProvider } from '../../../constants';
 import { SoundcloudAPI } from '../../../utils/audio';
-import { GuildQueueItem, TrackInfo } from './guild-queue-item';
+import { GuildQueueItem, ReadableCreator, TrackInfo } from './guild-queue-item';
 
 export class GuildQueueSoundCloudItem extends GuildQueueItem {
-    private constructor(stream: Readable, trackInfo: TrackInfo) {
-        super(SoundcloudAudioProvider, stream, trackInfo);
+    private constructor(trackInfo: TrackInfo, createReadable: ReadableCreator) {
+        super(SoundcloudAudioProvider, trackInfo, createReadable);
     }
 
     public static async create(link: string, queuedBy: Discord.GuildMember, currentQueueSize: number): Promise<GuildQueueSoundCloudItem> {
@@ -21,7 +20,10 @@ export class GuildQueueSoundCloudItem extends GuildQueueItem {
             thumbnail: info.thumbnail
         };
 
-        const stream = await info.downloadProgressive();
-        return new GuildQueueSoundCloudItem(stream, trackInfo);
+        const createReadable: ReadableCreator = async () => {
+            return await info.downloadProgressive();
+        };
+
+        return new GuildQueueSoundCloudItem(trackInfo, createReadable);
     }
 }

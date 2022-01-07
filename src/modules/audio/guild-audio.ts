@@ -5,7 +5,7 @@ import { BotCore, CommandError } from '../../core';
 import { getLoggerWrapper, LoggerWrapper } from '../../utils/logger';
 import memberStats from '../member-stats';
 import { GuildQueue } from './guild-queue';
-import { GuildQueueItem } from './guild-queue-item/guild-queue-item';
+import { GuildQueueItem, TrackInfo } from './guild-queue-item/guild-queue-item';
 import { smartParse } from './smart-parse';
 
 const MAX_QUEUE_LENGTH = 50;
@@ -45,13 +45,12 @@ export class GuildAudio {
             throw new CommandError(`Queue cannot exceed ${MAX_QUEUE_LENGTH} items`);
 
         const guildQueueItem = await smartParse(query, queuedBy, this.queue.size);
-        const trackInfo = guildQueueItem.trackInfo;
         this.queue.add(guildQueueItem);
-        this.log.debug(`Queued: ${trackInfo.title}`);
+        this.log.debug(`Queued: ${guildQueueItem.trackInfo.title} (id: ${guildQueueItem.id})`);
 
         if(addToHistory) {
             await memberStats.incrementSongsQueued(queuedBy);
-            await BotCore.database.addGuildQueueItemToQueueHistory(queuedBy.guild, trackInfo.title, trackInfo.queuedBy.user);
+            await BotCore.database.addGuildQueueItemToQueueHistory(queuedBy.guild, guildQueueItem.trackInfo.title, guildQueueItem.trackInfo.queuedBy.user);
         }
 
         if(!this.isPlaying) {
@@ -69,14 +68,14 @@ export class GuildAudio {
         const item = this.queue.pop();
 
         if(item) {
-            this.removeSkipReactions(item);
-            this.log.debug(`Finished: ${item.id} (remaining queue: ${this.queue.size})`);
+            item.removeEmbedReactions();
+            this.log.debug(`Finished: ${item.trackInfo.title} (id: ${item.id}, remaining queue: ${this.queue.size})`);
         }
 
         this.playNext();
     }
 
-    async playNext() {
+    private async playNext() {
         const vc = getVoiceConnection(this.guild.id);
         if(!vc) {
             this.log.debug('playNext called without VoiceConnection');
@@ -91,7 +90,6 @@ export class GuildAudio {
             this.log.warn('Waited 5s for VoiceConnection to become ready, playNext aborted');
             return;
         }
-
 
         const next = this.queue.peek();
         if(next) {
@@ -109,13 +107,6 @@ export class GuildAudio {
 
             this.player.play(resource);
             this.log.info(`Playing: ${next.trackInfo.title} (id: ${next.id})`);
-        }
-    }
-
-    async removeSkipReactions(item: GuildQueueItem) {
-        const embedMsg = await item.getEmbedMessage();
-        if(embedMsg) {
-            await embedMsg.reactions.removeAll();
         }
     }
 
@@ -138,7 +129,6 @@ export class GuildAudio {
         this.log.debug('Queue cleared');
     }
 
-
     skipById(id: string) {
         const currentItem = this.queue.peek();
         const itemToSkip = this.queue.getById(id);
@@ -157,7 +147,7 @@ export class GuildAudio {
             this.skipCurrent();
         } else {
             this.queue.removeById(itemToSkip.id);
-            this.log.debug(`Skipped: ${itemToSkip.id}`);
+            this.log.debug(`Skipped: ${itemToSkip.trackInfo.title} (id: ${itemToSkip.id})`);
         }
     }
 
@@ -173,7 +163,7 @@ export class GuildAudio {
         }
 
         this.player.stop();
-        this.log.debug(`Skipped: ${itemToSkip.id}`);
+        this.log.debug(`Skipped: ${itemToSkip.trackInfo.title} (id: ${itemToSkip.id})`);
     }
 
     async attachSkipReaction(item: GuildQueueItem) {
@@ -192,15 +182,13 @@ export class GuildAudio {
             return true;
         };
 
-        const onCollected = () => {
-            this.skipById(item.id);
-            this.removeSkipReactions(item);
-        };
-
         msg.createReactionCollector({
             filter: queuedByFilter,
             max: 1
-        }).once('collect', onCollected);
+        }).once('collect', () => {
+            item.removeEmbedReactions();
+            this.skipById(item.id);
+        });
 
         await msg.react(EmojiCharacters.reject);
     }
@@ -209,8 +197,8 @@ export class GuildAudio {
         return await this.queue.getMessageEmbed();
     }
 
-    getCurrentAudioResource(): AudioResource | undefined {
-        return this.player.state.status === AudioPlayerStatus.Idle ? undefined : this.player.state.resource;
+    getCurrentAudioResource(): AudioResource<TrackInfo> | undefined {
+        return this.player.state.status === AudioPlayerStatus.Idle ? undefined : this.player.state.resource as AudioResource<TrackInfo>;
     }
 
     async getVolume(): Promise<number> {
@@ -225,13 +213,9 @@ export class GuildAudio {
 
         // Update current playing volume if playing
         const resource = this.getCurrentAudioResource();
-        if(resource) {
-            if(resource.volume) {
-                resource.volume.setVolume(v / VOLUME_FACTOR);
-                this.log.debug(`Volume set: ${v}%`);
-            } else {
-                this.log.warn(`setVolume called on resource without`);
-            }
+        if(resource && resource.volume) {
+            resource.volume.setVolume(v / VOLUME_FACTOR);
+            this.log.debug(`Volume set: ${v}%`);
         }
     }
 }
