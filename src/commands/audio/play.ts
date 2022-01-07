@@ -37,7 +37,7 @@ export default class PlayCommand extends GuildCommand {
         const guildAudio = audio.getGuildAudio(guild);
         const queuedItem = await guildAudio.smartQueue(query, member, true);
 
-        const embed = await queuedItem.getMessageEmbed();
+        const embed = queuedItem.getMessageEmbed();
         const reply = await interaction.editReply({ embeds: [embed] });
 
         if(reply instanceof Discord.Message) {

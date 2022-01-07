@@ -61,20 +61,31 @@ export abstract class GuildQueueItem {
         }
     }
 
-    async getMessageEmbed(): Promise<MessageEmbed> {
+    getMessageEmbed(): MessageEmbed {
         const emoji = resolveEmojiString(this.provider.emoji, this.trackInfo.queuedBy.guild);
 
         const embed = new Discord.MessageEmbed()
-            .setColor(this.provider.color);
+            .setColor(this.provider.color)
+            .setFooter({ text: `Skip using the ${EmojiCharacters.reject} reaction` });
 
         if(this.trackInfo.link) {
-            embed.setAuthor(this.trackInfo.title, undefined, this.trackInfo.link);
+            embed.setAuthor({
+                name: this.trackInfo.title,
+                iconURL: undefined,
+                url: this.trackInfo.link
+            });
             embed.setTitle(`${emoji} ${this.trackInfo.link}`);
         } else {
             embed.setTitle(`${emoji} ${this.trackInfo.title}`);
         }
-        if(this.trackInfo.thumbnail) embed.setThumbnail(this.trackInfo.thumbnail);
-        if(this.trackInfo.link) embed.setURL(this.trackInfo.link);
+
+        if(this.trackInfo.thumbnail) {
+            embed.setThumbnail(this.trackInfo.thumbnail);
+        }
+
+        if(this.trackInfo.link) {
+            embed.setURL(this.trackInfo.link);
+        }
 
         if(this.trackInfo.length) {
             embed.addField('Length', secondsToMS(this.trackInfo.length), true);
@@ -84,7 +95,6 @@ export abstract class GuildQueueItem {
             embed.addField('Position', `#${this.trackInfo.initialQueuePosition}`, true);
         }
 
-        embed.setFooter(`Skip using the ${EmojiCharacters.reject} reaction`);
         return embed;
     }
 }
