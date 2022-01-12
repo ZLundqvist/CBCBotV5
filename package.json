@@ -50,7 +50,7 @@
     "utf-8-validate": "^5.0.8",
     "validator": "^13.7.0",
     "youtube-search": "^1.1.6",
-    "ytdl-core": "^4.9.2",
+    "ytdl-core": "^4.10.0",
     "zlib-sync": "^0.1.7"
   }
 }
