@@ -31,14 +31,10 @@ export class LoggerWrapper {
     }
 
     set level(level: log4js.Level | string) {
-        if(typeof level === 'string') {
-            this.logger.level = level;
-        } else {
-            this.logger.level = level.levelStr;
-        }
+        this.logger.level = level;
     }
 
-    get level(): string {
+    get level(): log4js.Level | string {
         return this.logger.level;
     }
 
