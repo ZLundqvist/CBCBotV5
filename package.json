@@ -46,7 +46,7 @@
     "sodium": "^3.0.2",
     "soundcloud-scraper": "^5.0.2",
     "sqlite3": "^5.0.2",
-    "typeorm": "^0.2.44",
+    "typeorm": "^0.2.45",
     "utf-8-validate": "^5.0.8",
     "validator": "^13.7.0",
     "youtube-search": "^1.1.6",
