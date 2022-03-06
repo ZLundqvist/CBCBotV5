@@ -27,7 +27,7 @@ export class GuildAudio {
             }
         });
 
-        this.player.on('stateChange', (oldState, newState) => {
+        this.player.on<'stateChange'>('stateChange', (oldState, newState) => {
             this.log.trace(`AudioPlayer stateChange: ${oldState.status} -> ${newState.status}`);
 
             if(newState.status === AudioPlayerStatus.Idle) {
