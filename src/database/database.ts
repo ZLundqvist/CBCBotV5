@@ -12,7 +12,7 @@ const log = getLoggerWrapper(__dirname);
 
 export class Database {
     private readonly fileName: string;
-    private connection?: typeorm.Connection;
+    private connection?: typeorm.DataSource;
 
     constructor(fileName: string) {
         this.fileName = fileName;
@@ -33,7 +33,7 @@ export class Database {
             throw new Error('Connection already exists');
         }
 
-        this.connection = await typeorm.createConnection({
+        this.connection = await new typeorm.DataSource({
             type: 'sqlite',
             database: `./database/${this.fileName}.sqlite`,
             entities: [
@@ -43,7 +43,8 @@ export class Database {
                 QueueHistory
             ],
             synchronize: true
-        });
+        }).initialize();
+
 
         log.info('Established connection to database: ' + this.connection.options.database);
     }
@@ -71,7 +72,9 @@ export class Database {
     }
 
     async getGuild(guild: Discord.Guild): Promise<Guild> {
-        let dbGuild = await Guild.findOne(guild.id);
+        let dbGuild = await Guild.findOneBy({
+            id: guild.id
+        });
 
         if(!dbGuild) {
             dbGuild = new Guild();
@@ -89,7 +92,9 @@ export class Database {
      * @returns 
      */
     async getMember(m: Discord.GuildMember): Promise<Member> {
-        let member = await Member.findOne(m.id);
+        let member = await Member.findOneBy({
+            id: m.id
+        });
 
         if(!member) {
             const guild = await this.getGuild(m.guild);
@@ -140,7 +145,7 @@ export class Database {
 
         const members = await Member.find({
             where: {
-                guild: dbGuild
+                guild: { id: dbGuild.id }
             },
             order: {
                 currency: 'DESC'
@@ -179,20 +184,16 @@ export class Database {
         return alias;
     }
 
-    async getAlias(guild: Discord.Guild, key: string): Promise<Alias | undefined> {
-        return await Alias.findOne({
-            where: {
-                guild: guild.id,
-                key: key
-            }
+    async getAlias(guild: Discord.Guild, key: string): Promise<Alias | null> {
+        return await Alias.findOneBy({
+            guild: { id: guild.id },
+            key: key
         });
     }
 
     async getGuildAliases(guild: Discord.Guild): Promise<Alias[]> {
-        return await Alias.find({
-            where: {
-                guild: guild.id
-            }
+        return await Alias.findBy({
+            guild: { id: guild.id }
         });
     }
 }
