@@ -47,7 +47,7 @@
     "snoowrap": "^1.23.0",
     "sodium": "^3.0.2",
     "soundcloud-scraper": "^5.0.2",
-    "sqlite3": "^5.0.2",
+    "sqlite3": "^5.0.3",
     "typeorm": "^0.3.3",
     "utf-8-validate": "^5.0.9",
     "validator": "^13.7.0",
