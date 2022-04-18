@@ -41,7 +41,7 @@
     "erlpack": "github:discord/erlpack",
     "ffmpeg-static": "^5.0.0",
     "log4js": "^6.4.4",
-    "moment": "^2.29.2",
+    "moment": "^2.29.3",
     "nanoid": "^3.3.2",
     "reflect-metadata": "^0.1.13",
     "snoowrap": "^1.23.0",
