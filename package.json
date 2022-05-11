@@ -21,7 +21,7 @@
   "homepage": "https://github.com/ZLundqvist/CBCBotV5#readme",
   "devDependencies": {
     "@types/jest": "^27.4.1",
-    "@types/node": "^16.11.27",
+    "@types/node": "^16.11.34",
     "@types/request": "^2.48.8",
     "@types/validator": "^13.7.2",
     "jest": "^27.5.1",
