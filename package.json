@@ -46,7 +46,7 @@
     "reflect-metadata": "^0.1.13",
     "snoowrap": "^1.23.0",
     "sodium": "^3.0.2",
-    "soundcloud-scraper": "^5.0.2",
+    "soundcloud-scraper": "^5.0.3",
     "sqlite3": "^5.0.3",
     "typeorm": "^0.3.6",
     "utf-8-validate": "^5.0.9",
