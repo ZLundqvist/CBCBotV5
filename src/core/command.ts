@@ -9,15 +9,15 @@ export interface CommandOptions {
 
 export interface RunCommandContext {
     client: Discord.Client<true>;
-    interaction: Discord.CommandInteraction;
+    interaction: Discord.ChatInputCommandInteraction;
 };
 
 export abstract class Command {
-    readonly commandData: Discord.ApplicationCommandDataResolvable;
+    readonly commandData: Discord.RESTPostAPIApplicationCommandsJSONBody;
     protected readonly options: Required<CommandOptions>;
     protected readonly log: LoggerWrapper;
 
-    constructor(commandData: Discord.ApplicationCommandDataResolvable, options: CommandOptions) {
+    constructor(commandData: Discord.RESTPostAPIApplicationCommandsJSONBody, options: CommandOptions) {
         this.commandData = commandData;
         // Assign default values to optional properties
         this.options = Object.assign({
@@ -35,7 +35,7 @@ export abstract class Command {
      * Handles permissions and setup of reply
      * @param interaction 
      */
-    async run(interaction: Discord.CommandInteraction): Promise<void> {
+    async run(interaction: Discord.ChatInputCommandInteraction): Promise<void> {
         const context: RunCommandContext = {
             client: interaction.client,
             interaction: interaction

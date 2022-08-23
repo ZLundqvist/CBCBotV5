@@ -14,15 +14,15 @@ class MemberStatsModule extends Module {
 
     async destroy(): Promise<void> { }
 
-    async getMemberStatsEmbed(m: Discord.GuildMember): Promise<Discord.MessageEmbed> {
+    async getMemberStatsEmbed(m: Discord.GuildMember): Promise<Discord.EmbedBuilder> {
         const member = await BotCore.database.getMember(m);
-        const embed = new Discord.MessageEmbed();
+        const embed = new Discord.EmbedBuilder();
         const avatarURL = m.user.avatarURL();
 
         embed.setColor(m.displayHexColor);
         if(avatarURL) embed.setThumbnail(avatarURL);
 
-        embed.setAuthor(`Stats for ${m.displayName}`);
+        embed.setAuthor({ name: `Stats for ${m.displayName}` });
 
         embed.addFields({
             name: 'Messages sent',
@@ -33,7 +33,7 @@ class MemberStatsModule extends Module {
             value: member.songs_queued.toString(),
             inline: true
         });
-        embed.setFooter(`Joined at: ${m.joinedAt?.toLocaleString()}`);
+        embed.setFooter({ text: `Joined at: ${m.joinedAt?.toLocaleString()}` });
 
         return embed;
     }

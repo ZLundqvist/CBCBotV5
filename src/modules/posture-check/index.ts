@@ -66,7 +66,7 @@ class PostureCheckModule extends Module {
     }
 
     private async doPostureCheck(guild: Discord.Guild): Promise<void> {
-        if(!guild.me) {
+        if(!guild.members.me) {
             this.log.warn('guild.me is null, cannot play PC');
             return;
         }
@@ -86,7 +86,7 @@ class PostureCheckModule extends Module {
 
         try {
             this.log.debug(`Performing PostureCheck (guild: ${guild.name})`);
-            await guildAudio.smartQueue('pc', guild.me, false);
+            await guildAudio.smartQueue('pc', guild.members.me, false);
         } catch(error: any) {
             this.log.warn(`Unable to queue PostureCheck: ${error.message}`);
         }

@@ -78,10 +78,10 @@ export abstract class GuildQueueItem {
         }
     }
 
-    getMessageEmbed(): Discord.MessageEmbed {
+    getMessageEmbed(): Discord.EmbedBuilder {
         const emoji = resolveEmojiString(this.provider.emoji, this.trackInfo.queuedBy.guild);
 
-        const embed = new Discord.MessageEmbed()
+        const embed = new Discord.EmbedBuilder()
             .setColor(this.provider.color)
             .setFooter({ text: `Skip using the ${EmojiCharacters.reject} reaction` });
 
@@ -105,11 +105,11 @@ export abstract class GuildQueueItem {
         }
 
         if(this.trackInfo.length) {
-            embed.addField('Length', secondsToMS(this.trackInfo.length), true);
+            embed.addFields({ name: 'Length', value: secondsToMS(this.trackInfo.length), inline: true });
         }
 
         if(this.trackInfo.initialQueuePosition >= 1) {
-            embed.addField('Position', `#${this.trackInfo.initialQueuePosition}`, true);
+            embed.addFields({ name: 'Position', value: `#${this.trackInfo.initialQueuePosition}`, inline: true });
         }
 
         return embed;

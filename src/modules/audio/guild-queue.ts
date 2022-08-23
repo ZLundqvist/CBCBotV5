@@ -67,9 +67,9 @@ export class GuildQueue {
         return beforeSize !== this.size; // Return true if size has changed after filtering
     }
 
-    async getMessageEmbed(): Promise<Discord.MessageEmbed> {
+    async getMessageEmbed(): Promise<Discord.EmbedBuilder> {
         const fields: Discord.EmbedField[] = [];
-        const embed = new Discord.MessageEmbed();
+        const embed = new Discord.EmbedBuilder();
 
         const totalQueueTime = this.queue.reduce((acc, cur) => acc += cur.trackInfo.length ? cur.trackInfo.length : 0, 0);
 
@@ -109,8 +109,8 @@ export class GuildQueue {
         }
 
         embed.addFields(fields);
-        embed.setFooter(`Total queue time: ${secondsToMS(totalQueueTime)}`);
-        embed.setColor(this.guild.me?.displayHexColor || Colors.white);
+        embed.setFooter({text: `Total queue time: ${secondsToMS(totalQueueTime)}`});
+        embed.setColor(this.guild.members.me?.displayHexColor || Colors.white);
 
         return embed;
     }

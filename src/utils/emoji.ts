@@ -27,7 +27,7 @@ export async function uploadEmoji(file: string, name: string, guild: Discord.Gui
 		log.warn(`Unable to upload emoji '${name}'. Emoji already exists.`);
 	} else {
 		try {
-			await guild.emojis.create(file, name);
+			await guild.emojis.create({ name: name, attachment: file });
 			log.info(`Emoji uploaded (name: ${name}, guild: ${guild.name})`);
 		} catch(error: any) {
 			const reason: string = error.code === 50013 ? 'MISSING_PERMISSIONS' : error.message

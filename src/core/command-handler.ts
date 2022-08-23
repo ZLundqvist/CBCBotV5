@@ -61,7 +61,7 @@ export class CommandHandler {
     }
 
     private async onInteractionCreate(interaction: Discord.Interaction): Promise<void> {
-        if(!interaction.isCommand()) {
+        if(!interaction.isChatInputCommand()) {
             return;
         }
 

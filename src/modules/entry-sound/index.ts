@@ -56,7 +56,7 @@ class EntrySoundModule extends Module {
             if(newState.member?.user.id === this.client.user.id) {
                 // If event was caused by bot itself
                 await this.playBotEntry(newState.guild);
-            } else if(newState.member && newState.channelId === newState.guild.me?.voice.channelId) {
+            } else if(newState.member && newState.channelId === newState.guild.members.me?.voice.channelId) {
                 // If event was someone joining my channel
                 await this.playMemberEntry(newState.member);
             } else {
@@ -73,7 +73,7 @@ class EntrySoundModule extends Module {
             return;
         }
 
-        if(!guild.me) {
+        if(!guild.members.me) {
             return;
         }
 
@@ -81,7 +81,7 @@ class EntrySoundModule extends Module {
 
         if(!guildAudio.isPlaying) {
             try {
-                await guildAudio.smartQueue(guildDB.entrysound, guild.me, false);
+                await guildAudio.smartQueue(guildDB.entrysound, guild.members.me, false);
             } catch(error: any) {
                 this.log.warn(`Unable to queue bot entry: ${error.message}`);
             }

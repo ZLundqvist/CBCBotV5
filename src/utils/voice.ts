@@ -10,7 +10,7 @@ type VoiceStateUpdateTypes = 'connect' | 'disconnect' | 'transfer' | 'stateChang
  * Returns true if bot is connected to a VoiceChannel in the given guild
  */
 export function inVoiceChannel(guild: Discord.Guild): boolean {
-    return !!guild.me?.voice.channelId;
+    return !!guild.members.me?.voice.channelId;
 }
 
 /**
@@ -18,7 +18,7 @@ export function inVoiceChannel(guild: Discord.Guild): boolean {
  * Returns 0 if bot is currently disconnected
  */
 export function membersInMyVoiceChannel(guild: Discord.Guild): number {
-    const currentVoiceChannel = guild.me?.voice.channel;
+    const currentVoiceChannel = guild.members.me?.voice.channel;
     // If no VoiceState exists for the client user in the guild
     // That means we have either not yet joined the guild or that we are not connected to any channel
     if(!currentVoiceChannel) {
@@ -92,7 +92,7 @@ export function inSameChannelAs(member: Discord.GuildMember): boolean {
     }
 
     // If my voicechannel is the same as the members voicechannel
-    return member.guild.me?.voice.channelId === member.voice.channelId;
+    return member.guild.members.me?.voice.channelId === member.voice.channelId;
 }
 
 /**

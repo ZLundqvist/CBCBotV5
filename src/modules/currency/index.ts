@@ -1,4 +1,4 @@
-import Discord from 'discord.js';
+import Discord, { ChannelType } from 'discord.js';
 import moment from 'moment';
 import { Colors, Images } from '../../constants';
 import { BotCore, Module } from "../../core";
@@ -23,10 +23,10 @@ class CurrencyModule extends Module {
         }
     }
 
-    async getMemberEmbed(member: Discord.GuildMember): Promise<Discord.MessageEmbed> {
+    async getMemberEmbed(member: Discord.GuildMember): Promise<Discord.EmbedBuilder> {
         const currency = await BotCore.database.getMember(member);
 
-        return new Discord.MessageEmbed()
+        return new Discord.EmbedBuilder()
             .setAuthor({
                 name: member.displayName,
                 iconURL: Images.currencyLogo
@@ -44,10 +44,10 @@ class CurrencyModule extends Module {
             });
     }
 
-    async getTopEmbed(guild: Discord.Guild, spots: number = 10): Promise<Discord.MessageEmbed> {
+    async getTopEmbed(guild: Discord.Guild, spots: number = 10): Promise<Discord.EmbedBuilder> {
         const top = await BotCore.database.getMemberCurrencyTop(guild, spots);
 
-        const embed = new Discord.MessageEmbed()
+        const embed = new Discord.EmbedBuilder()
             .setAuthor({
                 name: `Currency Leaderboard`,
                 iconURL: Images.currencyLogo
@@ -58,7 +58,7 @@ class CurrencyModule extends Module {
             const member = guild.members.resolve(currency.id);
 
             if(member) {
-                embed.addField(`#${index + 1} **${member.displayName}**`, `${currency.currency} gold`);
+                embed.addFields({ name: `#${index + 1} **${member.displayName}**`, value: `${currency.currency} gold` });
             }
         });
 
@@ -86,7 +86,7 @@ class CurrencyModule extends Module {
                 const guildSettings = await BotCore.database.getGuild(guild);
 
                 const voiceChannels = guild.channels.cache
-                    .filter((channel): channel is Discord.VoiceChannel => channel.type === 'GUILD_VOICE') // Remove non-VoiceChannels
+                    .filter((channel): channel is Discord.VoiceChannel => channel.type === ChannelType.GuildVoice) // Remove non-VoiceChannels
                     .filter((channel) => channel.id !== guild.afkChannelId); // Remove AFK channel
 
                 const connectedMembers = voiceChannels

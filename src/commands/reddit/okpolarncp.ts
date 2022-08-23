@@ -17,7 +17,7 @@ export default class OpPolarnCPCommand extends GlobalCommand {
 
     async runGlobalCommand(context: RunCommandContext) {
         const post = await reddit.getRandom('okpolarncp');
-        const attachment = new Discord.MessageAttachment(post.buffer);
+        const attachment = new Discord.AttachmentBuilder(post.buffer);
         await context.interaction.editReply({
             content: post.title,
             files: [attachment]

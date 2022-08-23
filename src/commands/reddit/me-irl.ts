@@ -17,7 +17,7 @@ export default class MeIRLCommand extends GlobalCommand {
 
     async runGlobalCommand(context: RunCommandContext) {
         const post = await reddit.getRandom('me_irl');
-        const attachment = new Discord.MessageAttachment(post.buffer);
+        const attachment = new Discord.AttachmentBuilder(post.buffer);
         await context.interaction.editReply({
             content: post.title,
             files: [attachment]

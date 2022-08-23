@@ -32,7 +32,7 @@ export default class SQLCommand extends GlobalCommand {
             const queryResults = await getConnection().query(query);
             const resultsString = JSON.stringify(queryResults, null, 2);
             const buffer = Buffer.from(resultsString);
-            const attachment = new Discord.MessageAttachment(buffer, 'results.txt');
+            const attachment = new Discord.AttachmentBuilder(buffer).setName('results.txt');
 
             await context.interaction.reply({
                 files: [
