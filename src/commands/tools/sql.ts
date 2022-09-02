@@ -1,7 +1,6 @@
 import { SlashCommandBuilder } from '@discordjs/builders';
 import Discord from 'discord.js';
-import { getConnection } from 'typeorm';
-import { CommandError, GlobalCommand } from "../../core";
+import { BotCore, CommandError, GlobalCommand } from "../../core";
 import { RunCommandContext } from '../../core/command';
 import { OwnerOnlyPrecondition } from '../../preconditions';
 
@@ -29,7 +28,7 @@ export default class SQLCommand extends GlobalCommand {
         const query = context.interaction.options.getString('query', true);
 
         try {
-            const queryResults = await getConnection().query(query);
+            const queryResults = await BotCore.database.query(query);
             const resultsString = JSON.stringify(queryResults, null, 2);
             const buffer = Buffer.from(resultsString);
             const attachment = new Discord.AttachmentBuilder(buffer).setName('results.txt');

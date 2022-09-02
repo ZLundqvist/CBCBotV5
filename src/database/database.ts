@@ -49,6 +49,14 @@ export class Database {
         log.info('Established connection to database: ' + this.connection.options.database);
     }
 
+    async query(query: string): Promise<any> {
+        if(!this.connection) {
+            throw new Error("No connection exists");
+        }
+
+        return this.connection.query(query);
+    }
+
     async closeConnection(): Promise<void> {
         if(this.connection) {
             await this.connection.close();

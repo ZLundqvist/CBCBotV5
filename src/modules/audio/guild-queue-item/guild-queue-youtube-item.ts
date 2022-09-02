@@ -10,9 +10,8 @@ export class GuildQueueYoutubeItem extends GuildQueueItem {
 
     public static async create(link: string, queuedBy: Discord.GuildMember, currentQueueSize: number): Promise<GuildQueueYoutubeItem> {
         const info = await YoutubeAPI.getInfo(link);
-
-        // Extract thumbnail with biggest dimensions
-        const thumbnail = info.player_response.videoDetails.thumbnail.thumbnails.reduce((prev, current) => {
+        
+        const thumbnail_url = info.player_response.videoDetails.thumbnail.thumbnails.reduce((prev, current) => {
             return (prev.width > current.width) ? prev : current
         }).url;
 
@@ -24,7 +23,7 @@ export class GuildQueueYoutubeItem extends GuildQueueItem {
             initialQueuePosition: currentQueueSize + 1,
             length: length,
             link: link,
-            thumbnail: thumbnail
+            thumbnail: thumbnail_url
         };
 
         const createReadable: ReadableCreator = async () => {
