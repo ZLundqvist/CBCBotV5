@@ -1,6 +1,6 @@
 {
   "name": "cbcbotv5",
-  "version": "1.5.8",
+  "version": "1.5.9",
   "description": "Unimpressive discord bot",
   "main": "dist/main.js",
   "scripts": {
