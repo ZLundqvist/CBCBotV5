@@ -23,7 +23,7 @@
     "@types/jest": "^27.5.0",
     "@types/node": "^16.11.56",
     "@types/request": "^2.48.8",
-    "@types/validator": "^13.7.6",
+    "@types/validator": "^13.7.12",
     "jest": "^27.5.1",
     "ts-jest": "^27.1.4",
     "ts-node-dev": "^2.0.0",
@@ -50,7 +50,7 @@
     "sqlite3": "^5.0.11",
     "typeorm": "^0.3.9",
     "utf-8-validate": "^5.0.9",
-    "validator": "^13.7.0",
+    "validator": "^13.9.0",
     "youtube-search": "^1.1.6",
     "ytdl-core": "^4.11.0",
     "zlib-sync": "^0.1.7"
